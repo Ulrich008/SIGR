@@ -35,21 +35,26 @@ public class Agent {
     private String datePriseService;
 
     /**
-     * RELATION :
-     * Plusieurs agents appartiennent à une unité administrative
-     * => Many Agents → One UniteAdministrative
+     * Plusieurs agents appartiennent
+     * à une unité administrative
      */
     @ManyToOne
     @JoinColumn(name = "id_unite")
     private UniteAdministrative unite;
 
     /**
-     * RELATION :
-     * Un agent peut être responsable de plusieurs actions
-     * => One Agent → Many Actions
+     * Un agent peut être responsable
+     * de plusieurs actions
      */
     @OneToMany(mappedBy = "responsable")
     private List<Action> actions;
+
+    /**
+     * Un agent peut avoir
+     * plusieurs affectations
+     */
+    @OneToMany(mappedBy = "agent")
+    private List<Affectation> affectations;
 
     // ===================== GETTERS / SETTERS =====================
 
@@ -140,6 +145,15 @@ public class Agent {
 
     public Agent setActions(List<Action> actions) {
         this.actions = actions;
+        return this;
+    }
+
+    public List<Affectation> getAffectations() {
+        return affectations;
+    }
+
+    public Agent setAffectations(List<Affectation> affectations) {
+        this.affectations = affectations;
         return this;
     }
 }
