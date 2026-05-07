@@ -1,0 +1,69 @@
+package com.example.SIGR.entity;
+import jakarta.persistence.*;
+import java.util.List;
+
+@Entity
+@Table(name = "type_unite")
+public class TypeUnite {
+
+    @Id
+    @Column(name = "id_type_unite", length = 20)
+    private String id;
+
+    @Column(name = "libelle_type", length = 100)
+    private String libelle;
+
+    @Column(length = 300)
+    private String description;
+
+    @Column(name = "cree_par", length = 50)
+    private String creePar;
+
+    @OneToMany(mappedBy = "typeUnite")
+    private List<UniteAdministrative> unites;
+
+    public String getId() {
+        return id;
+    }
+
+    public TypeUnite setId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    public String getLibelle() {
+        return libelle;
+    }
+
+    public TypeUnite setLibelle(String libelle) {
+        this.libelle = libelle;
+        return this;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public TypeUnite setDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public String getCreePar() {
+        return creePar;
+    }
+
+    public TypeUnite setCreePar(String creePar) {
+        this.creePar = creePar;
+        return this;
+    }
+
+    public List<UniteAdministrative> getUnites() {
+        return unites;
+    }
+
+    public TypeUnite setUnites(List<UniteAdministrative> unites) {
+        this.unites = unites;
+        return this;
+    }
+}
