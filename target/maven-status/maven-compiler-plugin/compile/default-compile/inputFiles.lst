@@ -1,9 +1,14 @@
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\config\OpenApiConfig.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\controller\MinistereController.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\controller\TypeUniteController.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\dto\request\MinistereRequest.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\dto\request\TypeUniteRequest.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\dto\response\MinistereResponse.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\dto\response\TypeUniteResponse.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\Action.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\Affectation.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\Agent.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\CartographieRisques.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\Evaluation.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\IndicateurPerformance.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\Ministere.java
@@ -17,6 +22,9 @@ C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\TypeUnite.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\entity\UniteAdministrative.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\repository\MinistereRepository.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\repository\TypeUniteRepository.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\services\MinistereService.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\services\MinistereServiceImpl.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\services\TypeUniteService.java
+C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\services\TypeUniteServiceImpl.java
 C:\Users\HP\Desktop\STAGE && MEMOIRE\SIGR\src\main\java\com\example\SIGR\SigrApplication.java

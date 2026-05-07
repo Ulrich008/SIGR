@@ -14,26 +14,55 @@ public class UniteAdministrative {
     @Column(name = "libelle_unite", length = 200)
     private String libelle;
 
+    /**
+     * Plusieurs unités peuvent avoir
+     * le même type d’unité
+     */
     @ManyToOne
     @JoinColumn(name = "id_type_unite")
     private TypeUnite typeUnite;
 
+    /**
+     * Plusieurs unités appartiennent
+     * à un ministère
+     */
     @ManyToOne
     @JoinColumn(name = "code_ministere")
     private Ministere ministere;
 
+    /**
+     * Relation hiérarchique :
+     * une unité peut avoir une unité parent
+     */
     @ManyToOne
     @JoinColumn(name = "id_unite_parent")
     private UniteAdministrative parent;
 
+    /**
+     * Une unité peut contenir
+     * plusieurs sous-unités
+     */
     @OneToMany(mappedBy = "parent")
     private List<UniteAdministrative> enfants;
 
+    /**
+     * Une unité administrative peut contenir
+     * plusieurs agents
+     */
     @OneToMany(mappedBy = "unite")
     private List<Agent> agents;
 
+    /**
+     * Une unité administrative peut avoir
+     * plusieurs affectations
+     */
+    @OneToMany(mappedBy = "unite")
+    private List<Affectation> affectations;
+
     @Column(name = "niveau_hierarchique")
     private Integer niveauHierarchique;
+
+    // ===================== GETTERS / SETTERS =====================
 
     public String getId() {
         return id;
@@ -95,6 +124,15 @@ public class UniteAdministrative {
 
     public UniteAdministrative setAgents(List<Agent> agents) {
         this.agents = agents;
+        return this;
+    }
+
+    public List<Affectation> getAffectations() {
+        return affectations;
+    }
+
+    public UniteAdministrative setAffectations(List<Affectation> affectations) {
+        this.affectations = affectations;
         return this;
     }
 
