@@ -1,0 +1,72 @@
+package com.example.SIGR.dto.response;
+
+import com.example.SIGR.entity.StatutCartographie;
+
+import java.time.LocalDate;
+
+public class CartographieRisquesResponse {
+
+    private String id;
+    private String titre;
+    private LocalDate periode;
+
+    private Integer seuilFaible;
+    private Integer seuilMoyen;
+    private Integer seuilEleve;
+
+    private StatutCartographie statut;
+
+    private int nombreRisques;
+
+    public CartographieRisquesResponse(
+            String id,
+            String titre,
+            LocalDate periode,
+            Integer seuilFaible,
+            Integer seuilMoyen,
+            Integer seuilEleve,
+            StatutCartographie statut,
+            int nombreRisques
+    ) {
+        this.id = id;
+        this.titre = titre;
+        this.periode = periode;
+        this.seuilFaible = seuilFaible;
+        this.seuilMoyen = seuilMoyen;
+        this.seuilEleve = seuilEleve;
+        this.statut = statut;
+        this.nombreRisques = nombreRisques;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getTitre() {
+        return titre;
+    }
+
+    public LocalDate getPeriode() {
+        return periode;
+    }
+
+    public Integer getSeuilFaible() {
+        return seuilFaible;
+    }
+
+    public Integer getSeuilMoyen() {
+        return seuilMoyen;
+    }
+
+    public Integer getSeuilEleve() {
+        return seuilEleve;
+    }
+
+    public StatutCartographie getStatut() {
+        return statut;
+    }
+
+    public int getNombreRisques() {
+        return nombreRisques;
+    }
+}

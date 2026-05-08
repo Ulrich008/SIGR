@@ -1,6 +1,7 @@
 package com.example.SIGR.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -14,25 +15,29 @@ public class CartographieRisques {
     @Column(name = "titre", length = 200)
     private String titre;
 
-    @Column(name = "periode", length = 50)
-    private String periode;
+    // PÉRIODE => date
+    @Column(name = "periode")
+    private LocalDate periode;
 
-    @Column(name = "seuil_faible", length = 2)
-    private String seuilFaible;
+    // SEUILS => entiers
+    @Column(name = "seuil_faible")
+    private Integer seuilFaible;
 
-    @Column(name = "seuil_moyen", length = 2)
-    private String seuilMoyen;
+    @Column(name = "seuil_moyen")
+    private Integer seuilMoyen;
 
-    @Column(name = "seuil_eleve", length = 2)
-    private String seuilEleve;
+    @Column(name = "seuil_eleve")
+    private Integer seuilEleve;
 
+    // STATUT => ENUM (corrigé)
+    @Enumerated(EnumType.STRING)
     @Column(name = "statut", length = 30)
-    private String statut;
+    private StatutCartographie statut;
 
     /**
      * RELATION :
      * Une cartographie peut contenir plusieurs risques
-     * => One CartographieRisques → Many Risques
+     * => One CartographieRisques ? Many Risques
      */
     @OneToMany(mappedBy = "cartographie")
     private List<Risque> risques;
@@ -57,47 +62,47 @@ public class CartographieRisques {
         return this;
     }
 
-    public String getPeriode() {
+    public LocalDate getPeriode() {
         return periode;
     }
 
-    public CartographieRisques setPeriode(String periode) {
+    public CartographieRisques setPeriode(LocalDate periode) {
         this.periode = periode;
         return this;
     }
 
-    public String getSeuilFaible() {
+    public Integer getSeuilFaible() {
         return seuilFaible;
     }
 
-    public CartographieRisques setSeuilFaible(String seuilFaible) {
+    public CartographieRisques setSeuilFaible(Integer seuilFaible) {
         this.seuilFaible = seuilFaible;
         return this;
     }
 
-    public String getSeuilMoyen() {
+    public Integer getSeuilMoyen() {
         return seuilMoyen;
     }
 
-    public CartographieRisques setSeuilMoyen(String seuilMoyen) {
+    public CartographieRisques setSeuilMoyen(Integer seuilMoyen) {
         this.seuilMoyen = seuilMoyen;
         return this;
     }
 
-    public String getSeuilEleve() {
+    public Integer getSeuilEleve() {
         return seuilEleve;
     }
 
-    public CartographieRisques setSeuilEleve(String seuilEleve) {
+    public CartographieRisques setSeuilEleve(Integer seuilEleve) {
         this.seuilEleve = seuilEleve;
         return this;
     }
 
-    public String getStatut() {
+    public StatutCartographie getStatut() {
         return statut;
     }
 
-    public CartographieRisques setStatut(String statut) {
+    public CartographieRisques setStatut(StatutCartographie statut) {
         this.statut = statut;
         return this;
     }

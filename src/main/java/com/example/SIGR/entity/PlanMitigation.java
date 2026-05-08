@@ -18,8 +18,9 @@ public class PlanMitigation {
     @Column(name = "date_creation")
     private LocalDate dateCreation;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "statut", length = 50)
-    private String statut;
+    private StatutPlanMitigation statut;
 
     // 🔗 Un plan de mitigation concerne un seul risque
     @ManyToOne
@@ -59,14 +60,13 @@ public class PlanMitigation {
         return this;
     }
 
-    public String getStatut() {
-        return statut;
-    }
+    public StatutPlanMitigation getStatut() { return statut; }
 
-    public PlanMitigation setStatut(String statut) {
+    public PlanMitigation setStatut(StatutPlanMitigation statut) {
         this.statut = statut;
         return this;
     }
+
 
     public Risque getRisque() {
         return risque;
