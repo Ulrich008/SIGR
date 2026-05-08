@@ -30,17 +30,40 @@ public class Risque {
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
 
+    /**
+     * Plusieurs risques peuvent appartenir
+     * à un même processus
+     */
     @ManyToOne
     @JoinColumn(name = "code_processus", nullable = false)
     private Processus processus;
 
-    // 👉 Remplacement de l'entité TypeRisque par Enum
+    /**
+     * Plusieurs risques peuvent appartenir
+     * à une même cartographie
+     */
+    @ManyToOne
+    @JoinColumn(name = "id_cartographie")
+    private CartographieRisques cartographie;
+
+    /**
+     * Type du risque
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "type_risque", length = 50)
     private TypeRisque typeRisque;
 
+    /**
+     * Un risque peut avoir plusieurs évaluations
+     */
     @OneToMany(mappedBy = "risque")
     private List<Evaluation> evaluations;
+
+    /**
+     * Un risque peut avoir plusieurs plans de mitigation
+     */
+    @OneToMany(mappedBy = "risque")
+    private List<PlanMitigation> plansMitigation;
 
     // ===================== GETTERS / SETTERS =====================
 
@@ -116,6 +139,15 @@ public class Risque {
         return this;
     }
 
+    public CartographieRisques getCartographie() {
+        return cartographie;
+    }
+
+    public Risque setCartographie(CartographieRisques cartographie) {
+        this.cartographie = cartographie;
+        return this;
+    }
+
     public TypeRisque getTypeRisque() {
         return typeRisque;
     }
@@ -131,6 +163,15 @@ public class Risque {
 
     public Risque setEvaluations(List<Evaluation> evaluations) {
         this.evaluations = evaluations;
+        return this;
+    }
+
+    public List<PlanMitigation> getPlansMitigation() {
+        return plansMitigation;
+    }
+
+    public Risque setPlansMitigation(List<PlanMitigation> plansMitigation) {
+        this.plansMitigation = plansMitigation;
         return this;
     }
 }
