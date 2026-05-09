@@ -1,31 +1,56 @@
 package com.example.SIGR.dto.response;
 
+import com.example.SIGR.entity.Frequence;
+
 import java.time.LocalDate;
 
 public class IndicateurPerformanceResponse {
 
+    private String id;
+
     private String code;
+
     private String libelle;
+
+    /**
+     * Valeur automatiquement fixée à %
+     */
     private String uniteMesure;
-    private String frequence;
+
+    /**
+     * Fréquence de mesure
+     */
+    private Frequence frequence;
 
     private Double valeurCible;
+
     private Double valeurObtenue;
+
     private Double seuilAlerte;
 
     private LocalDate dateMesure;
 
     private String codeProcessus;
+
     private String nomProcessus;
 
+    /**
+     * Valeur calculée automatiquement
+     */
     private Double ecartCible;
+
+    /**
+     * Statut calculé automatiquement
+     * OK / ALERTE / INCONNU
+     */
     private String statut;
 
     public IndicateurPerformanceResponse(
+            String id,
             String code,
             String libelle,
             String uniteMesure,
-            String frequence,
+            Frequence frequence,
             Double valeurCible,
             Double valeurObtenue,
             Double seuilAlerte,
@@ -35,6 +60,8 @@ public class IndicateurPerformanceResponse {
             Double ecartCible,
             String statut
     ) {
+
+        this.id = id;
         this.code = code;
         this.libelle = libelle;
         this.uniteMesure = uniteMesure;
@@ -49,29 +76,57 @@ public class IndicateurPerformanceResponse {
         this.statut = statut;
     }
 
-    // GETTERS
+    // ================= GETTERS =================
 
-    public String getCode() { return code; }
+    public String getId() {
+        return id;
+    }
 
-    public String getLibelle() { return libelle; }
+    public String getCode() {
+        return code;
+    }
 
-    public String getUniteMesure() { return uniteMesure; }
+    public String getLibelle() {
+        return libelle;
+    }
 
-    public String getFrequence() { return frequence; }
+    public String getUniteMesure() {
+        return uniteMesure;
+    }
 
-    public Double getValeurCible() { return valeurCible; }
+    public Frequence getFrequence() {
+        return frequence;
+    }
 
-    public Double getValeurObtenue() { return valeurObtenue; }
+    public Double getValeurCible() {
+        return valeurCible;
+    }
 
-    public Double getSeuilAlerte() { return seuilAlerte; }
+    public Double getValeurObtenue() {
+        return valeurObtenue;
+    }
 
-    public LocalDate getDateMesure() { return dateMesure; }
+    public Double getSeuilAlerte() {
+        return seuilAlerte;
+    }
 
-    public String getCodeProcessus() { return codeProcessus; }
+    public LocalDate getDateMesure() {
+        return dateMesure;
+    }
 
-    public String getNomProcessus() { return nomProcessus; }
+    public String getCodeProcessus() {
+        return codeProcessus;
+    }
 
-    public Double getEcartCible() { return ecartCible; }
+    public String getNomProcessus() {
+        return nomProcessus;
+    }
 
-    public String getStatut() { return statut; }
+    public Double getEcartCible() {
+        return ecartCible;
+    }
+
+    public String getStatut() {
+        return statut;
+    }
 }

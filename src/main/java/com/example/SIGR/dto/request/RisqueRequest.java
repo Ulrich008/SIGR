@@ -1,57 +1,53 @@
 package com.example.SIGR.dto.request;
 
+import com.example.SIGR.entity.StatutRisque;
 import com.example.SIGR.entity.TypeRisque;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
 public class RisqueRequest {
 
-    @NotBlank
-    private String id;
+    @NotBlank(message = "Le code est obligatoire")
+    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
+    private String code;
 
-    @NotBlank
+    @NotBlank(message = "Le libellé est obligatoire")
+    @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
-    @NotBlank
+    @NotBlank(message = "La catégorie est obligatoire")
+    @Size(max = 100, message = "La catégorie ne doit pas dépasser 100 caractères")
     private String categorie;
 
+    @Size(max = 1000, message = "La cause probable est trop longue")
     private String causeProbable;
 
+    @Size(max = 1000, message = "La conséquence probable est trop longue")
     private String consequenceProbable;
 
-    @NotBlank
-    private String statut;
+    @NotNull(message = "Le statut est obligatoire")
+    private StatutRisque statut;
 
-    @NotNull
+    @NotNull(message = "La date d'identification est obligatoire")
     private LocalDate dateIdentification;
 
-    /**
-     * Code du processus lié au risque
-     */
-    @NotBlank
+    @NotBlank(message = "Le code processus est obligatoire")
     private String codeProcessus;
 
-    /**
-     * Cartographie associée
-     */
     private String idCartographie;
 
-    /**
-     * Type du risque
-     */
-    @NotNull
+    @NotNull(message = "Le type de risque est obligatoire")
     private TypeRisque typeRisque;
 
     // ================= GETTERS / SETTERS =================
 
-    public String getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public RisqueRequest setId(String id) {
-        this.id = id;
+    public RisqueRequest setCode(String code) {
+        this.code = code;
         return this;
     }
 
@@ -91,11 +87,11 @@ public class RisqueRequest {
         return this;
     }
 
-    public String getStatut() {
+    public StatutRisque getStatut() {
         return statut;
     }
 
-    public RisqueRequest setStatut(String statut) {
+    public RisqueRequest setStatut(StatutRisque statut) {
         this.statut = statut;
         return this;
     }

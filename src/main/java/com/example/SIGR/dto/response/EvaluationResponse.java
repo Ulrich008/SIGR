@@ -5,6 +5,8 @@ import java.time.LocalDate;
 public class EvaluationResponse {
 
     private String id;
+    private String code;
+
     private Integer impact;
     private Integer probabilite;
     private LocalDate dateEvaluation;
@@ -21,6 +23,7 @@ public class EvaluationResponse {
 
     public EvaluationResponse(
             String id,
+            String code,
             Integer impact,
             Integer probabilite,
             LocalDate dateEvaluation,
@@ -33,6 +36,7 @@ public class EvaluationResponse {
             String nomAgent
     ) {
         this.id = id;
+        this.code = code;
         this.impact = impact;
         this.probabilite = probabilite;
         this.dateEvaluation = dateEvaluation;
@@ -45,25 +49,51 @@ public class EvaluationResponse {
         this.nomAgent = nomAgent;
     }
 
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
-    public Integer getImpact() { return impact; }
+    public String getCode() {
+        return code;
+    }
 
-    public Integer getProbabilite() { return probabilite; }
+    public Integer getImpact() {
+        return impact;
+    }
 
-    public LocalDate getDateEvaluation() { return dateEvaluation; }
+    public Integer getProbabilite() {
+        return probabilite;
+    }
 
-    public String getBonnesPratiques() { return bonnesPratiques; }
+    public LocalDate getDateEvaluation() {
+        return dateEvaluation;
+    }
 
-    public Integer getNiveauControle() { return niveauControle; }
+    public String getBonnesPratiques() {
+        return bonnesPratiques;
+    }
 
-    public Integer getScoreInitial() { return scoreInitial; }
+    public Integer getNiveauControle() {
+        return niveauControle;
+    }
 
-    public String getIdRisque() { return idRisque; }
+    public Integer getScoreInitial() {
+        return scoreInitial;
+    }
 
-    public String getLibelleRisque() { return libelleRisque; }
+    public String getIdRisque() {
+        return idRisque;
+    }
 
-    public String getIdAgent() { return idAgent; }
+    public String getLibelleRisque() {
+        return libelleRisque;
+    }
 
-    public String getNomAgent() { return nomAgent; }
+    public String getIdAgent() {
+        return idAgent;
+    }
+
+    public String getNomAgent() {
+        return nomAgent;
+    }
 }

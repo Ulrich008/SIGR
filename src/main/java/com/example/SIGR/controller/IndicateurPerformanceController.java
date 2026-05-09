@@ -20,19 +20,25 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/indicateurs-performance")
-@Tag(name = "Indicateur de Performance", description = "API de gestion des KPI")
+@Tag(
+        name = "Indicateur de Performance",
+        description = "API de gestion des indicateurs de performance (KPI)"
+)
 public class IndicateurPerformanceController {
 
     private final IndicateurPerformanceService service;
 
-    public IndicateurPerformanceController(IndicateurPerformanceService service) {
+    public IndicateurPerformanceController(
+            IndicateurPerformanceService service
+    ) {
         this.service = service;
     }
 
     // ================= CREATE =================
+
     @PostMapping
     @Operation(
-            summary = "Créer un indicateur de performance (KPI)",
+            summary = "Créer un indicateur de performance",
             requestBody = @RequestBody(
                     required = true,
                     content = @Content(
@@ -43,8 +49,7 @@ public class IndicateurPerformanceController {
                                     {
                                       "code": "KPI-001",
                                       "libelle": "Taux de satisfaction client",
-                                      "uniteMesure": "%",
-                                      "frequence": "MENSUEL",
+                                      "frequence": "MENSUELLE",
                                       "valeurCible": 90,
                                       "valeurObtenue": 85,
                                       "seuilAlerte": 75,
@@ -57,7 +62,9 @@ public class IndicateurPerformanceController {
             )
     )
     public ResponseEntity<IndicateurPerformanceResponse> create(
-            @Valid @org.springframework.web.bind.annotation.RequestBody IndicateurPerformanceRequest request
+            @Valid
+            @org.springframework.web.bind.annotation.RequestBody
+            IndicateurPerformanceRequest request
     ) {
 
         return ResponseEntity
@@ -66,6 +73,7 @@ public class IndicateurPerformanceController {
     }
 
     // ================= GET ALL =================
+
     @GetMapping
     @Operation(summary = "Lister tous les indicateurs de performance")
     public ResponseEntity<List<IndicateurPerformanceResponse>> getAll() {
@@ -74,17 +82,19 @@ public class IndicateurPerformanceController {
     }
 
     // ================= GET BY ID =================
-    @GetMapping("/{code}")
-    @Operation(summary = "Récupérer un KPI par code")
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Récupérer un indicateur de performance par ID")
     public ResponseEntity<IndicateurPerformanceResponse> getById(
-            @PathVariable String code
+            @PathVariable String id
     ) {
 
-        return ResponseEntity.ok(service.getById(code));
+        return ResponseEntity.ok(service.getById(id));
     }
 
     // ================= UPDATE =================
-    @PutMapping("/{code}")
+
+    @PutMapping("/{id}")
     @Operation(
             summary = "Modifier un indicateur de performance",
             requestBody = @RequestBody(
@@ -95,9 +105,9 @@ public class IndicateurPerformanceController {
                                     name = "Exemple modification KPI",
                                     value = """
                                     {
+                                      "code": "KPI-001",
                                       "libelle": "Taux de satisfaction client mis à jour",
-                                      "uniteMesure": "%",
-                                      "frequence": "MENSUEL",
+                                      "frequence": "MENSUELLE",
                                       "valeurCible": 95,
                                       "valeurObtenue": 88,
                                       "seuilAlerte": 80,
@@ -110,19 +120,27 @@ public class IndicateurPerformanceController {
             )
     )
     public ResponseEntity<IndicateurPerformanceResponse> update(
-            @PathVariable String code,
-            @Valid @org.springframework.web.bind.annotation.RequestBody IndicateurPerformanceRequest request
+            @PathVariable String id,
+
+            @Valid
+            @org.springframework.web.bind.annotation.RequestBody
+            IndicateurPerformanceRequest request
     ) {
 
-        return ResponseEntity.ok(service.update(code, request));
+        return ResponseEntity.ok(
+                service.update(id, request)
+        );
     }
 
     // ================= DELETE =================
-    @DeleteMapping("/{code}")
-    @Operation(summary = "Supprimer un indicateur de performance")
-    public ResponseEntity<Void> delete(@PathVariable String code) {
 
-        service.delete(code);
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Supprimer un indicateur de performance")
+    public ResponseEntity<Void> delete(
+            @PathVariable String id
+    ) {
+
+        service.delete(id);
 
         return ResponseEntity.noContent().build();
     }

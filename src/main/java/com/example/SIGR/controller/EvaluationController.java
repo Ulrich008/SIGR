@@ -40,7 +40,7 @@ public class EvaluationController {
                                     name = "Exemple création évaluation",
                                     value = """
                                     {
-                                      "id": "EVAL-001",
+                                      "code": "EVAL-001",
                                       "impact": 4,
                                       "probabilite": 3,
                                       "dateEvaluation": "2026-05-07",

@@ -1,25 +1,31 @@
 package com.example.SIGR.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 
 public class TypeUniteRequest {
 
-    @NotBlank
-    private String id;
+    @NotBlank(message = "Le code est obligatoire")
+    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
+    private String code;
 
-    @NotBlank
+    @NotBlank(message = "Le libellé est obligatoire")
+    @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
+    @Size(max = 1000, message = "La description est trop longue")
     private String description;
 
+    @Size(max = 100)
     private String creePar;
 
-    public String getId() {
-        return id;
+    // ================= GETTERS / SETTERS =================
+
+    public String getCode() {
+        return code;
     }
 
-    public TypeUniteRequest setId(String id) {
-        this.id = id;
+    public TypeUniteRequest setCode(String code) {
+        this.code = code;
         return this;
     }
 

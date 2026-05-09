@@ -12,13 +12,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/actions")
+@RequestMapping(value = "/api/actions", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Action", description = "API de gestion des actions")
 public class ActionController {
 
@@ -29,9 +30,10 @@ public class ActionController {
     }
 
     // ================= CREATE =================
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Créer une action",
+            description = "Permet de créer une nouvelle action dans le système",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -40,7 +42,7 @@ public class ActionController {
                                     name = "Exemple création action",
                                     value = """
                                     {
-                                      "id": "ACT-001",
+                                      "code": "ACT-001",
                                       "libelle": "Mettre en place un contrôle interne",
                                       "dateDebut": "2026-05-07",
                                       "dateFin": "2026-06-15",
@@ -56,15 +58,16 @@ public class ActionController {
     public ResponseEntity<ActionResponse> create(
             @Valid @RequestBody ActionRequest request
     ) {
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(actionService.create(request));
+        ActionResponse response = actionService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // ================= GET ALL =================
     @GetMapping
-    @Operation(summary = "Lister toutes les actions")
+    @Operation(
+            summary = "Lister toutes les actions",
+            description = "Retourne la liste complète des actions"
+    )
     public ResponseEntity<List<ActionResponse>> getAll() {
 
         return ResponseEntity.ok(actionService.getAll());
@@ -72,18 +75,21 @@ public class ActionController {
 
     // ================= GET BY ID =================
     @GetMapping("/{id}")
-    @Operation(summary = "Récupérer une action par identifiant")
+    @Operation(
+            summary = "Récupérer une action par ID",
+            description = "Retourne une action à partir de son identifiant"
+    )
     public ResponseEntity<ActionResponse> getById(
             @PathVariable String id
     ) {
-
         return ResponseEntity.ok(actionService.getById(id));
     }
 
     // ================= UPDATE =================
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Modifier une action",
+            description = "Met à jour une action existante",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -92,7 +98,7 @@ public class ActionController {
                                     name = "Exemple modification action",
                                     value = """
                                     {
-                                      "id": "ACT-001",
+                                      "code": "ACT-001",
                                       "libelle": "Renforcer le contrôle budgétaire",
                                       "dateDebut": "2026-05-10",
                                       "dateFin": "2026-07-01",
@@ -110,18 +116,21 @@ public class ActionController {
             @Valid @RequestBody ActionRequest request
     ) {
 
-        return ResponseEntity.ok(actionService.update(id, request));
+        ActionResponse response = actionService.update(id, request);
+        return ResponseEntity.ok(response);
     }
 
     // ================= DELETE =================
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer une action")
+    @Operation(
+            summary = "Supprimer une action",
+            description = "Supprime une action selon son identifiant"
+    )
     public ResponseEntity<Void> delete(
             @PathVariable String id
     ) {
 
         actionService.delete(id);
-
         return ResponseEntity.noContent().build();
     }
 }

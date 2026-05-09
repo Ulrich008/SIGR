@@ -9,11 +9,13 @@ public interface IndicateurPerformanceService {
 
     IndicateurPerformanceResponse create(IndicateurPerformanceRequest request);
 
-    IndicateurPerformanceResponse getById(String code);
+    IndicateurPerformanceResponse getById(String id);
+
+    /*IndicateurPerformanceResponse getByCode(String code);*/
 
     List<IndicateurPerformanceResponse> getAll();
 
-    IndicateurPerformanceResponse update(String code, IndicateurPerformanceRequest request);
+    IndicateurPerformanceResponse update(String id, IndicateurPerformanceRequest request);
 
-    void delete(String code);
+    void delete(String id);
 }

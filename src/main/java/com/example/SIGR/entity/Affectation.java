@@ -13,6 +13,12 @@ public class Affectation {
     private String id;
 
     /**
+     * Code métier de l'affectation
+     */
+    @Column(name = "code", length = 50, unique = true, nullable = false)
+    private String code;
+
+    /**
      * Plusieurs affectations peuvent concerner un agent
      */
     @ManyToOne
@@ -20,8 +26,7 @@ public class Affectation {
     private Agent agent;
 
     /**
-     * Plusieurs affectations peuvent concerner
-     * une unité administrative
+     * Plusieurs affectations peuvent concerner une unité administrative
      */
     @ManyToOne
     @JoinColumn(name = "id_unite")
@@ -53,6 +58,15 @@ public class Affectation {
 
     public Affectation setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public Affectation setCode(String code) {
+        this.code = code;
         return this;
     }
 

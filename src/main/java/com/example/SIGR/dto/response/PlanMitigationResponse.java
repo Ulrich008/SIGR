@@ -7,6 +7,7 @@ import java.time.LocalDate;
 public class PlanMitigationResponse {
 
     private String id;
+    private String code;
     private String description;
     private LocalDate dateCreation;
     private StatutPlanMitigation statut;
@@ -16,6 +17,7 @@ public class PlanMitigationResponse {
 
     public PlanMitigationResponse(
             String id,
+            String code,
             String description,
             LocalDate dateCreation,
             StatutPlanMitigation statut,
@@ -23,6 +25,7 @@ public class PlanMitigationResponse {
             String libelleRisque
     ) {
         this.id = id;
+        this.code = code;
         this.description = description;
         this.dateCreation = dateCreation;
         this.statut = statut;
@@ -32,15 +35,31 @@ public class PlanMitigationResponse {
 
     // GETTERS
 
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getDescription() { return description; }
+    public String getCode() {
+        return code;
+    }
 
-    public LocalDate getDateCreation() { return dateCreation; }
+    public String getDescription() {
+        return description;
+    }
 
-    public StatutPlanMitigation getStatut() { return statut; }
+    public LocalDate getDateCreation() {
+        return dateCreation;
+    }
 
-    public String getIdRisque() { return idRisque; }
+    public StatutPlanMitigation getStatut() {
+        return statut;
+    }
 
-    public String getLibelleRisque() { return libelleRisque; }
+    public String getIdRisque() {
+        return idRisque;
+    }
+
+    public String getLibelleRisque() {
+        return libelleRisque;
+    }
 }

@@ -8,22 +8,31 @@ import java.time.LocalDate;
 public class Action {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_action", length = 50)
     private String id;
+
+    @Column(name = "code_action", length = 50, unique = true, nullable = false)
+    private String code;
 
     @Column(name = "libelle", length = 200)
     private String libelle;
 
-    // Date de début de l'action
+    /**
+     * Date de début de l'action
+     */
     @Column(name = "date_debut")
     private LocalDate dateDebut;
 
-    // Date de fin prévue de l'action
+    /**
+     * Date de fin prévue de l'action
+     */
     @Column(name = "date_fin")
     private LocalDate dateFin;
 
-    @Column(name = "statut", length = 50)
-    private String statut;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut", length = 50, nullable = false)
+    private StatutAction statut;
 
     /**
      * RELATION :
@@ -54,6 +63,15 @@ public class Action {
         return this;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public Action setCode(String code) {
+        this.code = code;
+        return this;
+    }
+
     public String getLibelle() {
         return libelle;
     }
@@ -81,11 +99,11 @@ public class Action {
         return this;
     }
 
-    public String getStatut() {
+    public StatutAction getStatut() {
         return statut;
     }
 
-    public Action setStatut(String statut) {
+    public Action setStatut(StatutAction statut) {
         this.statut = statut;
         return this;
     }

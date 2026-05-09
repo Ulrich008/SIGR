@@ -1,4 +1,5 @@
 package com.example.SIGR.entity;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -6,18 +7,25 @@ import java.time.LocalDate;
 @Table(name = "indicateur_performance")
 public class IndicateurPerformance {
 
+    // 🔥 ID technique auto-généré
     @Id
-    @Column(name = "code_indicateur", length = 10)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_indicateur", updatable = false, nullable = false)
+    private String id;
+
+    // 🔥 Code métier (unique)
+    @Column(name = "code_indicateur", length = 10, unique = true, nullable = false)
     private String code;
 
     @Column(length = 200)
     private String libelle;
 
     @Column(name = "unite_mesure", length = 50)
-    private String uniteMesure;
+    private String uniteMesure = "%";
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30)
-    private String frequence;
+    private Frequence frequence;
 
     @Column(name = "valeur_cible")
     private Double valeurCible;
@@ -35,19 +43,29 @@ public class IndicateurPerformance {
     @JoinColumn(name = "code_processus", nullable = false)
     private Processus processus;
 
-    // ⚡ Champ calculé (non persisté)
+    // ===================== CALCULS =====================
+
     @Transient
     public Double getEcartCible() {
         if (valeurCible == null || valeurObtenue == null) return null;
         return valeurObtenue - valeurCible;
     }
 
-    // ⚡ Statut simple pour mémoire
     @Transient
     public String getStatut() {
         if (valeurObtenue == null || seuilAlerte == null) return "INCONNU";
-
         return valeurObtenue >= seuilAlerte ? "ALERTE" : "OK";
+    }
+
+    // ===================== GETTERS / SETTERS =====================
+
+    public String getId() {
+        return id;
+    }
+
+    public IndicateurPerformance setId(String id) {
+        this.id = id;
+        return this;
     }
 
     public String getCode() {
@@ -77,14 +95,15 @@ public class IndicateurPerformance {
         return this;
     }
 
-    public String getFrequence() {
+    public Frequence getFrequence() {
         return frequence;
     }
 
-    public IndicateurPerformance setFrequence(String frequence) {
+    public IndicateurPerformance setFrequence(Frequence frequence) {
         this.frequence = frequence;
         return this;
     }
+
 
     public Double getValeurCible() {
         return valeurCible;

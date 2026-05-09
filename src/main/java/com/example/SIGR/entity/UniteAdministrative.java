@@ -8,30 +8,33 @@ import java.util.List;
 public class UniteAdministrative {
 
     @Id
-    @Column(name = "id_unite", length = 50)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_unite", updatable = false, nullable = false, length = 50)
     private String id;
+
+    @Column(name = "code_unite", length = 50, unique = true, nullable = false)
+    private String code;
 
     @Column(name = "libelle_unite", length = 200)
     private String libelle;
 
     /**
-     * Plusieurs unités peuvent avoir
-     * le même type d’unité
+     * Plusieurs unités administratives peuvent partager le même type d’unité
+     * (ex : direction, service, division)
      */
     @ManyToOne
     @JoinColumn(name = "id_type_unite")
     private TypeUnite typeUnite;
 
     /**
-     * Plusieurs unités appartiennent
-     * à un ministère
+     * Plusieurs unités administratives appartiennent à un même ministère
      */
     @ManyToOne
     @JoinColumn(name = "code_ministere")
     private Ministere ministere;
 
     /**
-     * Relation hiérarchique :
+     * Relation hiérarchique (auto-référence) :
      * une unité peut avoir une unité parent
      */
     @ManyToOne
@@ -39,22 +42,19 @@ public class UniteAdministrative {
     private UniteAdministrative parent;
 
     /**
-     * Une unité peut contenir
-     * plusieurs sous-unités
+     * Une unité administrative peut avoir plusieurs sous-unités (enfants)
      */
     @OneToMany(mappedBy = "parent")
     private List<UniteAdministrative> enfants;
 
     /**
-     * Une unité administrative peut contenir
-     * plusieurs agents
+     * Une unité administrative peut contenir plusieurs agents
      */
     @OneToMany(mappedBy = "unite")
     private List<Agent> agents;
 
     /**
-     * Une unité administrative peut avoir
-     * plusieurs affectations
+     * Une unité administrative peut avoir plusieurs affectations d’agents
      */
     @OneToMany(mappedBy = "unite")
     private List<Affectation> affectations;
@@ -70,6 +70,15 @@ public class UniteAdministrative {
 
     public UniteAdministrative setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public UniteAdministrative setCode(String code) {
+        this.code = code;
         return this;
     }
 

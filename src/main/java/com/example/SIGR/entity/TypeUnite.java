@@ -1,14 +1,20 @@
 package com.example.SIGR.entity;
+
 import jakarta.persistence.*;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "type_unite")
 public class TypeUnite {
 
     @Id
-    @Column(name = "id_type_unite", length = 20)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_type_unite", length = 36, updatable = false, nullable = false)
     private String id;
+
+    @Column(name = "code", length = 30, unique = true, nullable = false)
+    private String code;
 
     @Column(name = "libelle_type", length = 100)
     private String libelle;
@@ -22,12 +28,23 @@ public class TypeUnite {
     @OneToMany(mappedBy = "typeUnite")
     private List<UniteAdministrative> unites;
 
+    // ================= GETTERS / SETTERS =================
+
     public String getId() {
         return id;
     }
 
     public TypeUnite setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public TypeUnite setCode(String code) {
+        this.code = code;
         return this;
     }
 

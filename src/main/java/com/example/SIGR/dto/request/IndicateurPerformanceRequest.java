@@ -1,32 +1,36 @@
 package com.example.SIGR.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.example.SIGR.entity.Frequence;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
 public class IndicateurPerformanceRequest {
 
-    @NotBlank
+    @NotBlank(message = "Le code est obligatoire")
+    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
     private String code;
 
-    @NotBlank
+    @NotBlank(message = "Le libellé est obligatoire")
+    @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
-    private String uniteMesure;
+    @NotNull(message = "La fréquence est obligatoire")
+    private Frequence frequence;
 
-    private String frequence;
-
+    @PositiveOrZero(message = "La valeur cible doit être >= 0")
     private Double valeurCible;
 
+    @PositiveOrZero(message = "La valeur obtenue doit être >= 0")
     private Double valeurObtenue;
 
+    @PositiveOrZero(message = "Le seuil d'alerte doit être >= 0")
     private Double seuilAlerte;
 
-    @NotNull
+    @NotNull(message = "La date de mesure est obligatoire")
     private LocalDate dateMesure;
 
-    @NotBlank
+    @NotBlank(message = "Le code du processus est obligatoire")
     private String codeProcessus;
 
     // ================= GETTERS / SETTERS =================
@@ -49,20 +53,11 @@ public class IndicateurPerformanceRequest {
         return this;
     }
 
-    public String getUniteMesure() {
-        return uniteMesure;
-    }
-
-    public IndicateurPerformanceRequest setUniteMesure(String uniteMesure) {
-        this.uniteMesure = uniteMesure;
-        return this;
-    }
-
-    public String getFrequence() {
+    public Frequence getFrequence() {
         return frequence;
     }
 
-    public IndicateurPerformanceRequest setFrequence(String frequence) {
+    public IndicateurPerformanceRequest setFrequence(Frequence frequence) {
         this.frequence = frequence;
         return this;
     }

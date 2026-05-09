@@ -11,6 +11,8 @@ public interface ActionService {
 
     ActionResponse getById(String id);
 
+    ActionResponse getByCode(String code);
+
     List<ActionResponse> getAll();
 
     ActionResponse update(String id, ActionRequest request);

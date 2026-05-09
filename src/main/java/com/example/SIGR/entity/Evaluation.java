@@ -1,4 +1,5 @@
 package com.example.SIGR.entity;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -7,8 +8,12 @@ import java.time.LocalDate;
 public class Evaluation {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_evaluation", length = 50)
     private String id;
+
+    @Column(name = "code", unique = true, nullable = false, length = 50)
+    private String code;
 
     private Integer impact;
 
@@ -31,12 +36,14 @@ public class Evaluation {
     @JoinColumn(name = "evalue_par")
     private Agent evaluePar;
 
-    // 🔥 CALCUL MÉTIER IMPORTANT (à expliquer en soutenance)
+    // ================= BUSINESS METHOD =================
     @Transient
     public Integer getScoreInitial() {
         if (impact == null || probabilite == null) return null;
         return impact * probabilite;
     }
+
+    // ================= GETTERS / SETTERS =================
 
     public String getId() {
         return id;
@@ -44,6 +51,15 @@ public class Evaluation {
 
     public Evaluation setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public Evaluation setCode(String code) {
+        this.code = code;
         return this;
     }
 

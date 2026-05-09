@@ -1,14 +1,26 @@
 package com.example.SIGR.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "agent")
 public class Agent {
 
+    /**
+     * ID technique (UUID)
+     */
     @Id
-    @Column(name = "matricule_agent", length = 20)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_agent")
+    private String id;
+
+    /**
+     * Matricule métier (unique)
+     */
+    @Column(name = "matricule_agent", length = 20, unique = true, nullable = false)
     private String matricule;
 
     @Column(name = "numeronpi_agent", length = 20)
@@ -29,34 +41,42 @@ public class Agent {
     private Role role;
 
     @Column(name = "date_naissance")
-    private String dateNaissance;
+    private LocalDate dateNaissance;
 
     @Column(name = "date_prise_service")
-    private String datePriseService;
+    private LocalDate datePriseService;
 
     /**
-     * Plusieurs agents appartiennent
-     * à une unité administrative
+     * Plusieurs agents appartiennent à une unité administrative
      */
     @ManyToOne
     @JoinColumn(name = "id_unite")
     private UniteAdministrative unite;
 
     /**
-     * Un agent peut être responsable
-     * de plusieurs actions
+     * Un agent peut être responsable de plusieurs actions
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "responsable")
     private List<Action> actions;
 
     /**
-     * Un agent peut avoir
-     * plusieurs affectations
+     * Un agent peut avoir plusieurs affectations
      */
+    @JsonIgnore
     @OneToMany(mappedBy = "agent")
     private List<Affectation> affectations;
 
-    // ===================== GETTERS / SETTERS =====================
+    // ================= GETTERS / SETTERS =================
+
+    public String getId() {
+        return id;
+    }
+
+    public Agent setId(String id) {
+        this.id = id;
+        return this;
+    }
 
     public String getMatricule() {
         return matricule;
@@ -112,20 +132,20 @@ public class Agent {
         return this;
     }
 
-    public String getDateNaissance() {
+    public LocalDate getDateNaissance() {
         return dateNaissance;
     }
 
-    public Agent setDateNaissance(String dateNaissance) {
+    public Agent setDateNaissance(LocalDate dateNaissance) {
         this.dateNaissance = dateNaissance;
         return this;
     }
 
-    public String getDatePriseService() {
+    public LocalDate getDatePriseService() {
         return datePriseService;
     }
 
-    public Agent setDatePriseService(String datePriseService) {
+    public Agent setDatePriseService(LocalDate datePriseService) {
         this.datePriseService = datePriseService;
         return this;
     }

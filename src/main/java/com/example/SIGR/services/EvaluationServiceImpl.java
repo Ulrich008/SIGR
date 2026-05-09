@@ -34,8 +34,9 @@ public class EvaluationServiceImpl implements EvaluationService {
     @Override
     public EvaluationResponse create(EvaluationRequest request) {
 
-        if (evaluationRepository.existsById(request.getId())) {
-            throw new RuntimeException("Evaluation existe déjà : " + request.getId());
+        // Vérification code métier
+        if (evaluationRepository.existsByCode(request.getCode())) {
+            throw new RuntimeException("Evaluation existe déjà avec le code : " + request.getCode());
         }
 
         Risque risque = risqueRepository.findById(request.getIdRisque())
@@ -50,7 +51,8 @@ public class EvaluationServiceImpl implements EvaluationService {
 
         Evaluation evaluation = new Evaluation();
 
-        evaluation.setId(request.getId());
+
+        evaluation.setCode(request.getCode());
         evaluation.setImpact(request.getImpact());
         evaluation.setProbabilite(request.getProbabilite());
         evaluation.setDateEvaluation(request.getDateEvaluation());
@@ -123,6 +125,7 @@ public class EvaluationServiceImpl implements EvaluationService {
 
         return new EvaluationResponse(
                 e.getId(),
+                e.getCode(),
                 e.getImpact(),
                 e.getProbabilite(),
                 e.getDateEvaluation(),

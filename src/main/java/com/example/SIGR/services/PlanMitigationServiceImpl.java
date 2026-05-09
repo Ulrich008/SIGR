@@ -29,8 +29,9 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
     @Override
     public PlanMitigationResponse create(PlanMitigationRequest request) {
 
-        if (repository.existsById(request.getId())) {
-            throw new RuntimeException("Plan déjà existant : " + request.getId());
+        // 🔥 vérification sur CODE (pas id)
+        if (request.getCode() != null && repository.existsByCode(request.getCode())) {
+            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
         }
 
         Risque risque = risqueRepository.findById(request.getIdRisque())
@@ -39,7 +40,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
                 );
 
         PlanMitigation plan = new PlanMitigation()
-                .setId(request.getId())
+                .setCode(request.getCode())
                 .setDescription(request.getDescription())
                 .setDateCreation(request.getDateCreation())
                 .setStatut(request.getStatut())
@@ -58,7 +59,15 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
 
         return toResponse(plan);
     }
+    @Override
+    public  PlanMitigationResponse getByCode(String code){
 
+        PlanMitigation plan = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan Introuvable " +  code)
+                );
+        return  toResponse(plan);
+    }
     @Override
     public List<PlanMitigationResponse> getAll() {
 
@@ -69,7 +78,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
     }
 
     @Override
-    public PlanMitigationResponse update(String id, PlanMitigationRequest request) {
+    public PlanMitigationResponse updateById(String id, PlanMitigationRequest request) {
 
         PlanMitigation plan = repository.findById(id)
                 .orElseThrow(() ->
@@ -81,6 +90,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
                         new RuntimeException("Risque introuvable : " + request.getIdRisque())
                 );
 
+        plan.setCode(request.getCode());
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
         plan.setStatut(request.getStatut());
@@ -90,7 +100,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
     }
 
     @Override
-    public void delete(String id) {
+    public void deleteById(String id) {
 
         if (!repository.existsById(id)) {
             throw new RuntimeException("Plan introuvable : " + id);
@@ -103,6 +113,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
 
         return new PlanMitigationResponse(
                 plan.getId(),
+                plan.getCode(),
                 plan.getDescription(),
                 plan.getDateCreation(),
                 plan.getStatut(),

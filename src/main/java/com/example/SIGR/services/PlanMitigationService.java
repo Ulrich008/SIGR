@@ -11,9 +11,15 @@ public interface PlanMitigationService {
 
     PlanMitigationResponse getById(String id);
 
+    PlanMitigationResponse getByCode(String code);
+
     List<PlanMitigationResponse> getAll();
 
-    PlanMitigationResponse update(String id, PlanMitigationRequest request);
+    PlanMitigationResponse updateById(String id, PlanMitigationRequest request);
 
-    void delete(String id);
+   /*PlanMitigationResponse updateByCode(String code, PlanMitigationRequest request);*/
+
+      void deleteById(String id);
+
+    /*void deleteByCode(String code);*/
 }

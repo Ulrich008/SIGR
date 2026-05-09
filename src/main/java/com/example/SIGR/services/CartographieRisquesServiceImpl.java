@@ -4,7 +4,6 @@ import com.example.SIGR.dto.request.CartographieRisquesRequest;
 import com.example.SIGR.dto.response.CartographieRisquesResponse;
 import com.example.SIGR.entity.CartographieRisques;
 import com.example.SIGR.repository.CartographieRisquesRepository;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,8 +22,8 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
     @Override
     public CartographieRisquesResponse create(CartographieRisquesRequest request) {
 
-        if (repository.existsById(request.getId())) {
-            throw new RuntimeException("Cartographie déjà existante : " + request.getId());
+        if (repository.existsByCode(request.getCode())) {
+            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
         }
 
         if (repository.existsByTitre(request.getTitre())) {
@@ -32,7 +31,7 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         }
 
         CartographieRisques entity = new CartographieRisques()
-                .setId(request.getId())
+                .setCode(request.getCode())
                 .setTitre(request.getTitre())
                 .setPeriode(request.getPeriode())
                 .setSeuilFaible(request.getSeuilFaible())
@@ -43,12 +42,21 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         return toResponse(repository.save(entity));
     }
 
-    // ================= GET BY ID =================
+    // ================= GET BY ID (interne) =================
     @Override
     public CartographieRisquesResponse getById(String id) {
 
         CartographieRisques entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Introuvable : " + id));
+
+        return toResponse(entity);
+    }
+
+    // ================= GET BY CODE (API métier) =================
+    public CartographieRisquesResponse getByCode(String code) {
+
+        CartographieRisques entity = repository.findByCode(code)
+                .orElseThrow(() -> new RuntimeException("Introuvable : " + code));
 
         return toResponse(entity);
     }
@@ -70,6 +78,7 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         CartographieRisques entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Introuvable : " + id));
 
+        entity.setCode(request.getCode());
         entity.setTitre(request.getTitre());
         entity.setPeriode(request.getPeriode());
         entity.setSeuilFaible(request.getSeuilFaible());
@@ -100,6 +109,7 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
 
         return new CartographieRisquesResponse(
                 entity.getId(),
+                entity.getCode(),
                 entity.getTitre(),
                 entity.getPeriode(),
                 entity.getSeuilFaible(),

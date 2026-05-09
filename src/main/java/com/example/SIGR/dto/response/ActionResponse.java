@@ -1,14 +1,21 @@
 package com.example.SIGR.dto.response;
 
+import com.example.SIGR.entity.StatutAction;
+
 import java.time.LocalDate;
 
 public class ActionResponse {
 
     private String id;
+    private String code;
     private String libelle;
     private LocalDate dateDebut;
     private LocalDate dateFin;
-    private String statut;
+
+    /**
+     * Statut typé (ENUM)
+     */
+    private StatutAction statut;
 
     private String idPlan;
 
@@ -17,15 +24,17 @@ public class ActionResponse {
 
     public ActionResponse(
             String id,
+            String code,
             String libelle,
             LocalDate dateDebut,
             LocalDate dateFin,
-            String statut,
+            StatutAction statut,
             String idPlan,
             String matriculeResponsable,
             String nomResponsable
     ) {
         this.id = id;
+        this.code = code;
         this.libelle = libelle;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
@@ -35,8 +44,14 @@ public class ActionResponse {
         this.nomResponsable = nomResponsable;
     }
 
+    // ================= GETTERS =================
+
     public String getId() {
         return id;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public String getLibelle() {
@@ -51,7 +66,7 @@ public class ActionResponse {
         return dateFin;
     }
 
-    public String getStatut() {
+    public StatutAction getStatut() {
         return statut;
     }
 

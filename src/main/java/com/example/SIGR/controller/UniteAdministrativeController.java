@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/uniteadministrative")
+@RequestMapping("/api/unite-administrative")
 @Tag(name = "Unité administrative", description = "API de gestion des unités administratives")
 public class UniteAdministrativeController {
 
@@ -36,7 +36,7 @@ public class UniteAdministrativeController {
                                     name = "Exemple création unité",
                                     value = """
                                     {
-                                      "id": "DGB",
+                                      "code": "DGB",
                                       "libelle": "Direction Générale du Budget",
                                       "idTypeUnite": "DIR_GEN",
                                       "codeMinistere": "MEF",
@@ -48,8 +48,10 @@ public class UniteAdministrativeController {
                     )
             )
     )
-    public ResponseEntity<UniteAdministrativeResponse> create(@Valid @RequestBody UniteAdministrativeRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(uniteService.create(request));
+    public ResponseEntity<UniteAdministrativeResponse> create(
+            @Valid @RequestBody UniteAdministrativeRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(uniteService.create(request));
     }
 
     @GetMapping
@@ -58,13 +60,13 @@ public class UniteAdministrativeController {
         return ResponseEntity.ok(uniteService.getAll());
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Récupérer une unité par son ID")
-    public ResponseEntity<UniteAdministrativeResponse> getById(@PathVariable String id) {
-        return ResponseEntity.ok(uniteService.getById(id));
+    @GetMapping("/{code}")
+    @Operation(summary = "Récupérer une unité par son code")
+    public ResponseEntity<UniteAdministrativeResponse> getByCode(@PathVariable String code) {
+        return ResponseEntity.ok(uniteService.getByCode(code));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une unité administrative",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -86,15 +88,15 @@ public class UniteAdministrativeController {
             )
     )
     public ResponseEntity<UniteAdministrativeResponse> update(
-            @PathVariable String id,
+            @PathVariable String code,
             @Valid @RequestBody UniteAdministrativeRequest request) {
-        return ResponseEntity.ok(uniteService.update(id, request));
+        return ResponseEntity.ok(uniteService.update(code, request));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{code}")
     @Operation(summary = "Supprimer une unité administrative")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        uniteService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable String code) {
+        uniteService.delete(code);
         return ResponseEntity.noContent().build();
     }
 }

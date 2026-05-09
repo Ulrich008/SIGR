@@ -26,9 +26,12 @@ public class MinistereController {
     public MinistereController(MinistereService ministereService) {
         this.ministereService = ministereService;
     }
+
+    // ================= CREATE =================
     @PostMapping
     @Operation(
             summary = "Créer un ministère",
+            description = "Permet de créer un nouveau ministère avec un code métier unique",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -37,6 +40,7 @@ public class MinistereController {
                                     name = "Exemple création ministère",
                                     value = """
                                     {
+                                      "code": "MIN-FIN",
                                       "nom": "Ministère des Finances",
                                       "sigle": "MFIN",
                                       "description": "Gestion des finances publiques",
@@ -48,7 +52,7 @@ public class MinistereController {
             )
     )
     public ResponseEntity<MinistereResponse> create(
-            @Valid @org.springframework.web.bind.annotation.RequestBody MinistereRequest request) {
+            @Valid @RequestBody MinistereRequest request) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -57,24 +61,39 @@ public class MinistereController {
 
     // ================= GET ALL =================
     @GetMapping
-    @Operation(summary = "Lister tous les ministères")
+    @Operation(
+            summary = "Lister tous les ministères",
+            description = "Retourne la liste complète des ministères enregistrés"
+    )
     public ResponseEntity<List<MinistereResponse>> getAll() {
-
         return ResponseEntity.ok(ministereService.getAll());
     }
 
     // ================= GET BY ID =================
-    @GetMapping("/{code}")
-    @Operation(summary = "Récupérer un ministère par code")
-    public ResponseEntity<MinistereResponse> getById(@PathVariable String code) {
-
-        return ResponseEntity.ok(ministereService.getById(code));
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Récupérer un ministère par ID",
+            description = "Recherche un ministère via son identifiant technique (UUID)"
+    )
+    public ResponseEntity<MinistereResponse> getById(@PathVariable String id) {
+        return ResponseEntity.ok(ministereService.getById(id));
     }
 
+    // ================= GET BY CODE =================
+    /*@GetMapping("/code/{code}")
+    @Operation(
+            summary = "Récupérer un ministère par code métier",
+            description = "Recherche un ministère via son code métier (ex: MIN-FIN)"
+    )
+    public ResponseEntity<MinistereResponse> getByCode(@PathVariable String code) {
+        return ResponseEntity.ok(ministereService.getByCode(code));
+    }
+*/
     // ================= UPDATE =================
-    @PutMapping("/{code}")
+    @PutMapping("/{id}")
     @Operation(
             summary = "Modifier un ministère",
+            description = "Met à jour les informations d'un ministère existant",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -94,19 +113,21 @@ public class MinistereController {
             )
     )
     public ResponseEntity<MinistereResponse> update(
-            @PathVariable String code,
-            @Valid @org.springframework.web.bind.annotation.RequestBody MinistereRequest request) {
+            @PathVariable String id,
+            @Valid @RequestBody MinistereRequest request) {
 
-        return ResponseEntity.ok(ministereService.update(code, request));
+        return ResponseEntity.ok(ministereService.update(id, request));
     }
 
     // ================= DELETE =================
-    @DeleteMapping("/{code}")
-    @Operation(summary = "Supprimer un ministère")
-    public ResponseEntity<Void> delete(@PathVariable String code) {
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Supprimer un ministère",
+            description = "Supprime définitivement un ministère via son ID"
+    )
+    public ResponseEntity<Void> delete(@PathVariable String id) {
 
-        ministereService.delete(code);
-
+        ministereService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

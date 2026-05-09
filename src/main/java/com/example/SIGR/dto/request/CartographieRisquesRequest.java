@@ -1,42 +1,46 @@
 package com.example.SIGR.dto.request;
 
 import com.example.SIGR.entity.StatutCartographie;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
 public class CartographieRisquesRequest {
 
-    @NotBlank
-    private String id;
+    @NotBlank(message = "Le code est obligatoire")
+    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
+    private String code;
 
-    @NotBlank
+    @NotBlank(message = "Le titre est obligatoire")
+    @Size(max = 200, message = "Le titre ne doit pas dépasser 200 caractères")
     private String titre;
 
-    @NotNull
+    @NotNull(message = "La période est obligatoire")
     private LocalDate periode;
 
-    @NotNull
+    @NotNull(message = "Le seuil faible est obligatoire")
+    @Min(value = 0, message = "Le seuil faible doit être >= 0")
     private Integer seuilFaible;
 
-    @NotNull
+    @NotNull(message = "Le seuil moyen est obligatoire")
+    @Min(value = 0, message = "Le seuil moyen doit être >= 0")
     private Integer seuilMoyen;
 
-    @NotNull
+    @NotNull(message = "Le seuil élevé est obligatoire")
+    @Min(value = 0, message = "Le seuil élevé doit être >= 0")
     private Integer seuilEleve;
 
-    @NotNull
+    @NotNull(message = "Le statut est obligatoire")
     private StatutCartographie statut;
 
     // ================= GETTERS / SETTERS =================
 
-    public String getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public CartographieRisquesRequest setId(String id) {
-        this.id = id;
+    public CartographieRisquesRequest setCode(String code) {
+        this.code = code;
         return this;
     }
 

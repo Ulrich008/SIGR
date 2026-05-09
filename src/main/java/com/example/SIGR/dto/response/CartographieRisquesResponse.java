@@ -7,6 +7,7 @@ import java.time.LocalDate;
 public class CartographieRisquesResponse {
 
     private String id;
+    private String code; // AJOUT IMPORTANT
     private String titre;
     private LocalDate periode;
 
@@ -20,6 +21,7 @@ public class CartographieRisquesResponse {
 
     public CartographieRisquesResponse(
             String id,
+            String code,
             String titre,
             LocalDate periode,
             Integer seuilFaible,
@@ -29,6 +31,7 @@ public class CartographieRisquesResponse {
             int nombreRisques
     ) {
         this.id = id;
+        this.code = code;
         this.titre = titre;
         this.periode = periode;
         this.seuilFaible = seuilFaible;
@@ -40,6 +43,10 @@ public class CartographieRisquesResponse {
 
     public String getId() {
         return id;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public String getTitre() {

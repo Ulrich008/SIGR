@@ -9,8 +9,12 @@ import java.util.List;
 public class PlanMitigation {
 
     @Id
-    @Column(name = "id_plan", length = 50)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_plan", updatable = false, nullable = false)
     private String id;
+
+    @Column(name = "code", length = 50, unique = true, nullable = false)
+    private String code;
 
     @Column(name = "description", length = 500)
     private String description;
@@ -22,12 +26,10 @@ public class PlanMitigation {
     @Column(name = "statut", length = 50)
     private StatutPlanMitigation statut;
 
-    // 🔗 Un plan de mitigation concerne un seul risque
     @ManyToOne
     @JoinColumn(name = "id_risque", nullable = false)
     private Risque risque;
 
-    // 🔗 Un plan contient plusieurs actions
     @OneToMany(mappedBy = "planMitigation")
     private List<Action> actions;
 
@@ -35,6 +37,15 @@ public class PlanMitigation {
 
     public String getId() {
         return id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public PlanMitigation setCode(String code) {
+        this.code = code;
+        return this;
     }
 
     public PlanMitigation setId(String id) {
@@ -60,13 +71,14 @@ public class PlanMitigation {
         return this;
     }
 
-    public StatutPlanMitigation getStatut() { return statut; }
+    public StatutPlanMitigation getStatut() {
+        return statut;
+    }
 
     public PlanMitigation setStatut(StatutPlanMitigation statut) {
         this.statut = statut;
         return this;
     }
-
 
     public Risque getRisque() {
         return risque;

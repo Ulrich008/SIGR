@@ -8,8 +8,15 @@ import java.util.List;
 public interface MinistereService {
 
     MinistereResponse create(MinistereRequest request);
-    MinistereResponse getById(String code);
+
+    MinistereResponse getById(String id);
+
     List<MinistereResponse> getAll();
-    MinistereResponse update(String code, MinistereRequest request);
-    void delete(String code);
+
+    MinistereResponse update(String id, MinistereRequest request);
+
+    void delete(String id);
+
+    // optionnel (très utile)
+    /*MinistereResponse getByCode(String code);*/
 }

@@ -1,42 +1,49 @@
 package com.example.SIGR.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
 public class EvaluationRequest {
 
-    @NotBlank
-    private String id;
+    @NotBlank(message = "Le code est obligatoire")
+    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
+    private String code;
 
-    @NotNull
+    @NotNull(message = "L'impact est obligatoire")
+    @Min(value = 1, message = "L'impact doit être >= 1")
+    @Max(value = 5, message = "L'impact doit être <= 5")
     private Integer impact;
 
-    @NotNull
+    @NotNull(message = "La probabilité est obligatoire")
+    @Min(value = 1, message = "La probabilité doit être >= 1")
+    @Max(value = 5, message = "La probabilité doit être <= 5")
     private Integer probabilite;
 
-    @NotNull
+    @NotNull(message = "La date d'évaluation est obligatoire")
     private LocalDate dateEvaluation;
 
+    @Size(max = 1000, message = "Les bonnes pratiques sont trop longues")
     private String bonnesPratiques;
 
-    @NotNull
+    @NotNull(message = "Le niveau de contrôle est obligatoire")
+    @Min(value = 1, message = "Le niveau de contrôle doit être >= 1")
+    @Max(value = 5, message = "Le niveau de contrôle doit être <= 5")
     private Integer niveauControle;
 
-    @NotBlank
+    @NotBlank(message = "L'identifiant du risque est obligatoire")
     private String idRisque;
 
     private String idAgent;
 
     // ================= GETTERS / SETTERS =================
 
-    public String getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public EvaluationRequest setId(String id) {
-        this.id = id;
+    public EvaluationRequest setCode(String code) {
+        this.code = code;
         return this;
     }
 

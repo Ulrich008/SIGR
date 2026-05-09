@@ -22,12 +22,12 @@ public class MinistereServiceImpl implements MinistereService {
     @Override
     public MinistereResponse create(MinistereRequest request) {
 
-        if (ministereRepository.existsByCode(request.getCode())){
-            throw new RuntimeException("Le code de ce ministère existe déjà " + request.getCode());
+        if (ministereRepository.existsByCode(request.getCode())) {
+            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
         }
 
         if (ministereRepository.existsByNom(request.getNom())) {
-            throw new RuntimeException("Un ministère avec ce nom existe déjà : " + request.getNom());
+            throw new RuntimeException("Nom déjà utilisé : " + request.getNom());
         }
 
         Ministere ministere = new Ministere();
@@ -44,10 +44,10 @@ public class MinistereServiceImpl implements MinistereService {
 
     // ================= GET BY ID =================
     @Override
-    public MinistereResponse getById(String code) {
+    public MinistereResponse getById(String id) {
 
-        Ministere ministere = ministereRepository.findById(code)
-                .orElseThrow(() -> new RuntimeException("Ministère introuvable, code : " + code));
+        Ministere ministere = ministereRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ministère introuvable, id : " + id));
 
         return toResponse(ministere);
     }
@@ -63,15 +63,14 @@ public class MinistereServiceImpl implements MinistereService {
 
     // ================= UPDATE =================
     @Override
-    public MinistereResponse update(String code, MinistereRequest request) {
+    public MinistereResponse update(String id, MinistereRequest request) {
 
-        Ministere ministere = ministereRepository.findById(code)
-                .orElseThrow(() -> new RuntimeException("Ministère introuvable, code : " + code));
+        Ministere ministere = ministereRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ministère introuvable, id : " + id));
 
-        // 🔥 Vérification doublon nom (corrigée)
         if (ministereRepository.existsByNom(request.getNom())
                 && !ministere.getNom().equals(request.getNom())) {
-            throw new RuntimeException("Un ministère avec ce nom existe déjà : " + request.getNom());
+            throw new RuntimeException("Nom déjà utilisé : " + request.getNom());
         }
 
         ministere.setNom(request.getNom());
@@ -86,19 +85,20 @@ public class MinistereServiceImpl implements MinistereService {
 
     // ================= DELETE =================
     @Override
-    public void delete(String code) {
+    public void delete(String id) {
 
-        if (!ministereRepository.existsById(code)) {
-            throw new RuntimeException("Ministère introuvable, code : " + code);
+        if (!ministereRepository.existsById(id)) {
+            throw new RuntimeException("Ministère introuvable, id : " + id);
         }
 
-        ministereRepository.deleteById(code);
+        ministereRepository.deleteById(id);
     }
 
     // ================= MAPPER =================
     private MinistereResponse toResponse(Ministere ministere) {
 
         return new MinistereResponse(
+                ministere.getId(),
                 ministere.getCode(),
                 ministere.getNom(),
                 ministere.getSigle(),

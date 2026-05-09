@@ -11,9 +11,15 @@ public interface RisqueService {
 
     RisqueResponse getById(String id);
 
+    RisqueResponse getByCode(String code);
+
     List<RisqueResponse> getAll();
 
-    RisqueResponse update(String id, RisqueRequest request);
+    RisqueResponse updateById(String id, RisqueRequest request);
+
+    RisqueResponse updateByCode(String code, RisqueRequest request);
 
     void delete(String id);
+
+    void deleteByCode(String code);
 }

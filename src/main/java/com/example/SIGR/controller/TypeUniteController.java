@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/typeunite")
-@Tag(name = "Type d'unité", description = "API de gestion des types d’unités administratives")
+@Tag(name = "Type d'unite", description = "API de gestion des types d'unites administratives")
 public class TypeUniteController {
 
     private final TypeUniteService typeUniteService;
@@ -25,20 +25,21 @@ public class TypeUniteController {
         this.typeUniteService = typeUniteService;
     }
 
+    // ================= CREATE =================
     @PostMapping
     @Operation(
-            summary = "Créer un type d'unité",
+            summary = "Creer un type d'unite",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple création type unité",
+                                    name = "Exemple creation",
                                     value = """
                                     {
-                                     
-                                      "libelle": "Direction Générale",
-                                      "description": "Unités de niveau direction générale",
+                                      "code": "TU-001",
+                                      "libelle": "Direction Generale",
+                                      "description": "Unite de niveau direction",
                                       "creePar": "admin"
                                     }
                                     """
@@ -46,35 +47,54 @@ public class TypeUniteController {
                     )
             )
     )
-    public ResponseEntity<TypeUniteResponse> create(@Valid @RequestBody TypeUniteRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(typeUniteService.create(request));
+    public ResponseEntity<TypeUniteResponse> create(
+            @Valid @RequestBody TypeUniteRequest request
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(typeUniteService.create(request));
     }
 
+    // ================= GET ALL =================
     @GetMapping
-    @Operation(summary = "Lister tous les types d'unités")
+    @Operation(summary = "Lister tous les types d'unites")
     public ResponseEntity<List<TypeUniteResponse>> getAll() {
         return ResponseEntity.ok(typeUniteService.getAll());
     }
 
+    // ================= GET BY ID =================
     @GetMapping("/{id}")
-    @Operation(summary = "Récupérer un type d'unité par son ID")
-    public ResponseEntity<TypeUniteResponse> getById(@PathVariable String id) {
+    @Operation(summary = "Recuperer un type d'unite par ID")
+    public ResponseEntity<TypeUniteResponse> getById(
+            @PathVariable String id
+    ) {
         return ResponseEntity.ok(typeUniteService.getById(id));
     }
 
+    // ================= GET BY CODE =================
+    @GetMapping("/code/{code}")
+    @Operation(summary = "Recuperer un type d'unite par code")
+    public ResponseEntity<TypeUniteResponse> getByCode(
+            @PathVariable String code
+    ) {
+        return ResponseEntity.ok(typeUniteService.getByCode(code));
+    }
+
+    // ================= UPDATE =================
     @PutMapping("/{id}")
     @Operation(
-            summary = "Modifier un type d'unité",
+            summary = "Modifier un type d'unite",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple modification type unité",
+                                    name = "Exemple modification",
                                     value = """
                                     {
+                                      "code": "TU-002",
                                       "libelle": "Direction Technique",
-                                      "description": "Unités techniques spécialisées",
+                                      "description": "Unites techniques specialisees",
                                       "creePar": "admin"
                                     }
                                     """
@@ -84,13 +104,17 @@ public class TypeUniteController {
     )
     public ResponseEntity<TypeUniteResponse> update(
             @PathVariable String id,
-            @Valid @RequestBody TypeUniteRequest request) {
+            @Valid @RequestBody TypeUniteRequest request
+    ) {
         return ResponseEntity.ok(typeUniteService.update(id, request));
     }
 
+    // ================= DELETE =================
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un type d'unité")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    @Operation(summary = "Supprimer un type d'unite")
+    public ResponseEntity<Void> delete(
+            @PathVariable String id
+    ) {
         typeUniteService.delete(id);
         return ResponseEntity.noContent().build();
     }

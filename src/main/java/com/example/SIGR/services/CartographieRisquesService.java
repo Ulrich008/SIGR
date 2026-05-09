@@ -9,7 +9,10 @@ public interface CartographieRisquesService {
 
     CartographieRisquesResponse create(CartographieRisquesRequest request);
 
+    // ACCÈS TECHNIQUE (admin / interne)
     CartographieRisquesResponse getById(String id);
+
+    CartographieRisquesResponse getByCode(String code);
 
     List<CartographieRisquesResponse> getAll();
 

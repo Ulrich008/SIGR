@@ -1,5 +1,8 @@
 package com.example.SIGR.entity;
+
 import jakarta.persistence.*;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "risque_residuel")
@@ -7,7 +10,11 @@ public class RisqueResiduel {
 
     @Id
     @Column(name = "id_risqueresiduel", length = 50)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(name = "code", unique = true, nullable = false, length = 50)
+    private String code;
 
     private Integer impactResiduel;
 
@@ -21,14 +28,14 @@ public class RisqueResiduel {
     @JoinColumn(name = "id_risque", nullable = false)
     private Risque risque;
 
-    // 🔥 calcul clé mémoire
+    // Calcul clé métier
     @Transient
     public Integer getScoreResiduel() {
         if (impactResiduel == null || probabiliteResiduelle == null) return null;
         return impactResiduel * probabiliteResiduelle;
     }
 
-    // 🔥 interprétation simple (très bon pour soutenance)
+    // Niveau de risque
     @Transient
     public String getNiveauRisque() {
         Integer score = getScoreResiduel();
@@ -39,12 +46,23 @@ public class RisqueResiduel {
         return "ELEVE";
     }
 
+    // Getters / Setters
+
     public String getId() {
         return id;
     }
 
     public RisqueResiduel setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public RisqueResiduel setCode(String code) {
+        this.code = code;
         return this;
     }
 

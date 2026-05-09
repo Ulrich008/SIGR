@@ -40,7 +40,7 @@ public class PlanMitigationController {
                                     name = "Exemple création plan mitigation",
                                     value = """
                                     {
-                                      "id": "PLAN-001",
+                                      "code": "PM-2026-001",
                                       "description": "Réduction du risque de fraude",
                                       "dateCreation": "2026-05-07",
                                       "statut": "PLANIFIE",
@@ -68,7 +68,7 @@ public class PlanMitigationController {
 
     // ================= GET BY ID =================
     @GetMapping("/{id}")
-    @Operation(summary = "Récupérer un plan de mitigation par ID")
+    @Operation(summary = "Récupérer un plan de mitigation par ID (UUID)")
     public ResponseEntity<PlanMitigationResponse> getById(
             @PathVariable String id
     ) {
@@ -87,6 +87,7 @@ public class PlanMitigationController {
                                     name = "Exemple modification plan mitigation",
                                     value = """
                                     {
+                                      "code": "PM-2026-001",
                                       "description": "Mise à jour du plan de réduction de fraude",
                                       "dateCreation": "2026-05-07",
                                       "statut": "EN_COURS",
@@ -101,15 +102,15 @@ public class PlanMitigationController {
             @PathVariable String id,
             @Valid @RequestBody PlanMitigationRequest request
     ) {
-        return ResponseEntity.ok(service.update(id, request));
+        return ResponseEntity.ok(service.updateById(id, request));
     }
 
     // ================= DELETE =================
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un plan de mitigation")
+    @Operation(summary = "Supprimer un plan de mitigation par ID (UUID)")
     public ResponseEntity<Void> delete(@PathVariable String id) {
 
-        service.delete(id);
+        service.deleteById(id);
 
         return ResponseEntity.noContent().build();
     }

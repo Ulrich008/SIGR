@@ -1,47 +1,46 @@
 package com.example.SIGR.dto.request;
 
+import com.example.SIGR.entity.StatutAction;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
 public class ActionRequest {
 
-    @NotBlank
-    private String id;
+    @NotBlank(message = "Le code est obligatoire")
+    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
+    private String code;
 
-    @NotBlank
+    @NotBlank(message = "Le libellé est obligatoire")
+    @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
-    @NotNull
+    @NotNull(message = "La date de début est obligatoire")
     private LocalDate dateDebut;
 
-    @NotNull
+    @NotNull(message = "La date de fin est obligatoire")
     private LocalDate dateFin;
 
-    @NotBlank
-    private String statut;
+    @NotNull(message = "Le statut est obligatoire")
+    private StatutAction statut;
 
-    /**
-     * Plan de mitigation lié
-     */
-    @NotBlank
+    @NotBlank(message = "L'identifiant du plan est obligatoire")
     private String idPlan;
 
-    /**
-     * Responsable de l'action
-     */
-    @NotBlank
+    @NotBlank(message = "Le matricule du responsable est obligatoire")
     private String matriculeResponsable;
 
     // ================= GETTERS / SETTERS =================
 
-    public String getId() {
-        return id;
+    public String getCode() {
+        return code;
     }
 
-    public ActionRequest setId(String id) {
-        this.id = id;
+    public ActionRequest setCode(String code) {
+        this.code = code;
         return this;
     }
 
@@ -72,11 +71,11 @@ public class ActionRequest {
         return this;
     }
 
-    public String getStatut() {
+    public StatutAction getStatut() {
         return statut;
     }
 
-    public ActionRequest setStatut(String statut) {
+    public ActionRequest setStatut(StatutAction statut) {
         this.statut = statut;
         return this;
     }

@@ -5,8 +5,11 @@ import com.example.SIGR.dto.response.RisqueResponse;
 import com.example.SIGR.services.RisqueService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
@@ -19,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/risques")
-@Tag(name = "Risque", description = "API de gestion des risques")
+@Tag(name = "Gestion des risques", description = "API permettant de gérer les risques (création, modification, suppression, consultation)")
 public class RisqueController {
 
     private final RisqueService risqueService;
@@ -28,19 +31,27 @@ public class RisqueController {
         this.risqueService = risqueService;
     }
 
-    // ================= CREATE =================
     @PostMapping
     @Operation(
             summary = "Créer un risque",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Permet de créer un nouveau risque dans le système"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Risque créé avec succès"),
+            @ApiResponse(responseCode = "400", description = "Données invalides")
+    })
+    public ResponseEntity<RisqueResponse> create(
+            @Valid @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Données du risque à créer",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple création risque",
+                                    name = "Exemple de création de risque",
                                     value = """
                                     {
-                                      "id": "RISK-001",
+                                      "code": "RIS-001",
                                       "libelle": "Fraude financière",
                                       "categorie": "Financier",
                                       "causeProbable": "Absence de contrôle",
@@ -55,76 +66,94 @@ public class RisqueController {
                             )
                     )
             )
-    )
-    public ResponseEntity<RisqueResponse> create(
-            @Valid @RequestBody RisqueRequest request
+            RisqueRequest request
     ) {
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(risqueService.create(request));
     }
 
-    // ================= GET ALL =================
     @GetMapping
-    @Operation(summary = "Lister tous les risques")
+    @Operation(
+            summary = "Lister tous les risques",
+            description = "Retourne la liste complète des risques enregistrés"
+    )
     public ResponseEntity<List<RisqueResponse>> getAll() {
-
         return ResponseEntity.ok(risqueService.getAll());
     }
 
-    // ================= GET BY ID =================
     @GetMapping("/{id}")
-    @Operation(summary = "Récupérer un risque par identifiant")
+    @Operation(
+            summary = "Récupérer un risque par ID",
+            description = "Retourne un risque via son identifiant technique (UUID)"
+    )
     public ResponseEntity<RisqueResponse> getById(
+            @Parameter(description = "Identifiant UUID du risque", example = "b3f1c2a0-8d1e-4c6a-9a5b-123456789abc")
             @PathVariable String id
     ) {
-
         return ResponseEntity.ok(risqueService.getById(id));
     }
 
-    // ================= UPDATE =================
+    @GetMapping("/code/{code}")
+    @Operation(
+            summary = "Récupérer un risque par code",
+            description = "Retourne un risque via son code métier (ex: RIS-001)"
+    )
+    public ResponseEntity<RisqueResponse> getByCode(
+            @Parameter(description = "Code métier du risque", example = "RIS-001")
+            @PathVariable String code
+    ) {
+        return ResponseEntity.ok(risqueService.getByCode(code));
+    }
+
     @PutMapping("/{id}")
     @Operation(
-            summary = "Modifier un risque",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    name = "Exemple modification risque",
-                                    value = """
-                                    {
-                                      "libelle": "Fraude budgétaire",
-                                      "categorie": "Financier",
-                                      "causeProbable": "Mauvais contrôle interne",
-                                      "consequenceProbable": "Pertes budgétaires",
-                                      "statut": "EN_COURS",
-                                      "dateIdentification": "2026-05-07",
-                                      "codeProcessus": "PROC-001",
-                                      "idCartographie": "CARTO-001",
-                                      "typeRisque": "OPERATIONNEL"
-                                    }
-                                    """
-                            )
-                    )
-            )
+            summary = "Modifier un risque par ID",
+            description = "Met à jour un risque existant via son identifiant technique"
     )
-    public ResponseEntity<RisqueResponse> update(
+    public ResponseEntity<RisqueResponse> updateById(
+            @Parameter(description = "UUID du risque", example = "b3f1c2a0-8d1e-4c6a-9a5b-123456789abc")
             @PathVariable String id,
             @Valid @RequestBody RisqueRequest request
     ) {
-
-        return ResponseEntity.ok(risqueService.update(id, request));
+        return ResponseEntity.ok(risqueService.updateById(id, request));
     }
 
-    // ================= DELETE =================
+    @PutMapping("/code/{code}")
+    @Operation(
+            summary = "Modifier un risque par code",
+            description = "Met à jour un risque via son code métier"
+    )
+    public ResponseEntity<RisqueResponse> updateByCode(
+            @Parameter(description = "Code métier du risque", example = "RIS-001")
+            @PathVariable String code,
+            @Valid @RequestBody RisqueRequest request
+    ) {
+        return ResponseEntity.ok(risqueService.updateByCode(code, request));
+    }
+
     @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un risque")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-
+    @Operation(
+            summary = "Supprimer un risque par ID",
+            description = "Supprime un risque via son identifiant technique"
+    )
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "UUID du risque", example = "b3f1c2a0-8d1e-4c6a-9a5b-123456789abc")
+            @PathVariable String id
+    ) {
         risqueService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 
+    @DeleteMapping("/code/{code}")
+    @Operation(
+            summary = "Supprimer un risque par code",
+            description = "Supprime un risque via son code métier"
+    )
+    public ResponseEntity<Void> deleteByCode(
+            @Parameter(description = "Code métier du risque", example = "RIS-001")
+            @PathVariable String code
+    ) {
+        risqueService.deleteByCode(code);
         return ResponseEntity.noContent().build();
     }
 }

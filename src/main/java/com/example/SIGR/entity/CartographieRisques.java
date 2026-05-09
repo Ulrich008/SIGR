@@ -9,17 +9,20 @@ import java.util.List;
 public class CartographieRisques {
 
     @Id
-    @Column(name = "id_cartographie", length = 50)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id_cartographie", updatable = false, nullable = false)
     private String id;
+
+    // NOUVEAU CHAMP CODE
+    @Column(name = "code", length = 50, unique = true, nullable = false)
+    private String code;
 
     @Column(name = "titre", length = 200)
     private String titre;
 
-    // PÉRIODE => date
     @Column(name = "periode")
     private LocalDate periode;
 
-    // SEUILS => entiers
     @Column(name = "seuil_faible")
     private Integer seuilFaible;
 
@@ -29,16 +32,10 @@ public class CartographieRisques {
     @Column(name = "seuil_eleve")
     private Integer seuilEleve;
 
-    // STATUT => ENUM (corrigé)
     @Enumerated(EnumType.STRING)
     @Column(name = "statut", length = 30)
     private StatutCartographie statut;
 
-    /**
-     * RELATION :
-     * Une cartographie peut contenir plusieurs risques
-     * => One CartographieRisques ? Many Risques
-     */
     @OneToMany(mappedBy = "cartographie")
     private List<Risque> risques;
 
@@ -50,6 +47,15 @@ public class CartographieRisques {
 
     public CartographieRisques setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public CartographieRisques setCode(String code) {
+        this.code = code;
         return this;
     }
 

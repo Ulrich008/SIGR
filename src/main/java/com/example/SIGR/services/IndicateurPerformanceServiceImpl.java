@@ -25,22 +25,27 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
         this.processusRepository = processusRepository;
     }
 
+    // ================= CREATE =================
+
     @Override
     public IndicateurPerformanceResponse create(IndicateurPerformanceRequest request) {
 
         if (repository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Code KPI existe déjà : " + request.getCode());
+            throw new RuntimeException(
+                    "Code KPI déjà existant : " + request.getCode()
+            );
         }
 
         Processus processus = processusRepository.findById(request.getCodeProcessus())
                 .orElseThrow(() ->
-                        new RuntimeException("Processus introuvable : " + request.getCodeProcessus())
+                        new RuntimeException(
+                                "Processus introuvable : " + request.getCodeProcessus()
+                        )
                 );
 
         IndicateurPerformance kpi = new IndicateurPerformance()
                 .setCode(request.getCode())
                 .setLibelle(request.getLibelle())
-                .setUniteMesure(request.getUniteMesure())
                 .setFrequence(request.getFrequence())
                 .setValeurCible(request.getValeurCible())
                 .setValeurObtenue(request.getValeurObtenue())
@@ -48,21 +53,30 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
                 .setDateMesure(request.getDateMesure())
                 .setProcessus(processus);
 
-        IndicateurPerformance saved = repository.save(kpi);
+        /**
+         * L’unité de mesure est toujours %
+         */
+        kpi.setUniteMesure("%");
 
-        return toResponse(saved);
+        return toResponse(repository.save(kpi));
     }
 
-    @Override
-    public IndicateurPerformanceResponse getById(String code) {
+    // ================= GET BY ID =================
 
-        IndicateurPerformance kpi = repository.findById(code)
+    @Override
+    public IndicateurPerformanceResponse getById(String id) {
+
+        IndicateurPerformance kpi = repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("KPI introuvable : " + code)
+                        new RuntimeException(
+                                "KPI introuvable (id) : " + id
+                        )
                 );
 
         return toResponse(kpi);
     }
+
+    // ================= GET ALL =================
 
     @Override
     public List<IndicateurPerformanceResponse> getAll() {
@@ -73,21 +87,30 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public IndicateurPerformanceResponse update(String code, IndicateurPerformanceRequest request) {
+    // ================= UPDATE =================
 
-        IndicateurPerformance kpi = repository.findById(code)
+    @Override
+    public IndicateurPerformanceResponse update(
+            String id,
+            IndicateurPerformanceRequest request
+    ) {
+
+        IndicateurPerformance kpi = repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("KPI introuvable : " + code)
+                        new RuntimeException(
+                                "KPI introuvable (id) : " + id
+                        )
                 );
 
         Processus processus = processusRepository.findById(request.getCodeProcessus())
                 .orElseThrow(() ->
-                        new RuntimeException("Processus introuvable : " + request.getCodeProcessus())
+                        new RuntimeException(
+                                "Processus introuvable : " + request.getCodeProcessus()
+                        )
                 );
 
-        kpi.setLibelle(request.getLibelle())
-                .setUniteMesure(request.getUniteMesure())
+        kpi.setCode(request.getCode())
+                .setLibelle(request.getLibelle())
                 .setFrequence(request.getFrequence())
                 .setValeurCible(request.getValeurCible())
                 .setValeurObtenue(request.getValeurObtenue())
@@ -95,22 +118,36 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
                 .setDateMesure(request.getDateMesure())
                 .setProcessus(processus);
 
+        /**
+         * Valeur imposée par le système
+         */
+        kpi.setUniteMesure("%");
+
         return toResponse(repository.save(kpi));
     }
 
-    @Override
-    public void delete(String code) {
+    // ================= DELETE =================
 
-        if (!repository.existsById(code)) {
-            throw new RuntimeException("KPI introuvable : " + code);
+    @Override
+    public void delete(String id) {
+
+        if (!repository.existsById(id)) {
+            throw new RuntimeException(
+                    "KPI introuvable (id) : " + id
+            );
         }
 
-        repository.deleteById(code);
+        repository.deleteById(id);
     }
 
-    private IndicateurPerformanceResponse toResponse(IndicateurPerformance kpi) {
+    // ================= MAPPER =================
+
+    private IndicateurPerformanceResponse toResponse(
+            IndicateurPerformance kpi
+    ) {
 
         return new IndicateurPerformanceResponse(
+                kpi.getId(),
                 kpi.getCode(),
                 kpi.getLibelle(),
                 kpi.getUniteMesure(),
@@ -120,7 +157,7 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
                 kpi.getSeuilAlerte(),
                 kpi.getDateMesure(),
                 kpi.getProcessus().getCode(),
-                kpi.getProcessus().getNom(),
+                kpi.getProcessus().getLibelle(),
                 kpi.getEcartCible(),
                 kpi.getStatut()
         );

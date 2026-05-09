@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ActionRepository extends JpaRepository<Action, String> {
 
-    boolean existsByLibelle(String libelle);
+    boolean existsByCode(String code);
 
-    boolean existsById(String id);
+    boolean existsByLibelle(String libelle);
 }
