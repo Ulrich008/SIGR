@@ -2,6 +2,7 @@ package com.example.SIGR.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
 public class Agent {
 
     /**
-     * ID technique (UUID)
+     * ID technique UUID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -18,10 +19,24 @@ public class Agent {
     private String id;
 
     /**
-     * Matricule métier (unique)
+     * Matricule métier unique
+     * Servira comme identifiant de connexion
      */
     @Column(name = "matricule_agent", length = 20, unique = true, nullable = false)
     private String matricule;
+
+    /**
+     * Mot de passe hashé
+     */
+    @JsonIgnore
+    @Column(name = "password_agent", nullable = false)
+    private String password;
+
+    /**
+     * Compte actif ou désactivé
+     */
+    @Column(name = "enabled_agent")
+    private Boolean enabled = true;
 
     @Column(name = "numeronpi_agent", length = 20)
     private String npi;
@@ -37,7 +52,7 @@ public class Agent {
     private Sexe sexe;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role_agent", length = 20)
+    @Column(name = "role_agent", length = 20, nullable = false)
     private Role role;
 
     @Column(name = "date_naissance")
@@ -84,6 +99,24 @@ public class Agent {
 
     public Agent setMatricule(String matricule) {
         this.matricule = matricule;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Agent setPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public Agent setEnabled(Boolean enabled) {
+        this.enabled = enabled;
         return this;
     }
 

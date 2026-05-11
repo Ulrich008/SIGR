@@ -16,4 +16,14 @@ public interface AgentRepository extends JpaRepository<Agent, String> {
      * Recherche un agent par son matricule métier
      */
     Optional<Agent> findByMatricule(String matricule);
+
+    /**
+     * Vérifie si un agent existe par son NPI
+     */
+    boolean existsByNpi(String npi);
+
+    /**
+     * Recherche un agent par son NPI
+     */
+    Optional<Agent> findByNpi(String npi);
 }

@@ -8,14 +8,19 @@ import java.util.List;
 public interface AgentService {
 
     /**
-     * Création d’un agent
+     * Création d'un agent
      */
     AgentResponse create(AgentRequest request);
 
     /**
-     * Recherche d’un agent par matricule
+     * Recherche d'un agent par matricule
      */
     AgentResponse getByMatricule(String matricule);
+
+    /**
+     * Recherche d'un agent par ID
+     */
+    AgentResponse getById(String id);
 
     /**
      * Liste de tous les agents
@@ -23,12 +28,17 @@ public interface AgentService {
     List<AgentResponse> getAll();
 
     /**
-     * Modification d’un agent
+     * Modification d'un agent
      */
     AgentResponse update(String matricule, AgentRequest request);
 
     /**
-     * Suppression d’un agent
+     * Activation ou désactivation d'un compte agent
+     */
+    AgentResponse changeStatus(String matricule, Boolean enabled);
+
+    /**
+     * Suppression d'un agent
      */
     void delete(String matricule);
 }

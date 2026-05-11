@@ -2,6 +2,7 @@ package com.example.SIGR.dto.request;
 
 import com.example.SIGR.entity.Role;
 import com.example.SIGR.entity.Sexe;
+
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
@@ -9,18 +10,22 @@ import java.time.LocalDate;
 public class AgentRequest {
 
     @NotBlank(message = "Le matricule est obligatoire")
-    @Size(max = 50, message = "Le matricule ne doit pas dépasser 50 caractères")
+    @Size(max = 20, message = "Le matricule ne doit pas dépasser 20 caractères")
     private String matricule;
 
-    @Size(max = 10 , message = "Le NPI ne doit pas dépasser 50 caractères")
+    @NotBlank(message = "Le mot de passe est obligatoire")
+    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    private String password;
+
+    @Size(max = 20, message = "Le NPI ne doit pas dépasser 20 caractères")
     private String npi;
 
     @NotBlank(message = "Le nom est obligatoire")
-    @Size(max = 100, message = "Le nom ne doit pas dépasser 100 caractères")
+    @Size(max = 50, message = "Le nom ne doit pas dépasser 50 caractères")
     private String nom;
 
     @NotBlank(message = "Le prénom est obligatoire")
-    @Size(max = 150, message = "Le prénom ne doit pas dépasser 150 caractères")
+    @Size(max = 100, message = "Le prénom ne doit pas dépasser 100 caractères")
     private String prenoms;
 
     @NotNull(message = "Le sexe est obligatoire")
@@ -30,9 +35,11 @@ public class AgentRequest {
     private Role role;
 
     @NotNull(message = "La date de naissance est obligatoire")
+    @Past(message = "La date de naissance doit être dans le passé")
     private LocalDate dateNaissance;
 
     @NotNull(message = "La date de prise de service est obligatoire")
+    @PastOrPresent(message = "La date de prise de service ne peut pas être dans le futur")
     private LocalDate datePriseService;
 
     @NotBlank(message = "Le code de l'unité est obligatoire")
@@ -46,6 +53,15 @@ public class AgentRequest {
 
     public AgentRequest setMatricule(String matricule) {
         this.matricule = matricule;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public AgentRequest setPassword(String password) {
+        this.password = password;
         return this;
     }
 

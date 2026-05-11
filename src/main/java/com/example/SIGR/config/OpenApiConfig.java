@@ -33,7 +33,7 @@ public class OpenApiConfig {
 
                 // ℹ️ Infos API
                 .info(new Info()
-                        .title("SIGR API")
+                        .title("SIGR  MEF API")
                         .description("API de gestion du Système d'Information de Gestion des Risques")
                         .version("1.0.0")
                         .contact(new Contact()

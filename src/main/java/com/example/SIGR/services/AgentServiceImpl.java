@@ -6,6 +6,8 @@ import com.example.SIGR.entity.Agent;
 import com.example.SIGR.entity.UniteAdministrative;
 import com.example.SIGR.repository.AgentRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +18,16 @@ public class AgentServiceImpl implements AgentService {
 
     private final AgentRepository agentRepository;
     private final UniteAdministrativeRepository uniteRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AgentServiceImpl(AgentRepository agentRepository,
-                            UniteAdministrativeRepository uniteRepository) {
+    public AgentServiceImpl(
+            AgentRepository agentRepository,
+            UniteAdministrativeRepository uniteRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.agentRepository = agentRepository;
         this.uniteRepository = uniteRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -30,6 +37,15 @@ public class AgentServiceImpl implements AgentService {
             throw new RuntimeException(
                     "Un agent avec ce matricule existe déjà : "
                             + request.getMatricule()
+            );
+        }
+
+        if (request.getNpi() != null
+                && agentRepository.existsByNpi(request.getNpi())) {
+
+            throw new RuntimeException(
+                    "Un agent avec ce NPI existe déjà : "
+                            + request.getNpi()
             );
         }
 
@@ -45,6 +61,10 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = new Agent();
 
         agent.setMatricule(request.getMatricule());
+        agent.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
+        agent.setEnabled(true);
         agent.setNpi(request.getNpi());
         agent.setNom(request.getNom());
         agent.setPrenoms(request.getPrenoms());
@@ -74,6 +94,20 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
+    public AgentResponse getById(String id) {
+
+        Agent agent = agentRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Agent introuvable : " + id
+                        )
+                );
+
+        return toResponse(agent);
+    }
+
+    @Override
     public List<AgentResponse> getAll() {
 
         return agentRepository.findAll()
@@ -94,7 +128,28 @@ public class AgentServiceImpl implements AgentService {
                 );
 
         if (request.getNpi() != null) {
+
+            boolean npiExiste = agentRepository
+                    .existsByNpi(request.getNpi());
+
+            if (npiExiste &&
+                    !request.getNpi().equals(agent.getNpi())) {
+
+                throw new RuntimeException(
+                        "Ce NPI est déjà utilisé : "
+                                + request.getNpi()
+                );
+            }
+
             agent.setNpi(request.getNpi());
+        }
+
+        if (request.getPassword() != null
+                && !request.getPassword().isBlank()) {
+
+            agent.setPassword(
+                    passwordEncoder.encode(request.getPassword())
+            );
         }
 
         if (request.getNom() != null) {
@@ -121,7 +176,8 @@ public class AgentServiceImpl implements AgentService {
             agent.setDatePriseService(request.getDatePriseService());
         }
 
-        if (request.getCodeUnite() != null) {
+        if (request.getCodeUnite() != null
+                && !request.getCodeUnite().isBlank()) {
 
             UniteAdministrative unite = uniteRepository
                     .findByCode(request.getCodeUnite())
@@ -134,6 +190,27 @@ public class AgentServiceImpl implements AgentService {
 
             agent.setUnite(unite);
         }
+
+        Agent updated = agentRepository.save(agent);
+
+        return toResponse(updated);
+    }
+
+    @Override
+    public AgentResponse changeStatus(
+            String matricule,
+            Boolean enabled
+    ) {
+
+        Agent agent = agentRepository
+                .findByMatricule(matricule)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Agent introuvable : " + matricule
+                        )
+                );
+
+        agent.setEnabled(enabled);
 
         Agent updated = agentRepository.save(agent);
 
@@ -166,6 +243,7 @@ public class AgentServiceImpl implements AgentService {
                 agent.getPrenoms(),
                 agent.getSexe(),
                 agent.getRole(),
+                agent.getEnabled(),
                 agent.getDateNaissance(),
                 agent.getDatePriseService(),
                 agent.getUnite() != null

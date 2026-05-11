@@ -17,6 +17,9 @@ public class AgentResponse {
      */
     private String matricule;
 
+    /**
+     * Numéro personnel d'identification
+     */
     private String npi;
 
     private String nom;
@@ -27,29 +30,38 @@ public class AgentResponse {
 
     private Role role;
 
+    /**
+     * Statut du compte
+     */
+    private Boolean enabled;
+
     private LocalDate dateNaissance;
 
     private LocalDate datePriseService;
 
     /**
-     * Informations unité administrative
+     * Informations de l'unité administrative
      */
     private String codeUnite;
 
     private String libelleUnite;
 
-    public AgentResponse(String id,
-                         String matricule,
-                         String npi,
-                         String nom,
-                         String prenoms,
-                         Sexe sexe,
-                         Role role,
-                         LocalDate dateNaissance,
-                         LocalDate datePriseService,
-                         String codeUnite,
-                         String libelleUnite) {
+    // ================= CONSTRUCTEUR =================
 
+    public AgentResponse(
+            String id,
+            String matricule,
+            String npi,
+            String nom,
+            String prenoms,
+            Sexe sexe,
+            Role role,
+            Boolean enabled,
+            LocalDate dateNaissance,
+            LocalDate datePriseService,
+            String codeUnite,
+            String libelleUnite
+    ) {
         this.id = id;
         this.matricule = matricule;
         this.npi = npi;
@@ -57,6 +69,7 @@ public class AgentResponse {
         this.prenoms = prenoms;
         this.sexe = sexe;
         this.role = role;
+        this.enabled = enabled;
         this.dateNaissance = dateNaissance;
         this.datePriseService = datePriseService;
         this.codeUnite = codeUnite;
@@ -91,6 +104,10 @@ public class AgentResponse {
 
     public Role getRole() {
         return role;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
     }
 
     public LocalDate getDateNaissance() {
