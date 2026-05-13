@@ -15,9 +15,6 @@ public class TypeUniteRequest {
     @Size(max = 1000, message = "La description est trop longue")
     private String description;
 
-    @Size(max = 100)
-    private String creePar;
-
     // ================= GETTERS / SETTERS =================
 
     public String getCode() {
@@ -44,15 +41,6 @@ public class TypeUniteRequest {
 
     public TypeUniteRequest setDescription(String description) {
         this.description = description;
-        return this;
-    }
-
-    public String getCreePar() {
-        return creePar;
-    }
-
-    public TypeUniteRequest setCreePar(String creePar) {
-        this.creePar = creePar;
         return this;
     }
 }

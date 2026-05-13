@@ -3,13 +3,19 @@ package com.example.SIGR.controller;
 import com.example.SIGR.dto.request.AgentRequest;
 import com.example.SIGR.dto.response.AgentResponse;
 import com.example.SIGR.services.AgentService;
+
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +35,9 @@ public class AgentController {
     }
 
     /**
-     * ================= CREATION =================
+     * ================= CRÉATION =================
      */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un agent",
@@ -42,18 +49,19 @@ public class AgentController {
                             examples = @ExampleObject(
                                     name = "Exemple création agent",
                                     value = """
-                                    {
-                                      "matricule": "AGT001",
-                                      "npi": "1234567890",
-                                      "nom": "ASSOGBA",
-                                      "prenoms": "Ulrich",
-                                      "sexe": "MASCULIN",
-                                      "role": "ADMIN",
-                                      "dateNaissance": "1998-05-10",
-                                      "datePriseService": "2024-01-15",
-                                      "codeUnite": "DGB"
-                                    }
-                                    """
+                                            {
+                                              "matricule": "AGT001",
+                                              "password": "password123",
+                                              "npi": "1234567890",
+                                              "nom": "ASSOGBA",
+                                              "prenoms": "Ulrich",
+                                              "sexe": "MASCULIN",
+                                              "role": "AGENT",
+                                              "dateNaissance": "1998-05-10",
+                                              "datePriseService": "2024-01-15",
+                                              "codeUnite": "DGB"
+                                            }
+                                            """
                             )
                     )
             )
@@ -62,14 +70,17 @@ public class AgentController {
             @Valid @RequestBody AgentRequest request
     ) {
 
+        AgentResponse response = agentService.create(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(agentService.create(request));
+                .body(response);
     }
 
     /**
      * ================= LISTE =================
      */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping
     @Operation(
             summary = "Lister tous les agents",
@@ -81,12 +92,31 @@ public class AgentController {
     }
 
     /**
+     * ================= RECHERCHE PAR ID =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @GetMapping("/id/{id}")
+    @Operation(
+            summary = "Rechercher un agent par ID",
+            description = "Retourne les informations d'un agent à partir de son ID"
+    )
+    public ResponseEntity<AgentResponse> getById(
+            @PathVariable String id
+    ) {
+
+        return ResponseEntity.ok(
+                agentService.getById(id)
+        );
+    }
+
+    /**
      * ================= RECHERCHE PAR MATRICULE =================
      */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping("/{matricule}")
     @Operation(
             summary = "Rechercher un agent par matricule",
-            description = "Retourne les informations d’un agent à partir de son matricule"
+            description = "Retourne les informations d'un agent à partir de son matricule"
     )
     public ResponseEntity<AgentResponse> getByMatricule(
             @PathVariable String matricule
@@ -100,10 +130,11 @@ public class AgentController {
     /**
      * ================= MODIFICATION =================
      */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{matricule}")
     @Operation(
             summary = "Modifier un agent",
-            description = "Permet de modifier les informations d’un agent",
+            description = "Permet de modifier les informations d'un agent",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -111,17 +142,18 @@ public class AgentController {
                             examples = @ExampleObject(
                                     name = "Exemple modification agent",
                                     value = """
-                                    {
-                                      "npi": "9876543210",
-                                      "nom": "ASSOGBA",
-                                      "prenoms": "Ulrich Junior",
-                                      "sexe": "MASCULIN",
-                                      "role": "UTILISATEUR",
-                                      "dateNaissance": "1998-05-10",
-                                      "datePriseService": "2024-01-15",
-                                      "codeUnite": "DGB"
-                                    }
-                                    """
+                                            {
+                                              "password": "newPassword123",
+                                              "npi": "9876543210",
+                                              "nom": "ASSOGBA",
+                                              "prenoms": "Ulrich Junior",
+                                              "sexe": "MASCULIN",
+                                              "role": "MANAGER",
+                                              "dateNaissance": "1998-05-10",
+                                              "datePriseService": "2024-01-15",
+                                              "codeUnite": "DGB"
+                                            }
+                                            """
                             )
                     )
             )
@@ -137,8 +169,28 @@ public class AgentController {
     }
 
     /**
+     * ================= ACTIVATION / DÉSACTIVATION =================
+     */
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PatchMapping("/{matricule}/status")
+    @Operation(
+            summary = "Activer ou désactiver un agent",
+            description = "Permet d'activer ou désactiver le compte d'un agent"
+    )
+    public ResponseEntity<AgentResponse> changeStatus(
+            @PathVariable String matricule,
+            @RequestParam Boolean enabled
+    ) {
+
+        return ResponseEntity.ok(
+                agentService.changeStatus(matricule, enabled)
+        );
+    }
+
+    /**
      * ================= SUPPRESSION =================
      */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{matricule}")
     @Operation(
             summary = "Supprimer un agent",

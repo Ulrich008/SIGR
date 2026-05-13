@@ -3,6 +3,7 @@ package com.example.SIGR.security;
 import com.example.SIGR.entity.Agent;
 import com.example.SIGR.repository.AgentRepository;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,8 +42,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true,
                 true,
                 true,
-                Collections.singleton(() ->
-                        agent.getRole().name()
+                Collections.singleton(
+                        new SimpleGrantedAuthority(
+                                agent.getRole().name()
+                        )
                 )
         );
     }

@@ -22,7 +22,7 @@ public class TypeUnite {
     @Column(length = 300)
     private String description;
 
-    @Column(name = "cree_par", length = 50)
+    @Column(name = "cree_par", length = 255)
     private String creePar;
 
     @OneToMany(mappedBy = "typeUnite")

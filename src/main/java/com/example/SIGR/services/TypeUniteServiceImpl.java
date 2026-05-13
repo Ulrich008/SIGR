@@ -5,6 +5,7 @@ import com.example.SIGR.dto.response.TypeUniteResponse;
 import com.example.SIGR.entity.TypeUnite;
 import com.example.SIGR.repository.TypeUniteRepository;
 import org.springframework.stereotype.Service;
+import com.example.SIGR.security.SecurityUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +36,7 @@ public class TypeUniteServiceImpl implements TypeUniteService {
         typeUnite.setCode(request.getCode());
         typeUnite.setLibelle(request.getLibelle());
         typeUnite.setDescription(request.getDescription());
-        typeUnite.setCreePar(request.getCreePar());
+        typeUnite.setCreePar(SecurityUtils.getCurrentRole());
 
         TypeUnite saved = typeUniteRepository.save(typeUnite);
         return toResponse(saved);
@@ -94,7 +95,7 @@ public class TypeUniteServiceImpl implements TypeUniteService {
         typeUnite.setCode(request.getCode());
         typeUnite.setLibelle(request.getLibelle());
         typeUnite.setDescription(request.getDescription());
-        typeUnite.setCreePar(request.getCreePar());
+        typeUnite.setCreePar(SecurityUtils.getCurrentRole());
 
         TypeUnite updated = typeUniteRepository.save(typeUnite);
         return toResponse(updated);

@@ -1,5 +1,7 @@
 package com.example.SIGR.config;
 
+import com.example.SIGR.security.CustomAccessDeniedHandler;
+import com.example.SIGR.security.JwtAuthenticationEntryPoint;
 import com.example.SIGR.security.JwtAuthenticationFilter;
 
 import org.springframework.context.annotation.Bean;
@@ -7,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
@@ -19,19 +23,36 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            CustomAccessDeniedHandler customAccessDeniedHandler
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
+    /**
+     * Encoder des mots de passe
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Authentication Manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration
@@ -40,6 +61,9 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    /**
+     * Configuration Spring Security
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http
@@ -47,16 +71,54 @@ public class SecurityConfig {
 
         http
 
+                /**
+                 * Activation du CORS
+                 * (utilise automatiquement ton CorsConfig)
+                 */
+                .cors(cors -> {})
+
+                /**
+                 * Désactivation CSRF
+                 * nécessaire pour API REST + JWT
+                 */
                 .csrf(csrf -> csrf.disable())
 
+                /**
+                 * API Stateless avec JWT
+                 */
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
 
+                /**
+                 * Gestion des erreurs 401 / 403
+                 */
+                .exceptionHandling(exception -> exception
+
+                        .authenticationEntryPoint(
+                                jwtAuthenticationEntryPoint
+                        )
+
+                        .accessDeniedHandler(
+                                customAccessDeniedHandler
+                        )
+                )
+
+                /**
+                 * Configuration des accès
+                 */
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // ================= AUTH =================
+
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        // ================= SWAGGER =================
+
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -65,10 +127,22 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
+
+                        // ================= OPTIONS =================
+                        // Important pour Angular + CORS
+
+                        .requestMatchers(
+                                "/**"
+                        ).permitAll()
+
+                        // ================= ROUTES PROTÉGÉES =================
+
                         .anyRequest().authenticated()
                 )
 
-                // AJOUT DU FILTRE JWT ICI
+                /**
+                 * Filtre JWT
+                 */
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

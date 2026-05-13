@@ -39,8 +39,7 @@ public class TypeUniteController {
                                     {
                                       "code": "TU-001",
                                       "libelle": "Direction Generale",
-                                      "description": "Unite de niveau direction",
-                                      "creePar": "admin"
+                                      "description": "Unite de niveau direction"
                                     }
                                     """
                             )

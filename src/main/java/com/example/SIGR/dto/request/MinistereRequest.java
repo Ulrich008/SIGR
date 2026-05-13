@@ -19,8 +19,6 @@ public class MinistereRequest {
     @Size(max = 1000, message = "La description est trop longue")
     private String description;
 
-    @Size(max = 100)
-    private String creePar;
 
     // ================= GETTERS / SETTERS =================
 
@@ -57,15 +55,6 @@ public class MinistereRequest {
 
     public MinistereRequest setDescription(String description) {
         this.description = description;
-        return this;
-    }
-
-    public String getCreePar() {
-        return creePar;
-    }
-
-    public MinistereRequest setCreePar(String creePar) {
-        this.creePar = creePar;
         return this;
     }
 }

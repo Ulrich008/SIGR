@@ -5,6 +5,7 @@ import com.example.SIGR.dto.response.MinistereResponse;
 import com.example.SIGR.entity.Ministere;
 import com.example.SIGR.repository.MinistereRepository;
 import org.springframework.stereotype.Service;
+import com.example.SIGR.security.SecurityUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class MinistereServiceImpl implements MinistereService {
         ministere.setNom(request.getNom());
         ministere.setSigle(request.getSigle());
         ministere.setDescription(request.getDescription());
-        ministere.setCreePar(request.getCreePar());
+        ministere.setCreePar(SecurityUtils.getCurrentRole());
 
         Ministere saved = ministereRepository.save(ministere);
 
@@ -48,6 +49,12 @@ public class MinistereServiceImpl implements MinistereService {
 
         Ministere ministere = ministereRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ministère introuvable, id : " + id));
+
+        return toResponse(ministere);
+    }
+    public MinistereResponse getByCode(String code) {
+        Ministere ministere = ministereRepository.findByCode(code)
+                .orElseThrow(()-> new RuntimeException("Ministere introuvable, id :" + code));
 
         return toResponse(ministere);
     }
@@ -76,7 +83,7 @@ public class MinistereServiceImpl implements MinistereService {
         ministere.setNom(request.getNom());
         ministere.setSigle(request.getSigle());
         ministere.setDescription(request.getDescription());
-        ministere.setCreePar(request.getCreePar());
+        ministere.setCreePar(SecurityUtils.getCurrentRole());
 
         Ministere updated = ministereRepository.save(ministere);
 

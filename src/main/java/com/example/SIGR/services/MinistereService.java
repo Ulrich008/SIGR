@@ -18,5 +18,5 @@ public interface MinistereService {
     void delete(String id);
 
     // optionnel (très utile)
-    /*MinistereResponse getByCode(String code);*/
+    MinistereResponse getByCode(String code);
 }

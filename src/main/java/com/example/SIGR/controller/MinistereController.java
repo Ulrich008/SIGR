@@ -5,20 +5,27 @@ import com.example.SIGR.dto.response.MinistereResponse;
 import com.example.SIGR.services.MinistereService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/ministeres")
-@Tag(name = "Ministère", description = "API de gestion des ministères")
+@Tag(
+        name = "Ministère",
+        description = "API de gestion des ministères"
+)
 public class MinistereController {
 
     private final MinistereService ministereService;
@@ -27,7 +34,10 @@ public class MinistereController {
         this.ministereService = ministereService;
     }
 
-    // ================= CREATE =================
+    /**
+     * ================= CREATE =================
+     */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un ministère",
@@ -39,57 +49,85 @@ public class MinistereController {
                             examples = @ExampleObject(
                                     name = "Exemple création ministère",
                                     value = """
-                                    {
-                                      "code": "MIN-FIN",
-                                      "nom": "Ministère des Finances",
-                                      "sigle": "MFIN",
-                                      "description": "Gestion des finances publiques",
-                                      "creePar": "admin"
-                                    }
-                                    """
+                                            {
+                                              "code": "MIN-FIN",
+                                              "nom": "Ministère des Finances",
+                                              "sigle": "MFIN",
+                                              "description": "Gestion des finances publiques"
+                                            }
+                                            """
                             )
                     )
             )
     )
     public ResponseEntity<MinistereResponse> create(
-            @Valid @RequestBody MinistereRequest request) {
+            @Valid @RequestBody MinistereRequest request
+    ) {
+
+        MinistereResponse response =
+                ministereService.create(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ministereService.create(request));
+                .body(response);
     }
 
-    // ================= GET ALL =================
+    /**
+     * ================= GET ALL =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping
     @Operation(
             summary = "Lister tous les ministères",
             description = "Retourne la liste complète des ministères enregistrés"
     )
     public ResponseEntity<List<MinistereResponse>> getAll() {
-        return ResponseEntity.ok(ministereService.getAll());
+
+        return ResponseEntity.ok(
+                ministereService.getAll()
+        );
     }
 
-    // ================= GET BY ID =================
+    /**
+     * ================= GET BY ID =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping("/{id}")
     @Operation(
             summary = "Récupérer un ministère par ID",
             description = "Recherche un ministère via son identifiant technique (UUID)"
     )
-    public ResponseEntity<MinistereResponse> getById(@PathVariable String id) {
-        return ResponseEntity.ok(ministereService.getById(id));
+    public ResponseEntity<MinistereResponse> getById(
+            @PathVariable String id
+    ) {
+
+        return ResponseEntity.ok(
+                ministereService.getById(id)
+        );
     }
 
-    // ================= GET BY CODE =================
-    /*@GetMapping("/code/{code}")
+    /**
+     * ================= GET BY CODE =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @GetMapping("/code/{code}")
     @Operation(
             summary = "Récupérer un ministère par code métier",
-            description = "Recherche un ministère via son code métier (ex: MIN-FIN)"
+            description = "Recherche un ministère via son code métier"
     )
-    public ResponseEntity<MinistereResponse> getByCode(@PathVariable String code) {
-        return ResponseEntity.ok(ministereService.getByCode(code));
+    public ResponseEntity<MinistereResponse> getByCode(
+            @PathVariable String code
+    ) {
+
+        return ResponseEntity.ok(
+                ministereService.getByCode(code)
+        );
     }
-*/
-    // ================= UPDATE =================
+
+    /**
+     * ================= UPDATE =================
+     */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Modifier un ministère",
@@ -101,33 +139,41 @@ public class MinistereController {
                             examples = @ExampleObject(
                                     name = "Exemple modification ministère",
                                     value = """
-                                    {
-                                      "nom": "Ministère de l’Économie",
-                                      "sigle": "ME",
-                                      "description": "Mise à jour description",
-                                      "creePar": "admin"
-                                    }
-                                    """
+                                            {
+                                              "nom": "Ministère de l’Économie",
+                                              "sigle": "ME",
+                                              "description": "Mise à jour description"
+                                            }
+                                            """
                             )
                     )
             )
     )
     public ResponseEntity<MinistereResponse> update(
             @PathVariable String id,
-            @Valid @RequestBody MinistereRequest request) {
+            @Valid @RequestBody MinistereRequest request
+    ) {
 
-        return ResponseEntity.ok(ministereService.update(id, request));
+        return ResponseEntity.ok(
+                ministereService.update(id, request)
+        );
     }
 
-    // ================= DELETE =================
+    /**
+     * ================= DELETE =================
+     */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Supprimer un ministère",
             description = "Supprime définitivement un ministère via son ID"
     )
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(
+            @PathVariable String id
+    ) {
 
         ministereService.delete(id);
+
         return ResponseEntity.noContent().build();
     }
 }
