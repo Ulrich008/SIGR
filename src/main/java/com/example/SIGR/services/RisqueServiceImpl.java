@@ -27,137 +27,282 @@ public class RisqueServiceImpl implements RisqueService {
         this.cartographieRepository = cartographieRepository;
     }
 
+    /**
+     * ================= CREATION =================
+     */
     @Override
-    public RisqueResponse create(RisqueRequest request) {
+    public RisqueResponse create(
+            RisqueRequest request
+    ) {
 
-        if (risqueRepository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
+        // ================= LIBELLE =================
+
+        if (risqueRepository.existsByLibelleIgnoreCase(
+                request.getLibelle()
+        )) {
+
+            throw new RuntimeException(
+                    "Libellé déjà utilisé : "
+                            + request.getLibelle()
+            );
         }
 
-        if (risqueRepository.existsByLibelleIgnoreCase(request.getLibelle())) {
-            throw new RuntimeException("Libellé déjà utilisé : " + request.getLibelle());
+        // ================= PROCESSUS =================
+
+        Processus processus =
+                processusRepository
+                        .findByCode(request.getCodeProcessus())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Processus introuvable : "
+                                                + request.getCodeProcessus()
+                                )
+                        );
+
+        // ================= CARTOGRAPHIE =================
+
+        CartographieRisques cartographie =
+                getCartographie(
+                        request.getCodeCartographie()
+                );
+
+        // ================= GENERATION CODE =================
+
+        long total =
+                risqueRepository.count() + 1;
+
+        String code =
+                String.format(
+                        "RIS-%03d",
+                        total
+                );
+
+        while (risqueRepository.existsByCode(code)) {
+
+            total++;
+
+            code = String.format(
+                    "RIS-%03d",
+                    total
+            );
         }
 
-        Processus processus = processusRepository.findById(request.getCodeProcessus())
-                .orElseThrow(() -> new RuntimeException("Processus introuvable : " + request.getCodeProcessus()));
-
-        CartographieRisques cartographie = getCartographie(request.getIdCartographie());
+        // ================= CREATION =================
 
         Risque risque = new Risque();
-        risque.setCode(request.getCode());
+
+        risque.setCode(code);
+
         risque.setLibelle(request.getLibelle());
-        risque.setCategorie(request.getCategorie());
         risque.setCauseProbable(request.getCauseProbable());
-        risque.setConsequenceProbable(request.getConsequenceProbable());
+        risque.setConsequenceProbable(
+                request.getConsequenceProbable()
+        );
         risque.setStatut(request.getStatut());
-        risque.setDateIdentification(request.getDateIdentification());
-        risque.setTypeRisque(request.getTypeRisque());
+        risque.setDateIdentification(
+                request.getDateIdentification()
+        );
+        risque.setTypeRisque(
+                request.getTypeRisque()
+        );
 
         risque.setProcessus(processus);
         risque.setCartographie(cartographie);
 
-        return toResponse(risqueRepository.save(risque));
+        Risque saved =
+                risqueRepository.save(risque);
+
+        return toResponse(saved);
     }
 
+    /**
+     * ================= GET BY CODE =================
+     */
     @Override
-    public RisqueResponse getById(String id) {
-        Risque risque = risqueRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Risque introuvable : " + id));
+    public RisqueResponse getByCode(
+            String code
+    ) {
+
+        Risque risque =
+                risqueRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Risque introuvable : "
+                                                + code
+                                )
+                        );
 
         return toResponse(risque);
     }
 
-    @Override
-    public RisqueResponse getByCode(String code) {
-        Risque risque = risqueRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Risque introuvable : " + code));
-
-        return toResponse(risque);
-    }
-
+    /**
+     * ================= GET ALL =================
+     */
     @Override
     public List<RisqueResponse> getAll() {
+
         return risqueRepository.findAll()
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * ================= UPDATE =================
+     */
     @Override
-    public RisqueResponse updateById(String id, RisqueRequest request) {
+    public RisqueResponse updateByCode(
+            String code,
+            RisqueRequest request
+    ) {
 
-        Risque risque = risqueRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Risque introuvable : " + id));
+        Risque risque =
+                risqueRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Risque introuvable : "
+                                                + code
+                                )
+                        );
 
-        return updateEntity(risque, request);
+        return updateEntity(
+                risque,
+                request
+        );
     }
 
+    /**
+     * ================= DELETE =================
+     */
     @Override
-    public RisqueResponse updateByCode(String code, RisqueRequest request) {
+    public void deleteByCode(
+            String code
+    ) {
 
-        Risque risque = risqueRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Risque introuvable : " + code));
-
-        return updateEntity(risque, request);
-    }
-
-    @Override
-    public void delete(String id) {
-        risqueRepository.deleteById(id);
-    }
-
-    @Override
-    public void deleteByCode(String code) {
-        Risque risque = risqueRepository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Risque introuvable : " + code));
+        Risque risque =
+                risqueRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Risque introuvable : "
+                                                + code
+                                )
+                        );
 
         risqueRepository.delete(risque);
     }
 
-    private RisqueResponse updateEntity(Risque risque, RisqueRequest request) {
+    /**
+     * ================= UPDATE ENTITY =================
+     */
+    private RisqueResponse updateEntity(
+            Risque risque,
+            RisqueRequest request
+    ) {
 
-        Processus processus = processusRepository.findById(request.getCodeProcessus())
-                .orElseThrow(() -> new RuntimeException("Processus introuvable : " + request.getCodeProcessus()));
+        // ================= PROCESSUS =================
 
-        CartographieRisques cartographie = getCartographie(request.getIdCartographie());
+        Processus processus =
+                processusRepository
+                        .findByCode(request.getCodeProcessus())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Processus introuvable : "
+                                                + request.getCodeProcessus()
+                                )
+                        );
+
+        // ================= CARTOGRAPHIE =================
+
+        CartographieRisques cartographie =
+                getCartographie(
+                        request.getCodeCartographie()
+                );
+
+        // ================= UPDATE =================
 
         risque.setLibelle(request.getLibelle());
-        risque.setCategorie(request.getCategorie());
-        risque.setCauseProbable(request.getCauseProbable());
-        risque.setConsequenceProbable(request.getConsequenceProbable());
+        risque.setCauseProbable(
+                request.getCauseProbable()
+        );
+        risque.setConsequenceProbable(
+                request.getConsequenceProbable()
+        );
         risque.setStatut(request.getStatut());
-        risque.setDateIdentification(request.getDateIdentification());
-        risque.setTypeRisque(request.getTypeRisque());
+        risque.setDateIdentification(
+                request.getDateIdentification()
+        );
+        risque.setTypeRisque(
+                request.getTypeRisque()
+        );
+
         risque.setProcessus(processus);
         risque.setCartographie(cartographie);
 
-        return toResponse(risqueRepository.save(risque));
+        Risque updated =
+                risqueRepository.save(risque);
+
+        return toResponse(updated);
     }
 
-    private RisqueResponse toResponse(Risque risque) {
+    /**
+     * ================= RESPONSE =================
+     */
+    private RisqueResponse toResponse(
+            Risque risque
+    ) {
+
         return new RisqueResponse(
                 risque.getId(),
                 risque.getCode(),
                 risque.getLibelle(),
-                risque.getCategorie(),
                 risque.getCauseProbable(),
                 risque.getConsequenceProbable(),
                 risque.getStatut(),
                 risque.getDateIdentification(),
-                risque.getProcessus().getCode(),
-                risque.getProcessus().getLibelle(),
-                risque.getCartographie() != null ? risque.getCartographie().getId() : null,
+
+                risque.getProcessus() != null
+                        ? risque.getProcessus().getCode()
+                        : null,
+
+                risque.getProcessus() != null
+                        ? risque.getProcessus().getLibelle()
+                        : null,
+
+                risque.getCartographie() != null
+                        ? risque.getCartographie().getCode()
+                        : null,
+
                 risque.getTypeRisque(),
+
                 risque.getRisquesResiduels() != null
-                        ? risque.getRisquesResiduels().stream().map(RisqueResiduel::getId).toList()
+                        ? risque.getRisquesResiduels()
+                          .stream()
+                          .map(RisqueResiduel::getId)
+                          .toList()
                         : List.of()
         );
     }
 
-    private CartographieRisques getCartographie(String idCarto) {
-        if (idCarto == null || idCarto.isBlank()) return null;
+    /**
+     * ================= CARTOGRAPHIE =================
+     */
+    private CartographieRisques getCartographie(
+            String codeCartographie
+    ) {
 
-        return cartographieRepository.findById(idCarto)
-                .orElseThrow(() -> new RuntimeException("Cartographie introuvable : " + idCarto));
+        if (codeCartographie == null
+                || codeCartographie.isBlank()) {
+
+            return null;
+        }
+
+        return cartographieRepository
+                .findByCode(codeCartographie)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Cartographie introuvable : "
+                                        + codeCartographie
+                        )
+                );
     }
 }

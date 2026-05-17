@@ -40,7 +40,7 @@ public class ProcessusServiceImpl implements ProcessusService {
             );
         }
 
-        UniteAdministrative unite = uniteRepository.findById(request.getIdUnite())
+        UniteAdministrative unite = uniteRepository.findByCode(request.getIdUnite())
                 .orElseThrow(() ->
                         new RuntimeException("Unité introuvable : " + request.getIdUnite())
                 );
@@ -48,7 +48,7 @@ public class ProcessusServiceImpl implements ProcessusService {
         Agent proprietaire = null;
 
         if (request.getIdProprietaire() != null && !request.getIdProprietaire().isBlank()) {
-            proprietaire = agentRepository.findById(request.getIdProprietaire())
+            proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
                     .orElseThrow(() ->
                             new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
                     );
@@ -108,7 +108,7 @@ public class ProcessusServiceImpl implements ProcessusService {
             );
         }
 
-        UniteAdministrative unite = uniteRepository.findById(request.getIdUnite())
+        UniteAdministrative unite = uniteRepository.findByCode(request.getIdUnite())
                 .orElseThrow(() ->
                         new RuntimeException("Unité introuvable : " + request.getIdUnite())
                 );
@@ -116,7 +116,7 @@ public class ProcessusServiceImpl implements ProcessusService {
         Agent proprietaire = null;
 
         if (request.getIdProprietaire() != null && !request.getIdProprietaire().isBlank()) {
-            proprietaire = agentRepository.findById(request.getIdProprietaire())
+            proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
                     .orElseThrow(() ->
                             new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
                     );
@@ -154,10 +154,10 @@ public class ProcessusServiceImpl implements ProcessusService {
                 processus.getLibelle(),
                 processus.getFinalite(),
                 processus.getTypeProcessus(),
-                processus.getUnite().getId(),
+                processus.getUnite().getCode(),
                 processus.getUnite().getLibelle(),
                 processus.getProprietaire() != null
-                        ? processus.getProprietaire().getId()
+                        ? processus.getProprietaire().getMatricule()
                         : null,
                 processus.getProprietaire() != null
                         ? processus.getProprietaire().getNom()

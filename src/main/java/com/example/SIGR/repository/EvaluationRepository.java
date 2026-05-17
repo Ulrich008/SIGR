@@ -12,4 +12,6 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
 
     // Vérifier unicité du code
     boolean existsByCode(String code);
+
+
 }

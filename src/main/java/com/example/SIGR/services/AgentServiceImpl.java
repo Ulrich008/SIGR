@@ -33,7 +33,26 @@ public class AgentServiceImpl implements AgentService {
     @Override
     public AgentResponse create(AgentRequest request) {
 
+        // ================= VALIDATIONS =================
+
+        if (request.getMatricule() == null
+                || request.getMatricule().isBlank()) {
+
+            throw new RuntimeException(
+                    "Le matricule est obligatoire"
+            );
+        }
+
+        if (request.getPassword() == null
+                || request.getPassword().isBlank()) {
+
+            throw new RuntimeException(
+                    "Le mot de passe est obligatoire"
+            );
+        }
+
         if (agentRepository.existsByMatricule(request.getMatricule())) {
+
             throw new RuntimeException(
                     "Un agent avec ce matricule existe déjà : "
                             + request.getMatricule()
@@ -41,6 +60,7 @@ public class AgentServiceImpl implements AgentService {
         }
 
         if (request.getNpi() != null
+                && !request.getNpi().isBlank()
                 && agentRepository.existsByNpi(request.getNpi())) {
 
             throw new RuntimeException(
@@ -48,6 +68,8 @@ public class AgentServiceImpl implements AgentService {
                             + request.getNpi()
             );
         }
+
+        // ================= UNITE =================
 
         UniteAdministrative unite = uniteRepository
                 .findByCode(request.getCodeUnite())
@@ -58,13 +80,18 @@ public class AgentServiceImpl implements AgentService {
                         )
                 );
 
+        // ================= CREATION =================
+
         Agent agent = new Agent();
 
         agent.setMatricule(request.getMatricule());
+
         agent.setPassword(
                 passwordEncoder.encode(request.getPassword())
         );
+
         agent.setEnabled(true);
+
         agent.setNpi(request.getNpi());
         agent.setNom(request.getNom());
         agent.setPrenoms(request.getPrenoms());
@@ -72,6 +99,7 @@ public class AgentServiceImpl implements AgentService {
         agent.setRole(request.getRole());
         agent.setDateNaissance(request.getDateNaissance());
         agent.setDatePriseService(request.getDatePriseService());
+
         agent.setUnite(unite);
 
         Agent saved = agentRepository.save(agent);
@@ -127,13 +155,16 @@ public class AgentServiceImpl implements AgentService {
                         )
                 );
 
-        if (request.getNpi() != null) {
+        // ================= NPI =================
+
+        if (request.getNpi() != null
+                && !request.getNpi().isBlank()) {
 
             boolean npiExiste = agentRepository
                     .existsByNpi(request.getNpi());
 
-            if (npiExiste &&
-                    !request.getNpi().equals(agent.getNpi())) {
+            if (npiExiste
+                    && !request.getNpi().equals(agent.getNpi())) {
 
                 throw new RuntimeException(
                         "Ce NPI est déjà utilisé : "
@@ -144,19 +175,29 @@ public class AgentServiceImpl implements AgentService {
             agent.setNpi(request.getNpi());
         }
 
+        // ================= PASSWORD =================
+
         if (request.getPassword() != null
                 && !request.getPassword().isBlank()) {
 
             agent.setPassword(
-                    passwordEncoder.encode(request.getPassword())
+                    passwordEncoder.encode(
+                            request.getPassword()
+                    )
             );
         }
 
-        if (request.getNom() != null) {
+        // ================= AUTRES CHAMPS =================
+
+        if (request.getNom() != null
+                && !request.getNom().isBlank()) {
+
             agent.setNom(request.getNom());
         }
 
-        if (request.getPrenoms() != null) {
+        if (request.getPrenoms() != null
+                && !request.getPrenoms().isBlank()) {
+
             agent.setPrenoms(request.getPrenoms());
         }
 
@@ -169,12 +210,18 @@ public class AgentServiceImpl implements AgentService {
         }
 
         if (request.getDateNaissance() != null) {
-            agent.setDateNaissance(request.getDateNaissance());
+            agent.setDateNaissance(
+                    request.getDateNaissance()
+            );
         }
 
         if (request.getDatePriseService() != null) {
-            agent.setDatePriseService(request.getDatePriseService());
+            agent.setDatePriseService(
+                    request.getDatePriseService()
+            );
         }
+
+        // ================= UNITE =================
 
         if (request.getCodeUnite() != null
                 && !request.getCodeUnite().isBlank()) {
@@ -206,7 +253,8 @@ public class AgentServiceImpl implements AgentService {
                 .findByMatricule(matricule)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Agent introuvable : " + matricule
+                                "Agent introuvable : "
+                                        + matricule
                         )
                 );
 
@@ -224,14 +272,15 @@ public class AgentServiceImpl implements AgentService {
                 .findByMatricule(matricule)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Agent introuvable : " + matricule
+                                "Agent introuvable : "
+                                        + matricule
                         )
                 );
 
         agentRepository.delete(agent);
     }
 
-    // ================= MAPPING RESPONSE =================
+    // ================= RESPONSE =================
 
     private AgentResponse toResponse(Agent agent) {
 

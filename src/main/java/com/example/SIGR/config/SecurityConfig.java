@@ -73,13 +73,11 @@ public class SecurityConfig {
 
                 /**
                  * Activation du CORS
-                 * (utilise automatiquement ton CorsConfig)
                  */
                 .cors(cors -> {})
 
                 /**
                  * Désactivation CSRF
-                 * nécessaire pour API REST + JWT
                  */
                 .csrf(csrf -> csrf.disable())
 
@@ -129,9 +127,9 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // ================= OPTIONS =================
-                        // Important pour Angular + CORS
 
                         .requestMatchers(
+                                org.springframework.http.HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 

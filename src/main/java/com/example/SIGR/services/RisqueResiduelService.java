@@ -7,23 +7,56 @@ import java.util.List;
 
 public interface RisqueResiduelService {
 
-    // ================= CRUD =================
-    RisqueResiduelResponse create(RisqueResiduelRequest request);
+    /**
+     * ================= CREATE =================
+     */
+    RisqueResiduelResponse create(
+            RisqueResiduelRequest request
+    );
 
-    RisqueResiduelResponse getById(String id);
-
+    /**
+     * ================= GET ALL =================
+     */
     List<RisqueResiduelResponse> getAll();
 
-    RisqueResiduelResponse updateBycode(String code, RisqueResiduelRequest request);
+    /**
+     * ================= GET BY CODE =================
+     */
+    RisqueResiduelResponse getByCode(
+            String code
+    );
 
+    /**
+     * ================= UPDATE =================
+     */
+    RisqueResiduelResponse updateByCode(
+            String code,
+            RisqueResiduelRequest request
+    );
 
-    void deleteBycode(String code);
+    /**
+     * ================= DELETE =================
+     */
+    void deleteByCode(
+            String code
+    );
 
-    RisqueResiduelResponse getByCode(String code);
+    /**
+     * ================= BY EVALUATION =================
+     */
+    List<RisqueResiduelResponse> getByEvaluation(
+            String codeEvaluation
+    );
 
-    List<RisqueResiduelResponse> getByEvaluation(String idEvaluation);
+    /**
+     * ================= BY RISQUE =================
+     */
+    List<RisqueResiduelResponse> getByRisque(
+            String codeRisque
+    );
 
-    List<RisqueResiduelResponse> getByRisque(String idRisque);
-
-    List<RisqueResiduelResponse> getRisquesElevés();
+    /**
+     * ================= RISQUES ELEVES =================
+     */
+    List<RisqueResiduelResponse> getRisquesEleves();
 }

@@ -8,17 +8,12 @@ import java.time.LocalDate;
 
 public class RisqueRequest {
 
-    @NotBlank(message = "Le code est obligatoire")
     @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
     private String code;
 
     @NotBlank(message = "Le libellé est obligatoire")
     @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
-
-    @NotBlank(message = "La catégorie est obligatoire")
-    @Size(max = 100, message = "La catégorie ne doit pas dépasser 100 caractères")
-    private String categorie;
 
     @Size(max = 1000, message = "La cause probable est trop longue")
     private String causeProbable;
@@ -35,7 +30,8 @@ public class RisqueRequest {
     @NotBlank(message = "Le code processus est obligatoire")
     private String codeProcessus;
 
-    private String idCartographie;
+    // 🔥 RENOMMÉ ICI
+    private String codeCartographie;
 
     @NotNull(message = "Le type de risque est obligatoire")
     private TypeRisque typeRisque;
@@ -60,14 +56,6 @@ public class RisqueRequest {
         return this;
     }
 
-    public String getCategorie() {
-        return categorie;
-    }
-
-    public RisqueRequest setCategorie(String categorie) {
-        this.categorie = categorie;
-        return this;
-    }
 
     public String getCauseProbable() {
         return causeProbable;
@@ -114,12 +102,13 @@ public class RisqueRequest {
         return this;
     }
 
-    public String getIdCartographie() {
-        return idCartographie;
+    // 🔥 GETTER CORRIGÉ
+    public String getCodeCartographie() {
+        return codeCartographie;
     }
 
-    public RisqueRequest setIdCartographie(String idCartographie) {
-        this.idCartographie = idCartographie;
+    public RisqueRequest setCodeCartographie(String codeCartographie) {
+        this.codeCartographie = codeCartographie;
         return this;
     }
 

@@ -30,37 +30,88 @@ public class RisqueResiduelServiceImpl implements RisqueResiduelService {
         this.risqueRepository = risqueRepository;
     }
 
-    // ================= CREATE =================
+    /**
+     * ================= CREATE =================
+     */
     @Override
     public RisqueResiduelResponse create(RisqueResiduelRequest request) {
 
-        Evaluation evaluation = evaluationRepository.findById(request.getIdEvaluation())
-                .orElseThrow(() -> new RuntimeException("Évaluation introuvable"));
+        Evaluation evaluation = evaluationRepository
+                .findByCode(request.getCodeEvaluation())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Evaluation introuvable : "
+                                        + request.getCodeEvaluation()
+                        )
+                );
 
-        Risque risque = risqueRepository.findById(request.getIdRisque())
-                .orElseThrow(() -> new RuntimeException("Risque introuvable"));
+        Risque risque = risqueRepository
+                .findByCode(request.getCodeRisque())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Risque introuvable : "
+                                        + request.getCodeRisque()
+                        )
+                );
 
-        RisqueResiduel rr = new RisqueResiduel()
-                .setCode(request.getCode())
-                .setImpactResiduel(request.getImpactResiduel())
-                .setProbabiliteResiduelle(request.getProbabiliteResiduelle())
-                .setEvaluation(evaluation)
-                .setRisque(risque);
+        // ===== GENERATION CODE =====
+
+        long total = repository.count() + 1;
+
+        String code = String.format(
+                "RR-%03d",
+                total
+        );
+
+        while (repository.existsByCode(code)) {
+
+            total++;
+
+            code = String.format(
+                    "RR-%03d",
+                    total
+            );
+        }
+
+        RisqueResiduel rr = new RisqueResiduel();
+
+        rr.setCode(code);
+
+        rr.setImpactResiduel(
+                request.getImpactResiduel()
+        );
+
+        rr.setProbabiliteResiduelle(
+                request.getProbabiliteResiduelle()
+        );
+
+        rr.setEvaluation(evaluation);
+
+        rr.setRisque(risque);
 
         return toResponse(repository.save(rr));
     }
 
-    // ================= GET BY ID =================
+    /**
+     * ================= GET BY CODE =================
+     */
     @Override
-    public RisqueResiduelResponse getById(String id) {
+    public RisqueResiduelResponse getByCode(String code) {
 
-        RisqueResiduel rr = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Risque résiduel introuvable"));
+        RisqueResiduel rr = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Risque résiduel introuvable : "
+                                        + code
+                        )
+                );
 
         return toResponse(rr);
     }
 
-    // ================= GET ALL =================
+    /**
+     * ================= GET ALL =================
+     */
     @Override
     public List<RisqueResiduelResponse> getAll() {
 
@@ -70,75 +121,125 @@ public class RisqueResiduelServiceImpl implements RisqueResiduelService {
                 .collect(Collectors.toList());
     }
 
-    // ================= UPDATE =================
+    /**
+     * ================= UPDATE =================
+     */
     @Override
-    public RisqueResiduelResponse updateBycode(String code, RisqueResiduelRequest request) {
+    public RisqueResiduelResponse updateByCode(
+            String code,
+            RisqueResiduelRequest request
+    ) {
 
-        RisqueResiduel rr = repository.findById(code)
-                .orElseThrow(() -> new RuntimeException("Risque résiduel introuvable"));
+        RisqueResiduel rr = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Risque résiduel introuvable : "
+                                        + code
+                        )
+                );
 
-        Evaluation evaluation = evaluationRepository.findById(request.getIdEvaluation())
-                .orElseThrow(() -> new RuntimeException("Évaluation introuvable"));
+        Evaluation evaluation = evaluationRepository
+                .findByCode(request.getCodeEvaluation())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Evaluation introuvable : "
+                                        + request.getCodeEvaluation()
+                        )
+                );
 
-        Risque risque = risqueRepository.findById(request.getIdRisque())
-                .orElseThrow(() -> new RuntimeException("Risque introuvable"));
+        Risque risque = risqueRepository
+                .findByCode(request.getCodeRisque())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Risque introuvable : "
+                                        + request.getCodeRisque()
+                        )
+                );
 
-        rr.setCode(request.getCode());
-        rr.setImpactResiduel(request.getImpactResiduel());
-        rr.setProbabiliteResiduelle(request.getProbabiliteResiduelle());
+        rr.setImpactResiduel(
+                request.getImpactResiduel()
+        );
+
+        rr.setProbabiliteResiduelle(
+                request.getProbabiliteResiduelle()
+        );
+
         rr.setEvaluation(evaluation);
+
         rr.setRisque(risque);
 
         return toResponse(repository.save(rr));
     }
 
-    // ================= DELETE =================
+    /**
+     * ================= DELETE =================
+     */
     @Override
-    public void deleteBycode(String code) {
-        repository.deleteById(code);
-    }
-
-    // ================= MÉTIER =================
-
-    @Override
-    public RisqueResiduelResponse getByCode(String code) {
+    public void deleteByCode(String code) {
 
         RisqueResiduel rr = repository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Risque résiduel introuvable avec le code : " + code));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Risque résiduel introuvable : "
+                                        + code
+                        )
+                );
 
-        return toResponse(rr);
+        repository.delete(rr);
     }
 
+    /**
+     * ================= PAR EVALUATION =================
+     */
     @Override
-    public List<RisqueResiduelResponse> getByEvaluation(String idEvaluation) {
+    public List<RisqueResiduelResponse> getByEvaluation(
+            String codeEvaluation
+    ) {
 
-        return repository.findByEvaluation_Id(idEvaluation)
+        return repository
+                .findByEvaluation_Code(codeEvaluation)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * ================= PAR RISQUE =================
+     */
     @Override
-    public List<RisqueResiduelResponse> getByRisque(String idRisque) {
+    public List<RisqueResiduelResponse> getByRisque(
+            String codeRisque
+    ) {
 
-        return repository.findByRisque_Id(idRisque)
+        return repository
+                .findByRisque_Code(codeRisque)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * ================= RISQUES ELEVES =================
+     */
     @Override
-    public List<RisqueResiduelResponse> getRisquesElevés() {
+    public List<RisqueResiduelResponse> getRisquesEleves() {
 
         return repository.findAll()
                 .stream()
-                .filter(rr -> rr.getScoreResiduel() != null && rr.getScoreResiduel() > 15)
+                .filter(rr ->
+                        rr.getScoreResiduel() != null
+                                && rr.getScoreResiduel() > 15
+                )
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
-    // ================= MAPPER =================
-    private RisqueResiduelResponse toResponse(RisqueResiduel rr) {
+    /**
+     * ================= RESPONSE =================
+     */
+    private RisqueResiduelResponse toResponse(
+            RisqueResiduel rr
+    ) {
 
         return new RisqueResiduelResponse(
                 rr.getId(),
@@ -147,9 +248,18 @@ public class RisqueResiduelServiceImpl implements RisqueResiduelService {
                 rr.getProbabiliteResiduelle(),
                 rr.getScoreResiduel(),
                 rr.getNiveauRisque(),
-                rr.getEvaluation().getId(),
-                rr.getRisque().getId(),
-                rr.getRisque().getLibelle()
+
+                rr.getEvaluation() != null
+                        ? rr.getEvaluation().getCode()
+                        : null,
+
+                rr.getRisque() != null
+                        ? rr.getRisque().getCode()
+                        : null,
+
+                rr.getRisque() != null
+                        ? rr.getRisque().getLibelle()
+                        : null
         );
     }
 }

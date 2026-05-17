@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -75,6 +76,26 @@ public class AgentController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    /**
+     * ================= MON PROFIL =================
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    @Operation(
+            summary = "Mon profil",
+            description = "Retourne les informations de l'utilisateur connecté"
+    )
+    public ResponseEntity<AgentResponse> me(
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                agentService.getByMatricule(
+                        authentication.getName()
+                )
+        );
     }
 
     /**
@@ -160,8 +181,20 @@ public class AgentController {
     )
     public ResponseEntity<AgentResponse> update(
             @PathVariable String matricule,
-            @Valid @RequestBody AgentRequest request
+            @Valid @RequestBody AgentRequest request,
+            Authentication authentication
     ) {
+
+        String currentUser = authentication.getName();
+
+        // Empêche un admin de modifier son propre rôle
+        if (currentUser.equals(matricule)
+                && request.getRole() != null) {
+
+            throw new RuntimeException(
+                    "Vous ne pouvez pas modifier votre propre rôle"
+            );
+        }
 
         return ResponseEntity.ok(
                 agentService.update(matricule, request)
@@ -179,11 +212,25 @@ public class AgentController {
     )
     public ResponseEntity<AgentResponse> changeStatus(
             @PathVariable String matricule,
-            @RequestParam Boolean enabled
+            @RequestParam Boolean enabled,
+            Authentication authentication
     ) {
 
+        String currentUser = authentication.getName();
+
+        // Empêche auto désactivation
+        if (currentUser.equals(matricule) && !enabled) {
+
+            throw new RuntimeException(
+                    "Vous ne pouvez pas désactiver votre propre compte"
+            );
+        }
+
         return ResponseEntity.ok(
-                agentService.changeStatus(matricule, enabled)
+                agentService.changeStatus(
+                        matricule,
+                        enabled
+                )
         );
     }
 
@@ -197,8 +244,19 @@ public class AgentController {
             description = "Permet de supprimer un agent via son matricule"
     )
     public ResponseEntity<Void> delete(
-            @PathVariable String matricule
+            @PathVariable String matricule,
+            Authentication authentication
     ) {
+
+        String currentUser = authentication.getName();
+
+        // Empêche auto suppression
+        if (currentUser.equals(matricule)) {
+
+            throw new RuntimeException(
+                    "Vous ne pouvez pas supprimer votre propre compte"
+            );
+        }
 
         agentService.delete(matricule);
 

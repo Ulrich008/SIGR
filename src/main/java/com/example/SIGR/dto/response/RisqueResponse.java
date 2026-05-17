@@ -11,7 +11,6 @@ public class RisqueResponse {
     private String id;
     private String code;
     private String libelle;
-    private String categorie;
     private String causeProbable;
     private String consequenceProbable;
 
@@ -35,7 +34,6 @@ public class RisqueResponse {
             String id,
             String code,
             String libelle,
-            String categorie,
             String causeProbable,
             String consequenceProbable,
             StatutRisque statut,
@@ -49,7 +47,6 @@ public class RisqueResponse {
         this.id = id;
         this.code = code ;
         this.libelle = libelle;
-        this.categorie = categorie;
         this.causeProbable = causeProbable;
         this.consequenceProbable = consequenceProbable;
         this.statut = statut;
@@ -70,10 +67,6 @@ public class RisqueResponse {
 
     public String getLibelle() {
         return libelle;
-    }
-
-    public String getCategorie() {
-        return categorie;
     }
 
     public String getCauseProbable() {

@@ -9,8 +9,6 @@ public interface TypeUniteService {
 
     TypeUniteResponse create(TypeUniteRequest request);
 
-    TypeUniteResponse getById(String id);
-
     TypeUniteResponse getByCode(String code);
 
     List<TypeUniteResponse> getAll();

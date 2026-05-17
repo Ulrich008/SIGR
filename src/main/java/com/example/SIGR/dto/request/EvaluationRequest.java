@@ -1,14 +1,14 @@
 package com.example.SIGR.dto.request;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
 public class EvaluationRequest {
-
-    @NotBlank(message = "Le code est obligatoire")
-    @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
-    private String code;
 
     @NotNull(message = "L'impact est obligatoire")
     @Min(value = 1, message = "L'impact doit être >= 1")
@@ -23,7 +23,10 @@ public class EvaluationRequest {
     @NotNull(message = "La date d'évaluation est obligatoire")
     private LocalDate dateEvaluation;
 
-    @Size(max = 1000, message = "Les bonnes pratiques sont trop longues")
+    @Size(
+            max = 1000,
+            message = "Les bonnes pratiques ne doivent pas dépasser 1000 caractères"
+    )
     private String bonnesPratiques;
 
     @NotNull(message = "Le niveau de contrôle est obligatoire")
@@ -31,27 +34,28 @@ public class EvaluationRequest {
     @Max(value = 5, message = "Le niveau de contrôle doit être <= 5")
     private Integer niveauControle;
 
-    @NotBlank(message = "L'identifiant du risque est obligatoire")
-    private String idRisque;
+    /**
+     * ================= RISQUE =================
+     * Utilisation du code métier
+     */
+    @NotBlank(message = "Le code du risque est obligatoire")
+    private String codeRisque;
 
-    private String idAgent;
+    /**
+     * ================= AGENT =================
+     * Utilisation du matricule
+     */
+    private String matriculeAgent;
 
     // ================= GETTERS / SETTERS =================
-
-    public String getCode() {
-        return code;
-    }
-
-    public EvaluationRequest setCode(String code) {
-        this.code = code;
-        return this;
-    }
 
     public Integer getImpact() {
         return impact;
     }
 
-    public EvaluationRequest setImpact(Integer impact) {
+    public EvaluationRequest setImpact(
+            Integer impact
+    ) {
         this.impact = impact;
         return this;
     }
@@ -60,7 +64,9 @@ public class EvaluationRequest {
         return probabilite;
     }
 
-    public EvaluationRequest setProbabilite(Integer probabilite) {
+    public EvaluationRequest setProbabilite(
+            Integer probabilite
+    ) {
         this.probabilite = probabilite;
         return this;
     }
@@ -69,7 +75,9 @@ public class EvaluationRequest {
         return dateEvaluation;
     }
 
-    public EvaluationRequest setDateEvaluation(LocalDate dateEvaluation) {
+    public EvaluationRequest setDateEvaluation(
+            LocalDate dateEvaluation
+    ) {
         this.dateEvaluation = dateEvaluation;
         return this;
     }
@@ -78,7 +86,9 @@ public class EvaluationRequest {
         return bonnesPratiques;
     }
 
-    public EvaluationRequest setBonnesPratiques(String bonnesPratiques) {
+    public EvaluationRequest setBonnesPratiques(
+            String bonnesPratiques
+    ) {
         this.bonnesPratiques = bonnesPratiques;
         return this;
     }
@@ -87,26 +97,32 @@ public class EvaluationRequest {
         return niveauControle;
     }
 
-    public EvaluationRequest setNiveauControle(Integer niveauControle) {
+    public EvaluationRequest setNiveauControle(
+            Integer niveauControle
+    ) {
         this.niveauControle = niveauControle;
         return this;
     }
 
-    public String getIdRisque() {
-        return idRisque;
+    public String getCodeRisque() {
+        return codeRisque;
     }
 
-    public EvaluationRequest setIdRisque(String idRisque) {
-        this.idRisque = idRisque;
+    public EvaluationRequest setCodeRisque(
+            String codeRisque
+    ) {
+        this.codeRisque = codeRisque;
         return this;
     }
 
-    public String getIdAgent() {
-        return idAgent;
+    public String getMatriculeAgent() {
+        return matriculeAgent;
     }
 
-    public EvaluationRequest setIdAgent(String idAgent) {
-        this.idAgent = idAgent;
+    public EvaluationRequest setMatriculeAgent(
+            String matriculeAgent
+    ) {
+        this.matriculeAgent = matriculeAgent;
         return this;
     }
 }

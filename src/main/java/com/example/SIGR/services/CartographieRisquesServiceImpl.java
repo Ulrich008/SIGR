@@ -18,20 +18,27 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         this.repository = repository;
     }
 
+    // ================= GENERATE CODE =================
+    private String generateCode() {
+
+        long count = repository.count() + 1;
+
+        return String.format("CARTO-%03d", count);
+    }
+
     // ================= CREATE =================
     @Override
     public CartographieRisquesResponse create(CartographieRisquesRequest request) {
 
-        if (repository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
+        if (repository.existsByTitre(request.getTitre())) {
+            throw new RuntimeException(
+                    "Titre déjà utilisé : " + request.getTitre());
         }
 
-        if (repository.existsByTitre(request.getTitre())) {
-            throw new RuntimeException("Titre déjà utilisé : " + request.getTitre());
-        }
+        String code = generateCode();
 
         CartographieRisques entity = new CartographieRisques()
-                .setCode(request.getCode())
+                .setCode(code)
                 .setTitre(request.getTitre())
                 .setPeriode(request.getPeriode())
                 .setSeuilFaible(request.getSeuilFaible())
@@ -42,21 +49,13 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         return toResponse(repository.save(entity));
     }
 
-    // ================= GET BY ID (interne) =================
+    // ================= GET BY CODE =================
     @Override
-    public CartographieRisquesResponse getById(String id) {
-
-        CartographieRisques entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Introuvable : " + id));
-
-        return toResponse(entity);
-    }
-
-    // ================= GET BY CODE (API métier) =================
     public CartographieRisquesResponse getByCode(String code) {
 
         CartographieRisques entity = repository.findByCode(code)
-                .orElseThrow(() -> new RuntimeException("Introuvable : " + code));
+                .orElseThrow(() ->
+                        new RuntimeException("Cartographie introuvable : " + code));
 
         return toResponse(entity);
     }
@@ -73,12 +72,23 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
 
     // ================= UPDATE =================
     @Override
-    public CartographieRisquesResponse update(String id, CartographieRisquesRequest request) {
+    public CartographieRisquesResponse update(
+            String code,
+            CartographieRisquesRequest request
+    ) {
 
-        CartographieRisques entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Introuvable : " + id));
+        CartographieRisques entity = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Cartographie introuvable : " + code));
 
-        entity.setCode(request.getCode());
+        // Vérification unicité titre
+        if (!entity.getTitre().equals(request.getTitre())
+                && repository.existsByTitre(request.getTitre())) {
+
+            throw new RuntimeException(
+                    "Titre déjà utilisé : " + request.getTitre());
+        }
+
         entity.setTitre(request.getTitre());
         entity.setPeriode(request.getPeriode());
         entity.setSeuilFaible(request.getSeuilFaible());
@@ -91,17 +101,19 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
 
     // ================= DELETE =================
     @Override
-    public void delete(String id) {
+    public void delete(String code) {
 
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Introuvable : " + id);
-        }
+        CartographieRisques entity = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Cartographie introuvable : " + code));
 
-        repository.deleteById(id);
+        repository.delete(entity);
     }
 
     // ================= MAPPER =================
-    private CartographieRisquesResponse toResponse(CartographieRisques entity) {
+    private CartographieRisquesResponse toResponse(
+            CartographieRisques entity
+    ) {
 
         int nbRisques = entity.getRisques() != null
                 ? entity.getRisques().size()

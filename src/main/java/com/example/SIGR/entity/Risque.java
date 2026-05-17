@@ -19,9 +19,6 @@ public class Risque {
     @Column(name = "libelle_risque", length = 200)
     private String libelle;
 
-    @Column(name = "categorie_risque", length = 100)
-    private String categorie;
-
     @Column(name = "cause_probable", length = 500)
     private String causeProbable;
 
@@ -90,9 +87,6 @@ public class Risque {
 
     public String getLibelle() { return libelle; }
     public Risque setLibelle(String libelle) { this.libelle = libelle; return this; }
-
-    public String getCategorie() { return categorie; }
-    public Risque setCategorie(String categorie) { this.categorie = categorie; return this; }
 
     public String getCauseProbable() { return causeProbable; }
     public Risque setCauseProbable(String causeProbable) { this.causeProbable = causeProbable; return this; }

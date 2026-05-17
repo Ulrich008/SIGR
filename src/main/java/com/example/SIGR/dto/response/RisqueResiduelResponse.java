@@ -3,15 +3,27 @@ package com.example.SIGR.dto.response;
 public class RisqueResiduelResponse {
 
     private String id;
+
     private String code;
 
     private Integer impactResiduel;
+
     private Integer probabiliteResiduelle;
+
     private Integer scoreResiduel;
+
     private String niveauRisque;
 
-    private String idEvaluation;
-    private String idRisque;
+    /**
+     * ================= EVALUATION =================
+     */
+    private String codeEvaluation;
+
+    /**
+     * ================= RISQUE =================
+     */
+    private String codeRisque;
+
     private String libelleRisque;
 
     public RisqueResiduelResponse(
@@ -21,18 +33,27 @@ public class RisqueResiduelResponse {
             Integer probabiliteResiduelle,
             Integer scoreResiduel,
             String niveauRisque,
-            String idEvaluation,
-            String idRisque,
+            String codeEvaluation,
+            String codeRisque,
             String libelleRisque
     ) {
+
         this.id = id;
+
         this.code = code;
+
         this.impactResiduel = impactResiduel;
+
         this.probabiliteResiduelle = probabiliteResiduelle;
+
         this.scoreResiduel = scoreResiduel;
+
         this.niveauRisque = niveauRisque;
-        this.idEvaluation = idEvaluation;
-        this.idRisque = idRisque;
+
+        this.codeEvaluation = codeEvaluation;
+
+        this.codeRisque = codeRisque;
+
         this.libelleRisque = libelleRisque;
     }
 
@@ -60,12 +81,12 @@ public class RisqueResiduelResponse {
         return niveauRisque;
     }
 
-    public String getIdEvaluation() {
-        return idEvaluation;
+    public String getCodeEvaluation() {
+        return codeEvaluation;
     }
 
-    public String getIdRisque() {
-        return idRisque;
+    public String getCodeRisque() {
+        return codeRisque;
     }
 
     public String getLibelleRisque() {

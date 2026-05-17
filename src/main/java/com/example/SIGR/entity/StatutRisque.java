@@ -4,6 +4,6 @@ public enum StatutRisque {
     ACTIF,
     EN_COURS,
     MAITRISE,
-    CLOS,
+    CLOTURE,
     SUPPRIME
 }

@@ -1,10 +1,13 @@
+
 package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.EvaluationRequest;
 import com.example.SIGR.dto.response.EvaluationResponse;
+
 import com.example.SIGR.entity.Agent;
 import com.example.SIGR.entity.Evaluation;
 import com.example.SIGR.entity.Risque;
+
 import com.example.SIGR.repository.AgentRepository;
 import com.example.SIGR.repository.EvaluationRepository;
 import com.example.SIGR.repository.RisqueRepository;
@@ -31,50 +34,124 @@ public class EvaluationServiceImpl implements EvaluationService {
         this.agentRepository = agentRepository;
     }
 
+    /**
+     * ================= CREATION =================
+     */
     @Override
-    public EvaluationResponse create(EvaluationRequest request) {
+    public EvaluationResponse create(
+            EvaluationRequest request
+    ) {
 
-        // Vérification code métier
-        if (evaluationRepository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Evaluation existe déjà avec le code : " + request.getCode());
-        }
+        // ================= RISQUE =================
 
-        Risque risque = risqueRepository.findById(request.getIdRisque())
-                .orElseThrow(() -> new RuntimeException("Risque introuvable"));
+        Risque risque =
+                risqueRepository
+                        .findByCode(request.getCodeRisque())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Risque introuvable : "
+                                                + request.getCodeRisque()
+                                )
+                        );
+
+        // ================= AGENT =================
 
         Agent agent = null;
 
-        if (request.getIdAgent() != null) {
-            agent = agentRepository.findById(request.getIdAgent())
-                    .orElseThrow(() -> new RuntimeException("Agent introuvable"));
+        if (request.getMatriculeAgent() != null
+                && !request.getMatriculeAgent().isBlank()) {
+
+            agent = agentRepository
+                    .findByMatricule(
+                            request.getMatriculeAgent()
+                    )
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Agent introuvable : "
+                                            + request.getMatriculeAgent()
+                            )
+                    );
         }
+
+        // ================= GENERATION CODE =================
+
+        long total =
+                evaluationRepository.count() + 1;
+
+        String code =
+                String.format(
+                        "EVAL-%03d",
+                        total
+                );
+
+        while (evaluationRepository.existsByCode(code)) {
+
+            total++;
+
+            code = String.format(
+                    "EVAL-%03d",
+                    total
+            );
+        }
+
+        // ================= CREATION =================
 
         Evaluation evaluation = new Evaluation();
 
+        evaluation.setCode(code);
 
-        evaluation.setCode(request.getCode());
-        evaluation.setImpact(request.getImpact());
-        evaluation.setProbabilite(request.getProbabilite());
-        evaluation.setDateEvaluation(request.getDateEvaluation());
-        evaluation.setBonnesPratiques(request.getBonnesPratiques());
-        evaluation.setNiveauControle(request.getNiveauControle());
+        evaluation.setImpact(
+                request.getImpact()
+        );
+
+        evaluation.setProbabilite(
+                request.getProbabilite()
+        );
+
+        evaluation.setDateEvaluation(
+                request.getDateEvaluation()
+        );
+
+        evaluation.setBonnesPratiques(
+                request.getBonnesPratiques()
+        );
+
+        evaluation.setNiveauControle(
+                request.getNiveauControle()
+        );
+
         evaluation.setRisque(risque);
+
         evaluation.setEvaluePar(agent);
 
-        Evaluation saved = evaluationRepository.save(evaluation);
+        Evaluation saved =
+                evaluationRepository.save(evaluation);
 
         return toResponse(saved);
     }
 
+    /**
+     * ================= GET BY CODE =================
+     */
     @Override
-    public EvaluationResponse getById(String id) {
+    public EvaluationResponse getByCode(
+            String code
+    ) {
 
-        Evaluation evaluation = evaluationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Evaluation introuvable"));
+        Evaluation evaluation =
+                evaluationRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Evaluation introuvable"
+                                )
+                        );
 
         return toResponse(evaluation);
     }
 
+    /**
+     * ================= GET ALL =================
+     */
     @Override
     public List<EvaluationResponse> getAll() {
 
@@ -84,44 +161,113 @@ public class EvaluationServiceImpl implements EvaluationService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * ================= UPDATE =================
+     */
     @Override
-    public EvaluationResponse update(String id, EvaluationRequest request) {
+    public EvaluationResponse update(
+            String code,
+            EvaluationRequest request
+    ) {
 
-        Evaluation evaluation = evaluationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Evaluation introuvable"));
+        // ================= EVALUATION =================
 
-        Risque risque = risqueRepository.findById(request.getIdRisque())
-                .orElseThrow(() -> new RuntimeException("Risque introuvable"));
+        Evaluation evaluation =
+                evaluationRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Evaluation introuvable : " + code
+                                )
+                        );
+
+        // ================= RISQUE =================
+
+        Risque risque =
+                risqueRepository
+                        .findByCode(request.getCodeRisque())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Risque introuvable : "
+                                                + request.getCodeRisque()
+                                )
+                        );
+
+        // ================= AGENT =================
 
         Agent agent = null;
 
-        if (request.getIdAgent() != null) {
-            agent = agentRepository.findById(request.getIdAgent())
-                    .orElseThrow(() -> new RuntimeException("Agent introuvable"));
+        if (request.getMatriculeAgent() != null
+                && !request.getMatriculeAgent().isBlank()) {
+
+            agent = agentRepository
+                    .findByMatricule(
+                            request.getMatriculeAgent()
+                    )
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Agent introuvable : "
+                                            + request.getMatriculeAgent()
+                            )
+                    );
         }
 
-        evaluation.setImpact(request.getImpact());
-        evaluation.setProbabilite(request.getProbabilite());
-        evaluation.setDateEvaluation(request.getDateEvaluation());
-        evaluation.setBonnesPratiques(request.getBonnesPratiques());
-        evaluation.setNiveauControle(request.getNiveauControle());
+        // ================= UPDATE =================
+
+        evaluation.setImpact(
+                request.getImpact()
+        );
+
+        evaluation.setProbabilite(
+                request.getProbabilite()
+        );
+
+        evaluation.setDateEvaluation(
+                request.getDateEvaluation()
+        );
+
+        evaluation.setBonnesPratiques(
+                request.getBonnesPratiques()
+        );
+
+        evaluation.setNiveauControle(
+                request.getNiveauControle()
+        );
+
         evaluation.setRisque(risque);
+
         evaluation.setEvaluePar(agent);
 
-        return toResponse(evaluationRepository.save(evaluation));
+        Evaluation updated =
+                evaluationRepository.save(evaluation);
+
+        return toResponse(updated);
     }
 
+    /**
+     * ================= DELETE =================
+     */
     @Override
-    public void delete(String id) {
+    public void delete(
+            String code
+    ) {
 
-        if (!evaluationRepository.existsById(id)) {
-            throw new RuntimeException("Evaluation introuvable");
-        }
+        Evaluation evaluation =
+                evaluationRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Evaluation introuvable : " + code
+                                )
+                        );
 
-        evaluationRepository.deleteById(id);
+        evaluationRepository.delete(evaluation);
     }
 
-    private EvaluationResponse toResponse(Evaluation e) {
+    /**
+     * ================= RESPONSE =================
+     */
+    private EvaluationResponse toResponse(
+            Evaluation e
+    ) {
 
         return new EvaluationResponse(
                 e.getId(),
@@ -132,10 +278,22 @@ public class EvaluationServiceImpl implements EvaluationService {
                 e.getBonnesPratiques(),
                 e.getNiveauControle(),
                 e.getScoreInitial(),
-                e.getRisque().getId(),
-                e.getRisque().getLibelle(),
-                e.getEvaluePar() != null ? e.getEvaluePar().getId() : null,
-                e.getEvaluePar() != null ? e.getEvaluePar().getNom() : null
+
+                e.getRisque() != null
+                        ? e.getRisque().getCode()
+                        : null,
+
+                e.getRisque() != null
+                        ? e.getRisque().getLibelle()
+                        : null,
+
+                e.getEvaluePar() != null
+                        ? e.getEvaluePar().getMatricule()
+                        : null,
+
+                e.getEvaluePar() != null
+                        ? e.getEvaluePar().getNom()
+                        : null
         );
     }
 }

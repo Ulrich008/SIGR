@@ -9,11 +9,15 @@ import java.time.LocalDate;
 
 public class AgentRequest {
 
-    @NotBlank(message = "Le matricule est obligatoire")
+    /**
+     * Obligatoire seulement à la création
+     */
     @Size(max = 20, message = "Le matricule ne doit pas dépasser 20 caractères")
     private String matricule;
 
-    @NotBlank(message = "Le mot de passe est obligatoire")
+    /**
+     * Facultatif lors du update
+     */
     @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
     private String password;
 

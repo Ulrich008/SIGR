@@ -10,9 +10,7 @@ public interface EvaluationService {
     // Création
     EvaluationResponse create(EvaluationRequest request);
 
-    EvaluationResponse getById(String id);
-
-    /*EvaluationResponse getByCode(String code)*/
+    EvaluationResponse getByCode(String code)
             ;
     List<EvaluationResponse> getAll();
 

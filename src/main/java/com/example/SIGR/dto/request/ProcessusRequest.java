@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 
 public class ProcessusRequest {
 
-    @NotBlank(message = "Le code est obligatoire")
+
     @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
     private String code;
 

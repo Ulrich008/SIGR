@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotNull;
 
 public class RisqueResiduelRequest {
 
-    @NotBlank(message = "Le code est obligatoire")
-    private String code;
-
     @NotNull(message = "L'impact résiduel est obligatoire")
     @Min(value = 1, message = "L'impact résiduel doit être >= 1")
     @Max(value = 5, message = "L'impact résiduel doit être <= 5")
@@ -20,28 +17,21 @@ public class RisqueResiduelRequest {
     @Max(value = 5, message = "La probabilité résiduelle doit être <= 5")
     private Integer probabiliteResiduelle;
 
-    @NotBlank(message = "L'identifiant de l'évaluation est obligatoire")
-    private String idEvaluation;
+    @NotBlank(message = "Le code de l'évaluation est obligatoire")
+    private String codeEvaluation;
 
-    @NotBlank(message = "L'identifiant du risque est obligatoire")
-    private String idRisque;
+    @NotBlank(message = "Le code du risque est obligatoire")
+    private String codeRisque;
 
     // ================= GETTERS / SETTERS =================
-
-    public String getCode() {
-        return code;
-    }
-
-    public RisqueResiduelRequest setCode(String code) {
-        this.code = code;
-        return this;
-    }
 
     public Integer getImpactResiduel() {
         return impactResiduel;
     }
 
-    public RisqueResiduelRequest setImpactResiduel(Integer impactResiduel) {
+    public RisqueResiduelRequest setImpactResiduel(
+            Integer impactResiduel
+    ) {
         this.impactResiduel = impactResiduel;
         return this;
     }
@@ -50,26 +40,32 @@ public class RisqueResiduelRequest {
         return probabiliteResiduelle;
     }
 
-    public RisqueResiduelRequest setProbabiliteResiduelle(Integer probabiliteResiduelle) {
+    public RisqueResiduelRequest setProbabiliteResiduelle(
+            Integer probabiliteResiduelle
+    ) {
         this.probabiliteResiduelle = probabiliteResiduelle;
         return this;
     }
 
-    public String getIdEvaluation() {
-        return idEvaluation;
+    public String getCodeEvaluation() {
+        return codeEvaluation;
     }
 
-    public RisqueResiduelRequest setIdEvaluation(String idEvaluation) {
-        this.idEvaluation = idEvaluation;
+    public RisqueResiduelRequest setCodeEvaluation(
+            String codeEvaluation
+    ) {
+        this.codeEvaluation = codeEvaluation;
         return this;
     }
 
-    public String getIdRisque() {
-        return idRisque;
+    public String getCodeRisque() {
+        return codeRisque;
     }
 
-    public RisqueResiduelRequest setIdRisque(String idRisque) {
-        this.idRisque = idRisque;
+    public RisqueResiduelRequest setCodeRisque(
+            String codeRisque
+    ) {
+        this.codeRisque = codeRisque;
         return this;
     }
 }

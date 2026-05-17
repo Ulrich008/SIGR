@@ -4,11 +4,11 @@ import com.example.SIGR.dto.request.TypeUniteRequest;
 import com.example.SIGR.dto.response.TypeUniteResponse;
 import com.example.SIGR.entity.TypeUnite;
 import com.example.SIGR.repository.TypeUniteRepository;
-import org.springframework.stereotype.Service;
 import com.example.SIGR.security.SecurityUtils;
 
+import org.springframework.stereotype.Service;
+
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -16,18 +16,24 @@ public class TypeUniteServiceImpl implements TypeUniteService {
 
     private final TypeUniteRepository typeUniteRepository;
 
-    public TypeUniteServiceImpl(TypeUniteRepository typeUniteRepository) {
+    public TypeUniteServiceImpl(
+            TypeUniteRepository typeUniteRepository
+    ) {
         this.typeUniteRepository = typeUniteRepository;
     }
 
     // ================= CREATE =================
     @Override
-    public TypeUniteResponse create(TypeUniteRequest request) {
+    public TypeUniteResponse create(
+            TypeUniteRequest request
+    ) {
 
         // Vérification unicité métier
         if (typeUniteRepository.existsByCode(request.getCode())) {
+
             throw new RuntimeException(
-                    "Un type d'unité existe déjà avec le code : " + request.getCode()
+                    "Un type d'unité existe déjà avec le code : "
+                            + request.getCode()
             );
         }
 
@@ -38,30 +44,25 @@ public class TypeUniteServiceImpl implements TypeUniteService {
         typeUnite.setDescription(request.getDescription());
         typeUnite.setCreePar(SecurityUtils.getCurrentRole());
 
-        TypeUnite saved = typeUniteRepository.save(typeUnite);
+        TypeUnite saved =
+                typeUniteRepository.save(typeUnite);
+
         return toResponse(saved);
-    }
-
-    // ================= GET BY ID =================
-    @Override
-    public TypeUniteResponse getById(String id) {
-
-        TypeUnite typeUnite = typeUniteRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Type d'unité introuvable (id) : " + id)
-                );
-
-        return toResponse(typeUnite);
     }
 
     // ================= GET BY CODE =================
     @Override
-    public TypeUniteResponse getByCode(String code) {
+    public TypeUniteResponse getByCode(
+            String code
+    ) {
 
-        TypeUnite typeUnite = typeUniteRepository.findByCode(code)
-                .orElseThrow(() ->
-                        new RuntimeException("Type d'unité introuvable (code) : " + code)
-                );
+        TypeUnite typeUnite =
+                typeUniteRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Type d'unité introuvable (code) : " + code
+                                )
+                        );
 
         return toResponse(typeUnite);
     }
@@ -69,6 +70,7 @@ public class TypeUniteServiceImpl implements TypeUniteService {
     // ================= GET ALL =================
     @Override
     public List<TypeUniteResponse> getAll() {
+
         return typeUniteRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -77,43 +79,63 @@ public class TypeUniteServiceImpl implements TypeUniteService {
 
     // ================= UPDATE =================
     @Override
-    public TypeUniteResponse update(String id, TypeUniteRequest request) {
+    public TypeUniteResponse update(
+            String code,
+            TypeUniteRequest request
+    ) {
 
-        TypeUnite typeUnite = typeUniteRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Type d'unité introuvable (id) : " + id)
-                );
+        TypeUnite typeUnite =
+                typeUniteRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Type d'unité introuvable (code) : " + code
+                                )
+                        );
 
-        // Vérification code si changé
-        if (!typeUnite.getCode().equals(request.getCode())
-                && typeUniteRepository.existsByCode(request.getCode())) {
-            throw new RuntimeException(
-                    "Un type d'unité existe déjà avec le code : " + request.getCode()
-            );
-        }
+        /**
+         * Le code ne doit pas être modifié
+         */
 
-        typeUnite.setCode(request.getCode());
-        typeUnite.setLibelle(request.getLibelle());
-        typeUnite.setDescription(request.getDescription());
-        typeUnite.setCreePar(SecurityUtils.getCurrentRole());
+        typeUnite.setLibelle(
+                request.getLibelle()
+        );
 
-        TypeUnite updated = typeUniteRepository.save(typeUnite);
+        typeUnite.setDescription(
+                request.getDescription()
+        );
+
+        typeUnite.setCreePar(
+                SecurityUtils.getCurrentRole()
+        );
+
+        TypeUnite updated =
+                typeUniteRepository.save(typeUnite);
+
         return toResponse(updated);
     }
 
     // ================= DELETE =================
     @Override
-    public void delete(String id) {
+    public void delete(
+            String code
+    ) {
 
-        if (!typeUniteRepository.existsById(id)) {
-            throw new RuntimeException("Type d'unité introuvable (id) : " + id);
-        }
+        TypeUnite typeUnite =
+                typeUniteRepository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Type d'unité introuvable (code) : " + code
+                                )
+                        );
 
-        typeUniteRepository.deleteById(id);
+        typeUniteRepository.delete(typeUnite);
     }
 
     // ================= MAPPER =================
-    private TypeUniteResponse toResponse(TypeUnite typeUnite) {
+    private TypeUniteResponse toResponse(
+            TypeUnite typeUnite
+    ) {
+
         return new TypeUniteResponse(
                 typeUnite.getId(),
                 typeUnite.getCode(),
