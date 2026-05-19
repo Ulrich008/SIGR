@@ -7,12 +7,21 @@ import java.time.LocalDate;
 public class PlanMitigationResponse {
 
     private String id;
+
     private String code;
+
     private String description;
+
     private LocalDate dateCreation;
+
     private StatutPlanMitigation statut;
 
-    private String idRisque;
+    /**
+     * Utilisation du CODE métier
+     * au lieu de l'id technique
+     */
+    private String codeRisque;
+
     private String libelleRisque;
 
     public PlanMitigationResponse(
@@ -21,7 +30,7 @@ public class PlanMitigationResponse {
             String description,
             LocalDate dateCreation,
             StatutPlanMitigation statut,
-            String idRisque,
+            String codeRisque,
             String libelleRisque
     ) {
         this.id = id;
@@ -29,11 +38,11 @@ public class PlanMitigationResponse {
         this.description = description;
         this.dateCreation = dateCreation;
         this.statut = statut;
-        this.idRisque = idRisque;
+        this.codeRisque = codeRisque;
         this.libelleRisque = libelleRisque;
     }
 
-    // GETTERS
+    // ================= GETTERS =================
 
     public String getId() {
         return id;
@@ -55,8 +64,8 @@ public class PlanMitigationResponse {
         return statut;
     }
 
-    public String getIdRisque() {
-        return idRisque;
+    public String getCodeRisque() {
+        return codeRisque;
     }
 
     public String getLibelleRisque() {

@@ -277,7 +277,7 @@ public class RisqueServiceImpl implements RisqueService {
                 risque.getRisquesResiduels() != null
                         ? risque.getRisquesResiduels()
                           .stream()
-                          .map(RisqueResiduel::getId)
+                          .map(RisqueResiduel::getCode)
                           .toList()
                         : List.of()
         );

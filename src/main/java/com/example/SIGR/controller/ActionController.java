@@ -14,13 +14,16 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/actions", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Action", description = "API de gestion des actions")
+@Tag(name = "Action", description = "API de gestion des actions (basée sur code métier)")
 public class ActionController {
 
     private final ActionService actionService;
@@ -30,10 +33,11 @@ public class ActionController {
     }
 
     // ================= CREATE =================
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Créer une action",
-            description = "Permet de créer une nouvelle action dans le système",
+            description = "Création d'une action avec génération automatique du code métier",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -42,12 +46,11 @@ public class ActionController {
                                     name = "Exemple création action",
                                     value = """
                                     {
-                                      "code": "ACT-001",
                                       "libelle": "Mettre en place un contrôle interne",
                                       "dateDebut": "2026-05-07",
                                       "dateFin": "2026-06-15",
                                       "statut": "EN_COURS",
-                                      "idPlan": "PLAN-001",
+                                      "codePlan": "PLAN-001",
                                       "matriculeResponsable": "AGT-001"
                                     }
                                     """
@@ -58,38 +61,41 @@ public class ActionController {
     public ResponseEntity<ActionResponse> create(
             @Valid @RequestBody ActionRequest request
     ) {
-        ActionResponse response = actionService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(actionService.create(request));
     }
 
     // ================= GET ALL =================
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
     @GetMapping
     @Operation(
             summary = "Lister toutes les actions",
             description = "Retourne la liste complète des actions"
     )
     public ResponseEntity<List<ActionResponse>> getAll() {
-
         return ResponseEntity.ok(actionService.getAll());
     }
 
-    // ================= GET BY ID =================
-    @GetMapping("/{id}")
+    // ================= GET BY CODE =================
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @GetMapping("/{code}")
     @Operation(
-            summary = "Récupérer une action par ID",
-            description = "Retourne une action à partir de son identifiant"
+            summary = "Récupérer une action par code",
+            description = "Retourne une action à partir de son code métier"
     )
-    public ResponseEntity<ActionResponse> getById(
-            @PathVariable String id
+    public ResponseEntity<ActionResponse> getByCode(
+            @PathVariable String code
     ) {
-        return ResponseEntity.ok(actionService.getById(id));
+        return ResponseEntity.ok(actionService.getByCode(code));
     }
 
     // ================= UPDATE =================
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une action",
-            description = "Met à jour une action existante",
+            description = "Met à jour une action via son code métier",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -98,12 +104,11 @@ public class ActionController {
                                     name = "Exemple modification action",
                                     value = """
                                     {
-                                      "code": "ACT-001",
                                       "libelle": "Renforcer le contrôle budgétaire",
                                       "dateDebut": "2026-05-10",
                                       "dateFin": "2026-07-01",
                                       "statut": "TERMINE",
-                                      "idPlan": "PLAN-001",
+                                      "codePlan": "PLAN-001",
                                       "matriculeResponsable": "AGT-002"
                                     }
                                     """
@@ -112,25 +117,23 @@ public class ActionController {
             )
     )
     public ResponseEntity<ActionResponse> update(
-            @PathVariable String id,
+            @PathVariable String code,
             @Valid @RequestBody ActionRequest request
     ) {
-
-        ActionResponse response = actionService.update(id, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(actionService.update(code, request));
     }
 
     // ================= DELETE =================
-    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une action",
-            description = "Supprime une action selon son identifiant"
+            description = "Suppression d'une action via son code métier"
     )
     public ResponseEntity<Void> delete(
-            @PathVariable String id
+            @PathVariable String code
     ) {
-
-        actionService.delete(id);
+        actionService.delete(code);
         return ResponseEntity.noContent().build();
     }
 }

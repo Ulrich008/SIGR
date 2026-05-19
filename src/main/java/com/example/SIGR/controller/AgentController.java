@@ -7,6 +7,7 @@ import com.example.SIGR.services.AgentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
@@ -25,24 +26,30 @@ import java.util.List;
 @RequestMapping("/api/agents")
 @Tag(
         name = "Agent",
-        description = "API de gestion des agents"
+        description = "API de gestion des agents basée sur le matricule métier"
 )
 public class AgentController {
 
     private final AgentService agentService;
 
-    public AgentController(AgentService agentService) {
+    public AgentController(
+            AgentService agentService
+    ) {
         this.agentService = agentService;
     }
 
     /**
-     * ================= CRÉATION =================
+     * ================= CREATION =================
      */
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un agent",
-            description = "Permet de créer un nouvel agent dans le système",
+            description = """
+                    Crée un nouvel agent.
+
+                    Le matricule est généré automatiquement par le système.
+                    """,
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -51,7 +58,6 @@ public class AgentController {
                                     name = "Exemple création agent",
                                     value = """
                                             {
-                                              "matricule": "AGT001",
                                               "password": "password123",
                                               "npi": "1234567890",
                                               "nom": "ASSOGBA",
@@ -65,13 +71,25 @@ public class AgentController {
                                             """
                             )
                     )
-            )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Agent créé avec succès"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Données invalides"
+                    )
+            }
     )
     public ResponseEntity<AgentResponse> create(
-            @Valid @RequestBody AgentRequest request
+            @Valid @RequestBody
+            AgentRequest request
     ) {
 
-        AgentResponse response = agentService.create(request);
+        AgentResponse response =
+                agentService.create(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -109,29 +127,13 @@ public class AgentController {
     )
     public ResponseEntity<List<AgentResponse>> getAll() {
 
-        return ResponseEntity.ok(agentService.getAll());
-    }
-
-    /**
-     * ================= RECHERCHE PAR ID =================
-     */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
-    @GetMapping("/id/{id}")
-    @Operation(
-            summary = "Rechercher un agent par ID",
-            description = "Retourne les informations d'un agent à partir de son ID"
-    )
-    public ResponseEntity<AgentResponse> getById(
-            @PathVariable String id
-    ) {
-
         return ResponseEntity.ok(
-                agentService.getById(id)
+                agentService.getAll()
         );
     }
 
     /**
-     * ================= RECHERCHE PAR MATRICULE =================
+     * ================= GET BY MATRICULE =================
      */
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping("/{matricule}")
@@ -149,13 +151,18 @@ public class AgentController {
     }
 
     /**
-     * ================= MODIFICATION =================
+     * ================= UPDATE =================
      */
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{matricule}")
     @Operation(
             summary = "Modifier un agent",
-            description = "Permet de modifier les informations d'un agent",
+            description = """
+                    Met à jour les informations d'un agent.
+
+                    Champs NON modifiables :
+                    - matricule
+                    """,
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
@@ -181,11 +188,13 @@ public class AgentController {
     )
     public ResponseEntity<AgentResponse> update(
             @PathVariable String matricule,
-            @Valid @RequestBody AgentRequest request,
+            @Valid @RequestBody
+            AgentRequest request,
             Authentication authentication
     ) {
 
-        String currentUser = authentication.getName();
+        String currentUser =
+                authentication.getName();
 
         // Empêche un admin de modifier son propre rôle
         if (currentUser.equals(matricule)
@@ -197,18 +206,27 @@ public class AgentController {
         }
 
         return ResponseEntity.ok(
-                agentService.update(matricule, request)
+                agentService.update(
+                        matricule,
+                        request
+                )
         );
     }
 
     /**
-     * ================= ACTIVATION / DÉSACTIVATION =================
+     * ================= CHANGE STATUS =================
      */
     @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/{matricule}/status")
     @Operation(
             summary = "Activer ou désactiver un agent",
-            description = "Permet d'activer ou désactiver le compte d'un agent"
+            description = """
+                    Active ou désactive le compte d'un agent.
+
+                    Paramètre attendu :
+                    - enabled=true
+                    - enabled=false
+                    """
     )
     public ResponseEntity<AgentResponse> changeStatus(
             @PathVariable String matricule,
@@ -216,10 +234,12 @@ public class AgentController {
             Authentication authentication
     ) {
 
-        String currentUser = authentication.getName();
+        String currentUser =
+                authentication.getName();
 
         // Empêche auto désactivation
-        if (currentUser.equals(matricule) && !enabled) {
+        if (currentUser.equals(matricule)
+                && !enabled) {
 
             throw new RuntimeException(
                     "Vous ne pouvez pas désactiver votre propre compte"
@@ -235,20 +255,21 @@ public class AgentController {
     }
 
     /**
-     * ================= SUPPRESSION =================
+     * ================= DELETE =================
      */
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{matricule}")
     @Operation(
             summary = "Supprimer un agent",
-            description = "Permet de supprimer un agent via son matricule"
+            description = "Supprime un agent via son matricule"
     )
     public ResponseEntity<Void> delete(
             @PathVariable String matricule,
             Authentication authentication
     ) {
 
-        String currentUser = authentication.getName();
+        String currentUser =
+                authentication.getName();
 
         // Empêche auto suppression
         if (currentUser.equals(matricule)) {
@@ -260,6 +281,8 @@ public class AgentController {
 
         agentService.delete(matricule);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 }

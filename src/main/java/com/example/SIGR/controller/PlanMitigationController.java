@@ -13,13 +13,17 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/plans-mitigation")
-@Tag(name = "Plan de Mitigation", description = "API de gestion des plans de mitigation")
+@Tag(
+        name = "Plan de Mitigation",
+        description = "API de gestion des plans de mitigation (basée sur code métier)"
+)
 public class PlanMitigationController {
 
     private final PlanMitigationService service;
@@ -29,22 +33,23 @@ public class PlanMitigationController {
     }
 
     // ================= CREATE =================
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @PostMapping
     @Operation(
             summary = "Créer un plan de mitigation",
+            description = "Le code est généré automatiquement",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple création plan mitigation",
+                                    name = "Création plan mitigation",
                                     value = """
                                     {
-                                      "code": "PM-2026-001",
                                       "description": "Réduction du risque de fraude",
                                       "dateCreation": "2026-05-07",
                                       "statut": "PLANIFIE",
-                                      "idRisque": "RISK-001"
+                                      "codeRisque": "RIS-001"
                                     }
                                     """
                             )
@@ -60,38 +65,45 @@ public class PlanMitigationController {
     }
 
     // ================= GET ALL =================
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
     @GetMapping
-    @Operation(summary = "Lister tous les plans de mitigation")
+    @Operation(
+            summary = "Lister tous les plans de mitigation",
+            description = "Retourne tous les plans de mitigation"
+    )
     public ResponseEntity<List<PlanMitigationResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
 
-    // ================= GET BY ID =================
-    @GetMapping("/{id}")
-    @Operation(summary = "Récupérer un plan de mitigation par ID (UUID)")
-    public ResponseEntity<PlanMitigationResponse> getById(
-            @PathVariable String id
+    // ================= GET BY CODE =================
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @GetMapping("/{code}")
+    @Operation(
+            summary = "Récupérer un plan de mitigation par code métier"
+    )
+    public ResponseEntity<PlanMitigationResponse> getByCode(
+            @PathVariable String code
     ) {
-        return ResponseEntity.ok(service.getById(id));
+        return ResponseEntity.ok(service.getByCode(code));
     }
 
     // ================= UPDATE =================
-    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PutMapping("/{code}")
     @Operation(
-            summary = "Modifier un plan de mitigation",
+            summary = "Modifier un plan de mitigation par code métier",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple modification plan mitigation",
+                                    name = "Modification plan mitigation",
                                     value = """
                                     {
-                                      "code": "PM-2026-001",
-                                      "description": "Mise à jour du plan de réduction de fraude",
+                                      "description": "Mise à jour du plan",
                                       "dateCreation": "2026-05-07",
                                       "statut": "EN_COURS",
-                                      "idRisque": "RISK-001"
+                                      "codeRisque": "RIS-001"
                                     }
                                     """
                             )
@@ -99,19 +111,22 @@ public class PlanMitigationController {
             )
     )
     public ResponseEntity<PlanMitigationResponse> update(
-            @PathVariable String id,
+            @PathVariable String code,
             @Valid @RequestBody PlanMitigationRequest request
     ) {
-        return ResponseEntity.ok(service.updateById(id, request));
+        return ResponseEntity.ok(service.updateByCode(code, request));
     }
 
     // ================= DELETE =================
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Supprimer un plan de mitigation par ID (UUID)")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-
-        service.deleteById(id);
-
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/{code}")
+    @Operation(
+            summary = "Supprimer un plan de mitigation par code métier"
+    )
+    public ResponseEntity<Void> delete(
+            @PathVariable String code
+    ) {
+        service.deleteByCode(code);
         return ResponseEntity.noContent().build();
     }
 }

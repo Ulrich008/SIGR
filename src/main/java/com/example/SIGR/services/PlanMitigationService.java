@@ -9,17 +9,15 @@ public interface PlanMitigationService {
 
     PlanMitigationResponse create(PlanMitigationRequest request);
 
-    PlanMitigationResponse getById(String id);
-
     PlanMitigationResponse getByCode(String code);
 
     List<PlanMitigationResponse> getAll();
 
-    PlanMitigationResponse updateById(String id, PlanMitigationRequest request);
 
-   /*PlanMitigationResponse updateByCode(String code, PlanMitigationRequest request);*/
 
-      void deleteById(String id);
+   PlanMitigationResponse updateByCode(String code, PlanMitigationRequest request);
 
-    /*void deleteByCode(String code);*/
+
+
+    void deleteByCode(String code);
 }

@@ -33,15 +33,7 @@ public class AgentServiceImpl implements AgentService {
     @Override
     public AgentResponse create(AgentRequest request) {
 
-        // ================= VALIDATIONS =================
-
-        if (request.getMatricule() == null
-                || request.getMatricule().isBlank()) {
-
-            throw new RuntimeException(
-                    "Le matricule est obligatoire"
-            );
-        }
+        // ================= PASSWORD =================
 
         if (request.getPassword() == null
                 || request.getPassword().isBlank()) {
@@ -51,13 +43,7 @@ public class AgentServiceImpl implements AgentService {
             );
         }
 
-        if (agentRepository.existsByMatricule(request.getMatricule())) {
-
-            throw new RuntimeException(
-                    "Un agent avec ce matricule existe déjà : "
-                            + request.getMatricule()
-            );
-        }
+        // ================= NPI =================
 
         if (request.getNpi() != null
                 && !request.getNpi().isBlank()
@@ -80,11 +66,30 @@ public class AgentServiceImpl implements AgentService {
                         )
                 );
 
+        // ================= GENERATION MATRICULE =================
+
+        long total = agentRepository.count() + 1;
+
+        String matricule = String.format(
+                "AGT-%03d",
+                total
+        );
+
+        while (agentRepository.existsByMatricule(matricule)) {
+
+            total++;
+
+            matricule = String.format(
+                    "AGT-%03d",
+                    total
+            );
+        }
+
         // ================= CREATION =================
 
         Agent agent = new Agent();
 
-        agent.setMatricule(request.getMatricule());
+        agent.setMatricule(matricule);
 
         agent.setPassword(
                 passwordEncoder.encode(request.getPassword())
@@ -115,20 +120,6 @@ public class AgentServiceImpl implements AgentService {
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Agent introuvable : " + matricule
-                        )
-                );
-
-        return toResponse(agent);
-    }
-
-    @Override
-    public AgentResponse getById(String id) {
-
-        Agent agent = agentRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Agent introuvable : " + id
                         )
                 );
 

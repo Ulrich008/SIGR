@@ -6,49 +6,42 @@ import java.time.LocalDate;
 
 public class ActionResponse {
 
-    private String id;
     private String code;
     private String libelle;
     private LocalDate dateDebut;
     private LocalDate dateFin;
 
-    /**
-     * Statut typé (ENUM)
-     */
     private StatutAction statut;
 
-    private String idPlan;
+    /**
+     * Références métier uniquement
+     */
+    private String codePlan;
 
     private String matriculeResponsable;
     private String nomResponsable;
 
     public ActionResponse(
-            String id,
             String code,
             String libelle,
             LocalDate dateDebut,
             LocalDate dateFin,
             StatutAction statut,
-            String idPlan,
+            String codePlan,
             String matriculeResponsable,
             String nomResponsable
     ) {
-        this.id = id;
         this.code = code;
         this.libelle = libelle;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
         this.statut = statut;
-        this.idPlan = idPlan;
+        this.codePlan = codePlan;
         this.matriculeResponsable = matriculeResponsable;
         this.nomResponsable = nomResponsable;
     }
 
     // ================= GETTERS =================
-
-    public String getId() {
-        return id;
-    }
 
     public String getCode() {
         return code;
@@ -70,8 +63,8 @@ public class ActionResponse {
         return statut;
     }
 
-    public String getIdPlan() {
-        return idPlan;
+    public String getCodePlan() {
+        return codePlan;
     }
 
     public String getMatriculeResponsable() {

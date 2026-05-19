@@ -14,5 +14,7 @@ public interface IndicateurPerformanceRepository extends JpaRepository<Indicateu
 
     Optional<IndicateurPerformance> findByCode(String code);
 
+
+
     List<IndicateurPerformance> findByProcessus_Code(String codeProcessus);
 }

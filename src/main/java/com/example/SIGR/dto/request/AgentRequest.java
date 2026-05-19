@@ -12,8 +12,6 @@ public class AgentRequest {
     /**
      * Obligatoire seulement à la création
      */
-    @Size(max = 20, message = "Le matricule ne doit pas dépasser 20 caractères")
-    private String matricule;
 
     /**
      * Facultatif lors du update
@@ -51,14 +49,6 @@ public class AgentRequest {
 
     // ================= GETTERS / SETTERS =================
 
-    public String getMatricule() {
-        return matricule;
-    }
-
-    public AgentRequest setMatricule(String matricule) {
-        this.matricule = matricule;
-        return this;
-    }
 
     public String getPassword() {
         return password;

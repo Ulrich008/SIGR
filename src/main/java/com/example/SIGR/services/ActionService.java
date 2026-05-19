@@ -9,8 +9,6 @@ public interface ActionService {
 
     ActionResponse create(ActionRequest request);
 
-    ActionResponse getById(String id);
-
     ActionResponse getByCode(String code);
 
     List<ActionResponse> getAll();

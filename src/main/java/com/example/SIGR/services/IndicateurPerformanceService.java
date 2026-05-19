@@ -1,3 +1,4 @@
+
 package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.IndicateurPerformanceRequest;
@@ -7,15 +8,37 @@ import java.util.List;
 
 public interface IndicateurPerformanceService {
 
-    IndicateurPerformanceResponse create(IndicateurPerformanceRequest request);
+    /**
+     * ================= CREATE =================
+     */
+    IndicateurPerformanceResponse create(
+            IndicateurPerformanceRequest request
+    );
 
-    IndicateurPerformanceResponse getById(String id);
+    /**
+     * ================= GET BY CODE =================
+     */
+    IndicateurPerformanceResponse getByCode(
+            String code
+    );
 
-    /*IndicateurPerformanceResponse getByCode(String code);*/
-
+    /**
+     * ================= GET ALL =================
+     */
     List<IndicateurPerformanceResponse> getAll();
 
-    IndicateurPerformanceResponse update(String id, IndicateurPerformanceRequest request);
+    /**
+     * ================= UPDATE =================
+     */
+    IndicateurPerformanceResponse update(
+            String code,
+            IndicateurPerformanceRequest request
+    );
 
-    void delete(String id);
+    /**
+     * ================= DELETE =================
+     */
+    void delete(
+            String code
+    );
 }

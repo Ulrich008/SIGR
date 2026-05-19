@@ -7,7 +7,6 @@ import java.time.LocalDate;
 
 public class IndicateurPerformanceRequest {
 
-    @NotBlank(message = "Le code est obligatoire")
     @Size(max = 50, message = "Le code ne doit pas dépasser 50 caractères")
     private String code;
 

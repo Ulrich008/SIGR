@@ -2,19 +2,24 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.IndicateurPerformanceRequest;
 import com.example.SIGR.dto.response.IndicateurPerformanceResponse;
+
 import com.example.SIGR.entity.IndicateurPerformance;
 import com.example.SIGR.entity.Processus;
+
 import com.example.SIGR.repository.IndicateurPerformanceRepository;
 import com.example.SIGR.repository.ProcessusRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceService {
+public class IndicateurPerformanceServiceImpl
+        implements IndicateurPerformanceService {
 
     private final IndicateurPerformanceRepository repository;
+
     private final ProcessusRepository processusRepository;
 
     public IndicateurPerformanceServiceImpl(
@@ -25,59 +30,113 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
         this.processusRepository = processusRepository;
     }
 
-    // ================= CREATE =================
-
+    /**
+     * ================= CREATE =================
+     */
     @Override
-    public IndicateurPerformanceResponse create(IndicateurPerformanceRequest request) {
+    public IndicateurPerformanceResponse create(
+            IndicateurPerformanceRequest request
+    ) {
 
-        if (repository.existsByCode(request.getCode())) {
-            throw new RuntimeException(
-                    "Code KPI déjà existant : " + request.getCode()
+        // ================= PROCESSUS =================
+
+        Processus processus =
+                processusRepository
+                        .findByCode(request.getCodeProcessus())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Processus introuvable : "
+                                                + request.getCodeProcessus()
+                                )
+                        );
+
+        // ================= GENERATION CODE =================
+
+        long total = repository.count() + 1;
+
+        String code =
+                String.format(
+                        "KPI-%03d",
+                        total
+                );
+
+        while (repository.existsByCode(code)) {
+
+            total++;
+
+            code = String.format(
+                    "KPI-%03d",
+                    total
             );
         }
 
-        Processus processus = processusRepository.findById(request.getCodeProcessus())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Processus introuvable : " + request.getCodeProcessus()
-                        )
-                );
+        // ================= CREATION =================
 
-        IndicateurPerformance kpi = new IndicateurPerformance()
-                .setCode(request.getCode())
-                .setLibelle(request.getLibelle())
-                .setFrequence(request.getFrequence())
-                .setValeurCible(request.getValeurCible())
-                .setValeurObtenue(request.getValeurObtenue())
-                .setSeuilAlerte(request.getSeuilAlerte())
-                .setDateMesure(request.getDateMesure())
-                .setProcessus(processus);
+        IndicateurPerformance kpi =
+                new IndicateurPerformance();
+
+        kpi.setCode(code);
+
+        kpi.setLibelle(
+                request.getLibelle()
+        );
+
+        kpi.setFrequence(
+                request.getFrequence()
+        );
+
+        kpi.setValeurCible(
+                request.getValeurCible()
+        );
+
+        kpi.setValeurObtenue(
+                request.getValeurObtenue()
+        );
+
+        kpi.setSeuilAlerte(
+                request.getSeuilAlerte()
+        );
+
+        kpi.setDateMesure(
+                request.getDateMesure()
+        );
+
+        kpi.setProcessus(processus);
 
         /**
-         * L’unité de mesure est toujours %
+         * Valeur imposée par le système
          */
         kpi.setUniteMesure("%");
 
-        return toResponse(repository.save(kpi));
+        IndicateurPerformance saved =
+                repository.save(kpi);
+
+        return toResponse(saved);
     }
 
-    // ================= GET BY ID =================
-
+    /**
+     * ================= GET BY CODE =================
+     */
     @Override
-    public IndicateurPerformanceResponse getById(String id) {
+    public IndicateurPerformanceResponse getByCode(
+            String code
+    ) {
 
-        IndicateurPerformance kpi = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "KPI introuvable (id) : " + id
-                        )
-                );
+        IndicateurPerformance kpi =
+                repository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "KPI introuvable : "
+                                                + code
+                                )
+                        );
 
         return toResponse(kpi);
     }
 
-    // ================= GET ALL =================
-
+    /**
+     * ================= GET ALL =================
+     */
     @Override
     public List<IndicateurPerformanceResponse> getAll() {
 
@@ -87,61 +146,100 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
                 .collect(Collectors.toList());
     }
 
-    // ================= UPDATE =================
-
+    /**
+     * ================= UPDATE =================
+     */
     @Override
     public IndicateurPerformanceResponse update(
-            String id,
+            String code,
             IndicateurPerformanceRequest request
     ) {
 
-        IndicateurPerformance kpi = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "KPI introuvable (id) : " + id
-                        )
-                );
+        // ================= KPI =================
 
-        Processus processus = processusRepository.findById(request.getCodeProcessus())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Processus introuvable : " + request.getCodeProcessus()
-                        )
-                );
+        IndicateurPerformance kpi =
+                repository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "KPI introuvable : "
+                                                + code
+                                )
+                        );
 
-        kpi.setCode(request.getCode())
-                .setLibelle(request.getLibelle())
-                .setFrequence(request.getFrequence())
-                .setValeurCible(request.getValeurCible())
-                .setValeurObtenue(request.getValeurObtenue())
-                .setSeuilAlerte(request.getSeuilAlerte())
-                .setDateMesure(request.getDateMesure())
-                .setProcessus(processus);
+        // ================= PROCESSUS =================
+
+        Processus processus =
+                processusRepository
+                        .findByCode(request.getCodeProcessus())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Processus introuvable : "
+                                                + request.getCodeProcessus()
+                                )
+                        );
+
+        // ================= UPDATE =================
+
+        kpi.setLibelle(
+                request.getLibelle()
+        );
+
+        kpi.setFrequence(
+                request.getFrequence()
+        );
+
+        kpi.setValeurCible(
+                request.getValeurCible()
+        );
+
+        kpi.setValeurObtenue(
+                request.getValeurObtenue()
+        );
+
+        kpi.setSeuilAlerte(
+                request.getSeuilAlerte()
+        );
+
+        kpi.setDateMesure(
+                request.getDateMesure()
+        );
+
+        kpi.setProcessus(processus);
 
         /**
          * Valeur imposée par le système
          */
         kpi.setUniteMesure("%");
 
-        return toResponse(repository.save(kpi));
+        IndicateurPerformance updated =
+                repository.save(kpi);
+
+        return toResponse(updated);
     }
 
-    // ================= DELETE =================
-
+    /**
+     * ================= DELETE =================
+     */
     @Override
-    public void delete(String id) {
+    public void delete(
+            String code
+    ) {
 
-        if (!repository.existsById(id)) {
-            throw new RuntimeException(
-                    "KPI introuvable (id) : " + id
-            );
-        }
+        IndicateurPerformance kpi =
+                repository.findByCode(code)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "KPI introuvable : "
+                                                + code
+                                )
+                        );
 
-        repository.deleteById(id);
+        repository.delete(kpi);
     }
 
-    // ================= MAPPER =================
-
+    /**
+     * ================= RESPONSE =================
+     */
     private IndicateurPerformanceResponse toResponse(
             IndicateurPerformance kpi
     ) {
@@ -156,8 +254,15 @@ public class IndicateurPerformanceServiceImpl implements IndicateurPerformanceSe
                 kpi.getValeurObtenue(),
                 kpi.getSeuilAlerte(),
                 kpi.getDateMesure(),
-                kpi.getProcessus().getCode(),
-                kpi.getProcessus().getLibelle(),
+
+                kpi.getProcessus() != null
+                        ? kpi.getProcessus().getCode()
+                        : null,
+
+                kpi.getProcessus() != null
+                        ? kpi.getProcessus().getLibelle()
+                        : null,
+
                 kpi.getEcartCible(),
                 kpi.getStatut()
         );

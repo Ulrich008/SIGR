@@ -2,8 +2,10 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.PlanMitigationRequest;
 import com.example.SIGR.dto.response.PlanMitigationResponse;
+
 import com.example.SIGR.entity.PlanMitigation;
 import com.example.SIGR.entity.Risque;
+
 import com.example.SIGR.repository.PlanMitigationRepository;
 import com.example.SIGR.repository.RisqueRepository;
 
@@ -26,71 +28,32 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         this.risqueRepository = risqueRepository;
     }
 
+    // ================= CREATE =================
     @Override
     public PlanMitigationResponse create(PlanMitigationRequest request) {
 
-        // 🔥 vérification sur CODE (pas id)
-        if (request.getCode() != null && repository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
-        }
-
-        Risque risque = risqueRepository.findById(request.getIdRisque())
+        // ================= RISQUE =================
+        Risque risque = risqueRepository.findByCode(request.getCodeRisque())
                 .orElseThrow(() ->
-                        new RuntimeException("Risque introuvable : " + request.getIdRisque())
+                        new RuntimeException("Risque introuvable : " + request.getCodeRisque())
                 );
 
-        PlanMitigation plan = new PlanMitigation()
-                .setCode(request.getCode())
-                .setDescription(request.getDescription())
-                .setDateCreation(request.getDateCreation())
-                .setStatut(request.getStatut())
-                .setRisque(risque);
+        // ================= GENERATION CODE ROBUSTE =================
+        String lastCode = repository.findTopByOrderByIdDesc()
+                .map(PlanMitigation::getCode)
+                .orElse("PLAN-000");
 
-        return toResponse(repository.save(plan));
-    }
+        int nextNumber = Integer.parseInt(lastCode.replace("PLAN-", "")) + 1;
 
-    @Override
-    public PlanMitigationResponse getById(String id) {
+        String code;
+        do {
+            code = String.format("PLAN-%03d", nextNumber++);
+        } while (repository.existsByCode(code));
 
-        PlanMitigation plan = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Plan introuvable : " + id)
-                );
+        // ================= CREATION =================
+        PlanMitigation plan = new PlanMitigation();
 
-        return toResponse(plan);
-    }
-    @Override
-    public  PlanMitigationResponse getByCode(String code){
-
-        PlanMitigation plan = repository.findByCode(code)
-                .orElseThrow(() ->
-                        new RuntimeException("Plan Introuvable " +  code)
-                );
-        return  toResponse(plan);
-    }
-    @Override
-    public List<PlanMitigationResponse> getAll() {
-
-        return repository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public PlanMitigationResponse updateById(String id, PlanMitigationRequest request) {
-
-        PlanMitigation plan = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Plan introuvable : " + id)
-                );
-
-        Risque risque = risqueRepository.findById(request.getIdRisque())
-                .orElseThrow(() ->
-                        new RuntimeException("Risque introuvable : " + request.getIdRisque())
-                );
-
-        plan.setCode(request.getCode());
+        plan.setCode(code);
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
         plan.setStatut(request.getStatut());
@@ -99,16 +62,62 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         return toResponse(repository.save(plan));
     }
 
+    // ================= GET BY CODE =================
     @Override
-    public void deleteById(String id) {
+    public PlanMitigationResponse getByCode(String code) {
 
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Plan introuvable : " + id);
-        }
+        PlanMitigation plan = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan introuvable : " + code)
+                );
 
-        repository.deleteById(id);
+        return toResponse(plan);
     }
 
+    // ================= GET ALL =================
+    @Override
+    public List<PlanMitigationResponse> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    // ================= UPDATE =================
+    @Override
+    public PlanMitigationResponse updateByCode(String code, PlanMitigationRequest request) {
+
+        PlanMitigation plan = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan introuvable : " + code)
+                );
+
+        Risque risque = risqueRepository.findByCode(request.getCodeRisque())
+                .orElseThrow(() ->
+                        new RuntimeException("Risque introuvable : " + request.getCodeRisque())
+                );
+
+        plan.setDescription(request.getDescription());
+        plan.setDateCreation(request.getDateCreation());
+        plan.setStatut(request.getStatut());
+        plan.setRisque(risque);
+
+        return toResponse(repository.save(plan));
+    }
+
+    // ================= DELETE =================
+    @Override
+    public void deleteByCode(String code) {
+
+        PlanMitigation plan = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan introuvable : " + code)
+                );
+
+        repository.delete(plan);
+    }
+
+    // ================= RESPONSE =================
     private PlanMitigationResponse toResponse(PlanMitigation plan) {
 
         return new PlanMitigationResponse(
@@ -117,8 +126,8 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
                 plan.getDescription(),
                 plan.getDateCreation(),
                 plan.getStatut(),
-                plan.getRisque().getId(),
-                plan.getRisque().getLibelle()
+                plan.getRisque() != null ? plan.getRisque().getCode() : null,
+                plan.getRisque() != null ? plan.getRisque().getLibelle() : null
         );
     }
 }

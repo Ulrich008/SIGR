@@ -31,70 +31,52 @@ public class ActionServiceImpl implements ActionService {
     }
 
     // ================= CREATE =================
-
     @Override
     public ActionResponse create(ActionRequest request) {
 
-        if (actionRepository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Code action déjà existant : " + request.getCode());
-        }
-
-        if (actionRepository.existsByLibelle(request.getLibelle())) {
-            throw new RuntimeException("Libellé déjà utilisé : " + request.getLibelle());
-        }
-
         if (request.getDateFin().isBefore(request.getDateDebut())) {
-            throw new RuntimeException("La date de fin ne peut pas être inférieure à la date de début");
+            throw new RuntimeException("Date de fin invalide");
         }
 
-        PlanMitigation plan = planMitigationRepository.findById(request.getIdPlan())
-                .orElseThrow(() ->
-                        new RuntimeException("Plan introuvable : " + request.getIdPlan())
-                );
+        PlanMitigation plan = planMitigationRepository.findByCode(request.getCodePlan())
+                .orElseThrow(() -> new RuntimeException("Plan introuvable : " + request.getCodePlan()));
 
-        Agent responsable = agentRepository.findById(request.getMatriculeResponsable())
-                .orElseThrow(() ->
-                        new RuntimeException("Agent introuvable : " + request.getMatriculeResponsable())
-                );
+        Agent responsable = agentRepository.findByMatricule(request.getMatriculeResponsable())
+                .orElseThrow(() -> new RuntimeException("Agent introuvable : " + request.getMatriculeResponsable()));
+
+        // ================= GENERATION CODE AUTO =================
+        long count = actionRepository.count() + 1;
+
+        String code = String.format("ACT-%03d", count);
+
+        while (actionRepository.existsByCode(code)) {
+            count++;
+            code = String.format("ACT-%03d", count);
+        }
 
         Action action = new Action()
-                .setCode(request.getCode())
+                .setCode(code)
                 .setLibelle(request.getLibelle())
                 .setDateDebut(request.getDateDebut())
                 .setDateFin(request.getDateFin())
-                .setStatut(request.getStatut()) // ENUM maintenant
+                .setStatut(request.getStatut())
                 .setPlanMitigation(plan)
                 .setResponsable(responsable);
 
         return toResponse(actionRepository.save(action));
     }
 
-    // ================= GET BY ID =================
-
+    // ================= GET BY CODE =================
     @Override
-    public ActionResponse getById(String id) {
+    public ActionResponse getByCode(String code) {
 
-        Action action = actionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Action introuvable : " + id));
+        Action action = actionRepository.findByCode(code)
+                .orElseThrow(() -> new RuntimeException("Action introuvable : " + code));
 
         return toResponse(action);
     }
 
-    // ================= GET BY CODE =================
-
-    @Override
-    public ActionResponse getByCode(String code) {
-
-        return actionRepository.findAll()
-                .stream()
-                .filter(a -> a.getCode().equals(code))
-                .findFirst()
-                .map(this::toResponse)
-                .orElseThrow(() -> new RuntimeException("Action introuvable : " + code));
-    }
-
     // ================= GET ALL =================
-
     @Override
     public List<ActionResponse> getAll() {
 
@@ -104,73 +86,53 @@ public class ActionServiceImpl implements ActionService {
                 .collect(Collectors.toList());
     }
 
-    // ================= UPDATE =================
-
+    // ================= UPDATE BY CODE =================
     @Override
-    public ActionResponse update(String id, ActionRequest request) {
+    public ActionResponse update(String code, ActionRequest request) {
 
-        Action action = actionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Action introuvable : " + id));
+        Action action = actionRepository.findByCode(code)
+                .orElseThrow(() -> new RuntimeException("Action introuvable : " + code));
 
         if (request.getDateFin().isBefore(request.getDateDebut())) {
-            throw new RuntimeException("La date de fin ne peut pas être inférieure à la date de début");
+            throw new RuntimeException("Date de fin invalide");
         }
 
-        if (actionRepository.existsByCode(request.getCode())
-                && !action.getCode().equals(request.getCode())) {
-            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
-        }
+        PlanMitigation plan = planMitigationRepository.findByCode(request.getCodePlan())
+                .orElseThrow(() -> new RuntimeException("Plan introuvable : " + request.getCodePlan()));
 
-        if (actionRepository.existsByLibelle(request.getLibelle())
-                && !action.getLibelle().equals(request.getLibelle())) {
-            throw new RuntimeException("Libellé déjà utilisé : " + request.getLibelle());
-        }
+        Agent responsable = agentRepository.findByMatricule(request.getMatriculeResponsable())
+                .orElseThrow(() -> new RuntimeException("Agent introuvable : " + request.getMatriculeResponsable()));
 
-        PlanMitigation plan = planMitigationRepository.findById(request.getIdPlan())
-                .orElseThrow(() ->
-                        new RuntimeException("Plan introuvable : " + request.getIdPlan())
-                );
-
-        Agent responsable = agentRepository.findById(request.getMatriculeResponsable())
-                .orElseThrow(() ->
-                        new RuntimeException("Agent introuvable : " + request.getMatriculeResponsable())
-                );
-
-        action.setCode(request.getCode())
-                .setLibelle(request.getLibelle())
+        action.setLibelle(request.getLibelle())
                 .setDateDebut(request.getDateDebut())
                 .setDateFin(request.getDateFin())
-                .setStatut(request.getStatut()) // ENUM
+                .setStatut(request.getStatut())
                 .setPlanMitigation(plan)
                 .setResponsable(responsable);
 
         return toResponse(actionRepository.save(action));
     }
 
-    // ================= DELETE =================
-
+    // ================= DELETE BY CODE =================
     @Override
-    public void delete(String id) {
+    public void delete(String code) {
 
-        if (!actionRepository.existsById(id)) {
-            throw new RuntimeException("Action introuvable : " + id);
-        }
+        Action action = actionRepository.findByCode(code)
+                .orElseThrow(() -> new RuntimeException("Action introuvable : " + code));
 
-        actionRepository.deleteById(id);
+        actionRepository.delete(action);
     }
 
     // ================= MAPPER =================
-
     private ActionResponse toResponse(Action action) {
 
         return new ActionResponse(
-                action.getId(),
                 action.getCode(),
                 action.getLibelle(),
                 action.getDateDebut(),
                 action.getDateFin(),
-                action.getStatut(), // ENUM directement
-                action.getPlanMitigation().getId(),
+                action.getStatut(),
+                action.getPlanMitigation().getCode(),
                 action.getResponsable().getMatricule(),
                 action.getResponsable().getNom()
         );

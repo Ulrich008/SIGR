@@ -18,11 +18,6 @@ public interface AgentService {
     AgentResponse getByMatricule(String matricule);
 
     /**
-     * Recherche d'un agent par ID
-     */
-    AgentResponse getById(String id);
-
-    /**
      * Liste de tous les agents
      */
     List<AgentResponse> getAll();
