@@ -11,5 +11,7 @@ public interface ProcessusRepository extends JpaRepository<Processus, String> {
 
     boolean existsByLibelle(String libelle);
 
+    boolean existsByLibelleAndCodeNot(String libelle, String code);
+
     Optional<Processus> findByCode(String code);
 }

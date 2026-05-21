@@ -33,7 +33,7 @@ public class ProcessusServiceImpl implements ProcessusService {
     // ================= CREATE =================
     @Override
     public ProcessusResponse create(ProcessusRequest request) {
-
+        // ✅ Vérification doublon libellé à la création
         if (processusRepository.existsByLibelle(request.getLibelle())) {
             throw new RuntimeException(
                     "Un processus avec ce libellé existe déjà : " + request.getLibelle()
@@ -46,7 +46,6 @@ public class ProcessusServiceImpl implements ProcessusService {
                 );
 
         Agent proprietaire = null;
-
         if (request.getIdProprietaire() != null && !request.getIdProprietaire().isBlank()) {
             proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
                     .orElseThrow(() ->
@@ -54,7 +53,7 @@ public class ProcessusServiceImpl implements ProcessusService {
                     );
         }
 
-        // 🔥 Génération automatique du code
+        // Génération automatique du code
         long count = processusRepository.count();
         String code = "PROC-" + String.format("%03d", count + 1);
 
@@ -67,19 +66,16 @@ public class ProcessusServiceImpl implements ProcessusService {
         processus.setProprietaire(proprietaire);
 
         Processus saved = processusRepository.save(processus);
-
         return toResponse(saved);
     }
 
     // ================= GET BY CODE =================
     @Override
     public ProcessusResponse getByCode(String code) {
-
         Processus processus = processusRepository.findByCode(code)
                 .orElseThrow(() ->
                         new RuntimeException("Processus introuvable : " + code)
                 );
-
         return toResponse(processus);
     }
 
@@ -95,14 +91,13 @@ public class ProcessusServiceImpl implements ProcessusService {
     // ================= UPDATE BY CODE =================
     @Override
     public ProcessusResponse updateByCode(String code, ProcessusRequest request) {
-
         Processus processus = processusRepository.findByCode(code)
                 .orElseThrow(() ->
                         new RuntimeException("Processus introuvable : " + code)
                 );
 
-        if (processusRepository.existsByLibelle(request.getLibelle())
-                && !processus.getLibelle().equals(request.getLibelle())) {
+        // ✅ CORRECTION : vérifie si un AUTRE processus possède déjà ce libellé
+        if (processusRepository.existsByLibelleAndCodeNot(request.getLibelle(), code)) {
             throw new RuntimeException(
                     "Un processus avec ce libellé existe déjà : " + request.getLibelle()
             );
@@ -114,7 +109,6 @@ public class ProcessusServiceImpl implements ProcessusService {
                 );
 
         Agent proprietaire = null;
-
         if (request.getIdProprietaire() != null && !request.getIdProprietaire().isBlank()) {
             proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
                     .orElseThrow(() ->
@@ -129,25 +123,21 @@ public class ProcessusServiceImpl implements ProcessusService {
         processus.setProprietaire(proprietaire);
 
         Processus updated = processusRepository.save(processus);
-
         return toResponse(updated);
     }
 
     // ================= DELETE BY CODE =================
     @Override
     public void deleteByCode(String code) {
-
         Processus processus = processusRepository.findByCode(code)
                 .orElseThrow(() ->
                         new RuntimeException("Processus introuvable : " + code)
                 );
-
         processusRepository.delete(processus);
     }
 
     // ================= MAPPER =================
     private ProcessusResponse toResponse(Processus processus) {
-
         return new ProcessusResponse(
                 processus.getId(),
                 processus.getCode(),

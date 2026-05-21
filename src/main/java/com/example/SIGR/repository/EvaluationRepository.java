@@ -1,17 +1,80 @@
 package com.example.SIGR.repository;
 
+import com.example.SIGR.dto.response.CartographieRisqueDetailResponse;
 import com.example.SIGR.entity.Evaluation;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EvaluationRepository extends JpaRepository<Evaluation, String> {
 
-    // Recherche par code métier
+    // ================= EXISTANT =================
+
     Optional<Evaluation> findByCode(String code);
 
-    // Vérifier unicité du code
     boolean existsByCode(String code);
 
+    // ================= CARTOGRAPHIE DETAILLEE =================
+    @Query("""
+    SELECT new com.example.SIGR.dto.response.CartographieRisqueDetailResponse(
 
+        r.code,
+        r.libelle,
+        r.typeRisque,
+        r.statut,
+        r.dateIdentification,
+
+        p.code,
+        p.libelle,
+        ua.libelle,
+
+        r.causeProbable,
+        r.consequenceProbable,
+
+        e.impactInherent,
+        e.probabiliteInherente,
+        CAST((e.impactInherent * e.probabiliteInherente) AS integer),
+
+        e.protection,
+        e.prevention,
+        CAST((e.impactInherent - e.protection) AS integer),
+        CAST((e.probabiliteInherente - e.prevention) AS integer),
+        CAST(((e.impactInherent - e.protection) * (e.probabiliteInherente - e.prevention)) AS integer),
+
+        e.rangPriorite,
+
+        e.controleExistants,
+        e.controleInexistants,
+        e.dejaSurvenu,
+
+        e.recommandation,
+        e.dateDebut,
+        e.dateFin,
+        e.bonnesPratiques,
+
+        ag.nom
+
+    )
+    FROM Evaluation e
+    JOIN e.risque r
+    JOIN r.processus p
+    JOIN p.unite ua
+    LEFT JOIN e.evaluePar ag
+""")
+
+    List<CartographieRisqueDetailResponse> findCartographieRisquesDetail();
+
+    // ================= OPTIONNEL =================
+
+    @Query("""
+        SELECT e
+        FROM Evaluation e
+        JOIN FETCH e.risque r
+        JOIN FETCH r.processus p
+        JOIN FETCH p.unite ua
+        WHERE r.cartographie.id = :idCartographie
+    """)
+    List<Evaluation> findByCartographie(@Param("idCartographie") String idCartographie);
 }

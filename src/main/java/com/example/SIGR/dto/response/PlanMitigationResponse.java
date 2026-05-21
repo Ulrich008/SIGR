@@ -10,6 +10,8 @@ public class PlanMitigationResponse {
 
     private String code;
 
+    private String libelle;
+
     private String description;
 
     private LocalDate dateCreation;
@@ -24,9 +26,14 @@ public class PlanMitigationResponse {
 
     private String libelleRisque;
 
+    public String getLibelle() {
+        return libelle;
+    }
+
     public PlanMitigationResponse(
             String id,
             String code,
+            String libelle,
             String description,
             LocalDate dateCreation,
             StatutPlanMitigation statut,
@@ -35,6 +42,7 @@ public class PlanMitigationResponse {
     ) {
         this.id = id;
         this.code = code;
+        this.libelle = libelle;
         this.description = description;
         this.dateCreation = dateCreation;
         this.statut = statut;

@@ -1,7 +1,9 @@
 package com.example.SIGR.controller;
 
 import com.example.SIGR.dto.request.EvaluationRequest;
+import com.example.SIGR.dto.response.CartographieRisqueDetailResponse;
 import com.example.SIGR.dto.response.EvaluationResponse;
+import com.example.SIGR.services.CartographieRisquesService;
 import com.example.SIGR.services.EvaluationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,72 +32,66 @@ import java.util.List;
 @RequestMapping("/api/evaluations")
 @Tag(
         name = "Evaluation",
-        description = "API de gestion des évaluations des risques"
+        description = "API de gestion des évaluations des risques inhérents et résiduels"
 )
 public class EvaluationController {
 
     private final EvaluationService evaluationService;
+    private final CartographieRisquesService cartographieRisquesService;
 
-    public EvaluationController(
-            EvaluationService evaluationService
-    ) {
+    public EvaluationController(EvaluationService evaluationService, CartographieRisquesService cartographieRisquesService) {
         this.evaluationService = evaluationService;
+        this.cartographieRisquesService = cartographieRisquesService;
     }
 
-    /**
-     * ================= CREATION =================
-     *
-     * ADMIN :
-     * - Création des évaluations
-     *
-     * MANAGER :
-     * - Création des évaluations
-     *
-     * AGENT :
-     * - Peut effectuer des évaluations
-     */
+    // ================= CREATION =================
+
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
     @PostMapping
     @Operation(
             summary = "Créer une évaluation",
             description = """
-                    Permet de créer une nouvelle évaluation.
-                    
-                    Champ généré automatiquement :
-                    - code
+                    Crée une évaluation de risque basée sur :
+                    - impact et probabilité inhérents
+                    - protection et prévention
+                    - calcul automatique du risque résiduel
+                    - calcul automatique du rang de priorité
+                    - génération automatique du code
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Evaluation créée avec succès"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Données invalides"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Accès refusé"
-            )
+            @ApiResponse(responseCode = "201", description = "Évaluation créée avec succès"),
+            @ApiResponse(responseCode = "400", description = "Données invalides"),
+            @ApiResponse(responseCode = "403", description = "Accès refusé")
     })
     public ResponseEntity<EvaluationResponse> create(
+
             @Valid
             @RequestBody
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
-                    description = "Données de l'évaluation à créer",
+                    description = "Données de création d'une évaluation",
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple création évaluation",
+                                    name = "Exemple création",
                                     value = """
                                             {
-                                              "impact": 4,
-                                              "probabilite": 3,
-                                              "dateEvaluation": "2026-05-16",
-                                              "bonnesPratiques": "Contrôle interne renforcé",
-                                              "niveauControle": 2,
+                                              "impactInherent": 4,
+                                              "probabiliteInherente": 3,
+                                              "protection": 2,
+                                              "prevention": 1,
+
+                                              "controleExistants": "Pare-feu actif et contrôle d'accès",
+                                              "controleInexistants": "Absence de supervision continue",
+                                              "dejaSurvenu": true,
+
+                                              "dateDebut": "2026-05-21",
+                                              "dateFin": "2026-06-01",
+
+                                              "recommandation": "Renforcer les contrôles internes",
+                                              "bonnesPratiques": "Audit régulier",
+
                                               "codeRisque": "RIS-001",
                                               "matriculeAgent": "AGT-001"
                                             }
@@ -108,25 +104,16 @@ public class EvaluationController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(
-                        evaluationService.create(request)
-                );
+                .body(evaluationService.create(request));
     }
 
-    /**
-     * ================= LISTE =================
-     *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     */
+    // ================= LISTE =================
+
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @GetMapping
     @Operation(
             summary = "Lister toutes les évaluations",
-            description = "Retourne la liste complète des évaluations"
+            description = "Retourne la liste complète des évaluations avec leurs scores calculés"
     )
     public ResponseEntity<List<EvaluationResponse>> getAll() {
 
@@ -135,41 +122,18 @@ public class EvaluationController {
         );
     }
 
-    /**
-     * ================= RECHERCHE PAR CODE =================
-     *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     *
-     * AGENT :
-     * - Peut consulter ses propres évaluations
-     */
+    // ================= GET BY CODE =================
+
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
     @GetMapping("/{code}")
     @Operation(
-            summary = "Récupérer une évaluation par code",
+            summary = "Récupérer une évaluation",
             description = "Retourne une évaluation via son code métier"
     )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Evaluation trouvée"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Evaluation introuvable"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Accès refusé"
-            )
-    })
     public ResponseEntity<EvaluationResponse> getByCode(
+
             @Parameter(
-                    description = "Code métier de l'évaluation",
+                    description = "Code de l'évaluation",
                     example = "EVAL-001"
             )
             @PathVariable String code
@@ -180,47 +144,32 @@ public class EvaluationController {
         );
     }
 
-    /**
-     * ================= MODIFICATION =================
-     *
-     * ADMIN :
-     * - Modification des évaluations
-     *
-     * MANAGER :
-     * - Modification des évaluations
-     */
+    // ================= UPDATE =================
+
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une évaluation",
             description = """
-                    Permet de modifier une évaluation existante via son code métier.
-                    
-                    Champ NON modifiable :
-                    - code
+                    Met à jour une évaluation existante.
+
+                    Règles :
+                    - Le code de l'évaluation ne peut pas être modifié
+                    - Les scores sont recalculés automatiquement
+                    - Le rang de priorité est recalculé automatiquement
+                    - Protection et prévention influencent le risque résiduel
                     """
     )
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Evaluation modifiée avec succès"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Données invalides"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Evaluation introuvable"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Accès refusé"
-            )
+            @ApiResponse(responseCode = "200", description = "Évaluation mise à jour avec succès"),
+            @ApiResponse(responseCode = "400", description = "Données invalides"),
+            @ApiResponse(responseCode = "404", description = "Évaluation introuvable"),
+            @ApiResponse(responseCode = "403", description = "Accès refusé")
     })
     public ResponseEntity<EvaluationResponse> update(
+
             @Parameter(
-                    description = "Code métier de l'évaluation",
+                    description = "Code de l'évaluation",
                     example = "EVAL-001"
             )
             @PathVariable String code,
@@ -229,18 +178,28 @@ public class EvaluationController {
             @RequestBody
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
-                    description = "Données de l'évaluation à modifier",
+                    description = "Données de mise à jour de l'évaluation",
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "Exemple modification évaluation",
+                                    name = "Exemple update",
                                     value = """
                                             {
-                                              "impact": 5,
-                                              "probabilite": 4,
-                                              "dateEvaluation": "2026-06-01",
-                                              "bonnesPratiques": "Audit renforcé et contrôle permanent",
-                                              "niveauControle": 4,
+                                              "impactInherent": 5,
+                                              "probabiliteInherente": 4,
+                                              "protection": 3,
+                                              "prevention": 2,
+
+                                              "controleExistants": "Audit trimestriel",
+                                              "controleInexistants": "Absence de PRA",
+                                              "dejaSurvenu": false,
+
+                                              "dateDebut": "2026-06-11",
+                                              "dateFin": "2026-06-30",
+
+                                              "recommandation": "Renforcement global du contrôle interne",
+                                              "bonnesPratiques": "Audit trimestriel",
+
                                               "codeRisque": "RIS-001",
                                               "matriculeAgent": "AGT-002"
                                             }
@@ -252,42 +211,22 @@ public class EvaluationController {
     ) {
 
         return ResponseEntity.ok(
-                evaluationService.update(
-                        code,
-                        request
-                )
+                evaluationService.update(code, request)
         );
     }
 
-    /**
-     * ================= SUPPRESSION =================
-     *
-     * ADMIN :
-     * - Suppression des évaluations
-     */
+    // ================= DELETE =================
+
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une évaluation",
-            description = "Supprime une évaluation via son code métier"
+            description = "Supprime définitivement une évaluation via son code métier"
     )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "Evaluation supprimée avec succès"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Evaluation introuvable"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Accès refusé"
-            )
-    })
     public ResponseEntity<Void> delete(
+
             @Parameter(
-                    description = "Code métier de l'évaluation",
+                    description = "Code de l'évaluation",
                     example = "EVAL-001"
             )
             @PathVariable String code
@@ -295,8 +234,29 @@ public class EvaluationController {
 
         evaluationService.delete(code);
 
-        return ResponseEntity
-                .noContent()
-                .build();
+        return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @GetMapping("/detail")
+    @Operation(
+            summary = "Détail complet de la cartographie des risques",
+            description = """
+                    Retourne une vue complète des risques avec :
+                    - processus associé
+                    - unité administrative
+                    - scores inhérents et résiduels
+                    - contrôles et plan d'action
+                    """
+    )
+    public ResponseEntity<List<CartographieRisqueDetailResponse>> getDetail() {
+
+        return ResponseEntity.ok(
+                evaluationService.getCartographieDetail()
+        );
+    }
+
+
+
 }
+

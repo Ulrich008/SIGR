@@ -10,4 +10,9 @@ public interface TypeUniteRepository extends JpaRepository<TypeUnite, String> {
     boolean existsByCode(String code);
 
     Optional<TypeUnite> findByCode(String code);
+
+    boolean existsByLibelleIgnoreCase(String libelle);
+
+    boolean existsByLibelleIgnoreCaseAndCodeNot(String libelle, String code);
+
 }

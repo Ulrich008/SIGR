@@ -1,5 +1,6 @@
 package com.example.SIGR.repository;
 
+import com.example.SIGR.entity.TypeUnite;
 import com.example.SIGR.entity.UniteAdministrative;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,8 +11,15 @@ public interface UniteAdministrativeRepository extends JpaRepository<UniteAdmini
     /**
      * Vérifie l'existence d'une unité par son code métier
      */
-    boolean existsByCode(String code);
+     boolean existsByCode(String code);
 
+    // UniteAdministrativeRepository.java
+    boolean existsByLibelleIgnoreCase(String libelle);
+
+    boolean existsByLibelleIgnoreCaseAndCodeNot(String libelle, String code);
+
+
+    boolean existsByTypeUnite(TypeUnite typeUnite);
     /**
      * Recherche une unité par son code métier
      */

@@ -18,4 +18,6 @@ public interface CartographieRisquesService {
     CartographieRisquesResponse update(String id, CartographieRisquesRequest request);
 
     void delete(String id);
+
+    byte[] generateExcel();
 }

@@ -16,6 +16,10 @@ public class PlanMitigation {
     @Column(name = "code", length = 50, unique = true, nullable = false)
     private String code;
 
+    @Column(name = "libelle_plan", length = 200)
+    private String libelle;
+
+
     @Column(name = "description", length = 500)
     private String description;
 
@@ -37,6 +41,14 @@ public class PlanMitigation {
 
     public String getId() {
         return id;
+    }
+
+    public String getLibelle() {
+        return libelle;
+    }
+
+    public void setLibelle(String libelle) {
+        this.libelle = libelle;
     }
 
     public String getCode() {

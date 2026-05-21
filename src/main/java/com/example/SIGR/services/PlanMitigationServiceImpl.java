@@ -32,6 +32,13 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
     @Override
     public PlanMitigationResponse create(PlanMitigationRequest request) {
 
+        // ✅ Vérification doublon libellé à la création
+        if (repository.existsByLibelle(request.getLibelle())) {
+            throw new RuntimeException(
+                    "Un plan de mitigation avec ce libellé existe déjà : " + request.getLibelle()
+            );
+        }
+
         // ================= RISQUE =================
         Risque risque = risqueRepository.findByCode(request.getCodeRisque())
                 .orElseThrow(() ->
@@ -54,6 +61,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         PlanMitigation plan = new PlanMitigation();
 
         plan.setCode(code);
+        plan.setLibelle(request.getLibelle());
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
         plan.setStatut(request.getStatut());
@@ -92,11 +100,19 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
                         new RuntimeException("Plan introuvable : " + code)
                 );
 
+        // ✅ Vérification doublon libellé à la mise à jour (exclut le plan courant)
+        if (repository.existsByLibelleAndCodeNot(request.getLibelle(), code)) {
+            throw new RuntimeException(
+                    "Un plan de mitigation avec ce libellé existe déjà : " + request.getLibelle()
+            );
+        }
+
         Risque risque = risqueRepository.findByCode(request.getCodeRisque())
                 .orElseThrow(() ->
                         new RuntimeException("Risque introuvable : " + request.getCodeRisque())
                 );
 
+        plan.setLibelle(request.getLibelle());
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
         plan.setStatut(request.getStatut());
@@ -123,6 +139,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         return new PlanMitigationResponse(
                 plan.getId(),
                 plan.getCode(),
+                plan.getLibelle(),
                 plan.getDescription(),
                 plan.getDateCreation(),
                 plan.getStatut(),

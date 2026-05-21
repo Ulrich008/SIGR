@@ -35,11 +35,13 @@ import java.util.List;
 public class CartographieRisquesController {
 
     private final CartographieRisquesService service;
+    private final CartographieRisquesService cartographieRisquesService;
 
     public CartographieRisquesController(
-            CartographieRisquesService service
-    ) {
+            CartographieRisquesService service,
+            CartographieRisquesService cartographieRisquesService) {
         this.service = service;
+        this.cartographieRisquesService = cartographieRisquesService;
     }
 
     /**
@@ -197,5 +199,27 @@ public class CartographieRisquesController {
         return ResponseEntity
                 .noContent()
                 .build();
+    }
+
+    @GetMapping("/export/excel")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @Operation(
+            summary = "Exporter la cartographie en Excel",
+            description = "Génère un fichier Excel contenant la cartographie détaillée des risques"
+    )
+    public ResponseEntity<byte[]> exportExcel() {
+
+        byte[] excel = cartographieRisquesService.generateExcel();
+
+        return ResponseEntity.ok()
+                .header(
+                        "Content-Type",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                .header(
+                        "Content-Disposition",
+                        "attachment; filename=cartographie-risques.xlsx"
+                )
+                .body(excel);
     }
 }

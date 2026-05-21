@@ -1,6 +1,7 @@
 package com.example.SIGR.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
 @Entity
@@ -15,18 +16,53 @@ public class Evaluation {
     @Column(name = "code", unique = true, nullable = false, length = 50)
     private String code;
 
-    private Integer impact;
+    // ================= RISQUE INHERENT =================
 
-    private Integer probabilite;
+    @Column(name = "impact_inherent")
+    private Integer impactInherent;
 
-    @Column(name = "date_evaluation")
-    private LocalDate dateEvaluation;
+    @Column(name = "probabilite_inherente")
+    private Integer probabiliteInherente;
+
+    // ================= MAITRISE DU RISQUE =================
+
+    @Column(name = "protection")
+    private Integer protection;
+
+    @Column(name = "prevention")
+    private Integer prevention;
+
+    // ================= CONTROLES =================
+
+    @Column(name = "controle_existants", length = 1000)
+    private String controleExistants;
+
+    @Column(name = "controle_inexistants", length = 1000)
+    private String controleInexistants;
+
+    @Column(name = "deja_survenu")
+    private Boolean dejaSurvenu = false;
+
+    // ================= PRIORISATION =================
+
+    @Column(name = "rang_priorite")
+    private Integer rangPriorite;
+
+    // ================= PLAN D'ACTION =================
+
+    @Column(name = "recommandation", length = 1000)
+    private String recommandation;
+
+    @Column(name = "date_debut")
+    private LocalDate dateDebut;
+
+    @Column(name = "date_fin")
+    private LocalDate dateFin;
+
+    // ================= INFORMATIONS GENERALES =================
 
     @Column(name = "bonnes_pratiques", length = 500)
     private String bonnesPratiques;
-
-    @Column(name = "niveau_controle")
-    private Integer niveauControle;
 
     @ManyToOne
     @JoinColumn(name = "id_risque", nullable = false)
@@ -36,11 +72,53 @@ public class Evaluation {
     @JoinColumn(name = "evalue_par")
     private Agent evaluePar;
 
-    // ================= BUSINESS METHOD =================
+    // ================= CALCULS METIER =================
+
+    /**
+     * Score inhérent = Impact inhérent × Probabilité inhérente
+     */
     @Transient
-    public Integer getScoreInitial() {
-        if (impact == null || probabilite == null) return null;
-        return impact * probabilite;
+    public Integer getScoreInherent() {
+        if (impactInherent == null || probabiliteInherente == null) {
+            return null;
+        }
+        return impactInherent * probabiliteInherente;
+    }
+
+    /**
+     * Impact résiduel = Impact inhérent - Protection
+     */
+    @Transient
+    public Integer getImpactResiduel() {
+        if (impactInherent == null || protection == null) {
+            return null;
+        }
+        return Math.max(impactInherent - protection, 0);
+    }
+
+    /**
+     * Probabilité résiduelle = Probabilité inhérente - Prévention
+     */
+    @Transient
+    public Integer getProbabiliteResiduelle() {
+        if (probabiliteInherente == null || prevention == null) {
+            return null;
+        }
+        return Math.max(probabiliteInherente - prevention, 0);
+    }
+
+    /**
+     * Score résiduel = Impact résiduel × Probabilité résiduelle
+     */
+    @Transient
+    public Integer getScoreResiduel() {
+        Integer impact = getImpactResiduel();
+        Integer proba = getProbabiliteResiduelle();
+
+        if (impact == null || proba == null) {
+            return null;
+        }
+        return impact * proba;
     }
 
     // ================= GETTERS / SETTERS =================
@@ -63,30 +141,102 @@ public class Evaluation {
         return this;
     }
 
-    public Integer getImpact() {
-        return impact;
+    public Integer getImpactInherent() {
+        return impactInherent;
     }
 
-    public Evaluation setImpact(Integer impact) {
-        this.impact = impact;
+    public Evaluation setImpactInherent(Integer impactInherent) {
+        this.impactInherent = impactInherent;
         return this;
     }
 
-    public Integer getProbabilite() {
-        return probabilite;
+    public Integer getProbabiliteInherente() {
+        return probabiliteInherente;
     }
 
-    public Evaluation setProbabilite(Integer probabilite) {
-        this.probabilite = probabilite;
+    public Evaluation setProbabiliteInherente(Integer probabiliteInherente) {
+        this.probabiliteInherente = probabiliteInherente;
         return this;
     }
 
-    public LocalDate getDateEvaluation() {
-        return dateEvaluation;
+    public Integer getProtection() {
+        return protection;
     }
 
-    public Evaluation setDateEvaluation(LocalDate dateEvaluation) {
-        this.dateEvaluation = dateEvaluation;
+    public Evaluation setProtection(Integer protection) {
+        this.protection = protection;
+        return this;
+    }
+
+    public Integer getPrevention() {
+        return prevention;
+    }
+
+    public Evaluation setPrevention(Integer prevention) {
+        this.prevention = prevention;
+        return this;
+    }
+
+    public String getControleExistants() {
+        return controleExistants;
+    }
+
+    public Evaluation setControleExistants(String controleExistants) {
+        this.controleExistants = controleExistants;
+        return this;
+    }
+
+    public String getControleInexistants() {
+        return controleInexistants;
+    }
+
+    public Evaluation setControleInexistants(String controleInexistants) {
+        this.controleInexistants = controleInexistants;
+        return this;
+    }
+
+    public Boolean getDejaSurvenu() {
+        return dejaSurvenu;
+    }
+
+    public Evaluation setDejaSurvenu(Boolean dejaSurvenu) {
+        this.dejaSurvenu = dejaSurvenu;
+        return this;
+    }
+
+    public Integer getRangPriorite() {
+        return rangPriorite;
+    }
+
+    public Evaluation setRangPriorite(Integer rangPriorite) {
+        this.rangPriorite = rangPriorite;
+        return this;
+    }
+
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public Evaluation setRecommandation(String recommandation) {
+        this.recommandation = recommandation;
+        return this;
+    }
+
+    public LocalDate getDateDebut() {
+        return dateDebut;
+    }
+
+    public Evaluation setDateDebut(LocalDate dateDebut) {
+        this.dateDebut = dateDebut;
+        return this;
+    }
+
+    public LocalDate getDateFin() {
+        return dateFin;
+    }
+
+    public Evaluation setDateFin(LocalDate dateFin) {
+        this.dateFin = dateFin;
         return this;
     }
 
@@ -96,15 +246,6 @@ public class Evaluation {
 
     public Evaluation setBonnesPratiques(String bonnesPratiques) {
         this.bonnesPratiques = bonnesPratiques;
-        return this;
-    }
-
-    public Integer getNiveauControle() {
-        return niveauControle;
-    }
-
-    public Evaluation setNiveauControle(Integer niveauControle) {
-        this.niveauControle = niveauControle;
         return this;
     }
 

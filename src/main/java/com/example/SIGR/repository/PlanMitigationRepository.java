@@ -12,4 +12,7 @@ public interface PlanMitigationRepository extends JpaRepository<PlanMitigation, 
     Optional<PlanMitigation> findTopByOrderByIdDesc();
 
     Optional<PlanMitigation> findByCode(String code);
+
+    boolean existsByLibelle(String libelle);
+    boolean existsByLibelleAndCodeNot(String libelle, String code);
 }

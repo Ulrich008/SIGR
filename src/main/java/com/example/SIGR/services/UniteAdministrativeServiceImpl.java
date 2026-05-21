@@ -1,5 +1,4 @@
 package com.example.SIGR.services;
-
 import com.example.SIGR.dto.request.UniteAdministrativeRequest;
 import com.example.SIGR.dto.response.UniteAdministrativeResponse;
 import com.example.SIGR.entity.Ministere;
@@ -9,7 +8,6 @@ import com.example.SIGR.repository.MinistereRepository;
 import com.example.SIGR.repository.TypeUniteRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -24,7 +22,7 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
             MinistereRepository ministereRepository,
             TypeUniteRepository typeUniteRepository
     ) {
-        this.uniteRepository = uniteRepository;
+        this.uniteRepository    = uniteRepository;
         this.ministereRepository = ministereRepository;
         this.typeUniteRepository = typeUniteRepository;
     }
@@ -35,9 +33,17 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     @Override
     public UniteAdministrativeResponse create(UniteAdministrativeRequest request) {
 
+        // ================= DOUBLON CODE =================
         if (uniteRepository.existsByCode(request.getCode())) {
             throw new RuntimeException(
                     "Une unité existe déjà avec ce code : " + request.getCode()
+            );
+        }
+
+        // ================= DOUBLON LIBELLE =================
+        if (uniteRepository.existsByLibelleIgnoreCase(request.getLibelle())) {
+            throw new RuntimeException(
+                    "Une unité existe déjà avec ce libellé : " + request.getLibelle()
             );
         }
 
@@ -69,12 +75,10 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     // =========================================================
     @Override
     public UniteAdministrativeResponse getByCode(String code) {
-
         UniteAdministrative unite = uniteRepository.findByCode(code)
                 .orElseThrow(() ->
                         new RuntimeException("Unité introuvable : " + code)
                 );
-
         return toResponse(unite);
     }
 
@@ -90,7 +94,7 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     }
 
     // =========================================================
-    // UPDATE (code uniquement via URL)
+    // UPDATE
     // =========================================================
     @Override
     public UniteAdministrativeResponse update(String code, UniteAdministrativeRequest request) {
@@ -100,11 +104,19 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
                         new RuntimeException("Unité introuvable : " + code)
                 );
 
+        // ================= DOUBLON LIBELLE (hors entité courante) =================
         if (request.getLibelle() != null) {
+            boolean libelleDejaUtilise = uniteRepository
+                    .existsByLibelleIgnoreCaseAndCodeNot(request.getLibelle(), code);
+            if (libelleDejaUtilise) {
+                throw new RuntimeException(
+                        "Une autre unité existe déjà avec ce libellé : " + request.getLibelle()
+                );
+            }
             unite.setLibelle(request.getLibelle());
         }
 
-        // TYPE UNITE (CODE)
+        // ================= TYPE UNITE =================
         if (request.getIdTypeUnite() != null && !request.getIdTypeUnite().isBlank()) {
             TypeUnite typeUnite = typeUniteRepository.findByCode(request.getIdTypeUnite())
                     .orElseThrow(() ->
@@ -113,7 +125,7 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
             unite.setTypeUnite(typeUnite);
         }
 
-        // MINISTERE (CODE)
+        // ================= MINISTERE =================
         if (request.getCodeMinistere() != null && !request.getCodeMinistere().isBlank()) {
             Ministere ministere = ministereRepository.findByCode(request.getCodeMinistere())
                     .orElseThrow(() ->
@@ -122,9 +134,8 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
             unite.setMinistere(ministere);
         }
 
-        // PARENT
+        // ================= PARENT =================
         if (request.getIdUniteParent() != null) {
-
             if (request.getIdUniteParent().isBlank()) {
                 unite.setParent(null);
             } else {
@@ -148,12 +159,10 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     // =========================================================
     @Override
     public void delete(String code) {
-
         UniteAdministrative unite = uniteRepository.findByCode(code)
                 .orElseThrow(() ->
                         new RuntimeException("Unité introuvable : " + code)
                 );
-
         uniteRepository.delete(unite);
     }
 
@@ -161,11 +170,9 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     // HELPERS
     // =========================================================
     private UniteAdministrative resolveParent(String idUniteParent) {
-
         if (idUniteParent == null || idUniteParent.isBlank()) {
             return null;
         }
-
         return uniteRepository.findByCode(idUniteParent)
                 .orElseThrow(() ->
                         new RuntimeException("Unité parent introuvable : " + idUniteParent)
@@ -177,11 +184,11 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
                 unite.getId(),
                 unite.getCode(),
                 unite.getLibelle(),
-                unite.getTypeUnite() != null ? unite.getTypeUnite().getCode() : null,
-                unite.getTypeUnite() != null ? unite.getTypeUnite().getLibelle() : null,
-                unite.getMinistere() != null ? unite.getMinistere().getCode() : null,
-                unite.getMinistere() != null ? unite.getMinistere().getNom() : null,
-                unite.getParent() != null ? unite.getParent().getCode() : null,
+                unite.getTypeUnite()  != null ? unite.getTypeUnite().getCode()    : null,
+                unite.getTypeUnite()  != null ? unite.getTypeUnite().getLibelle() : null,
+                unite.getMinistere()  != null ? unite.getMinistere().getCode()    : null,
+                unite.getMinistere()  != null ? unite.getMinistere().getNom()     : null,
+                unite.getParent()     != null ? unite.getParent().getCode()       : null,
                 unite.getNiveauHierarchique()
         );
     }

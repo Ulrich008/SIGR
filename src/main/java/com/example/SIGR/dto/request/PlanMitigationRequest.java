@@ -14,6 +14,13 @@ public class PlanMitigationRequest {
      * Le code est généré automatiquement
      * donc supprimé du request
      */
+    @NotBlank(message = "Le libellé est obligatoire")
+    @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
+    private String libelle;
+
+    public String getLibelle() {
+        return libelle;
+    }
 
     @Size(
             max = 1000,
@@ -41,6 +48,10 @@ public class PlanMitigationRequest {
     private String codeRisque;
 
     // ================= GETTERS / SETTERS =================
+
+    public void setLibelle(String libelle) {
+        this.libelle = libelle;
+    }
 
     public String getDescription() {
         return description;
