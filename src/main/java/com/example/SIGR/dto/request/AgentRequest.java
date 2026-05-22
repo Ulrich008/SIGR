@@ -10,45 +10,90 @@ import java.time.LocalDate;
 public class AgentRequest {
 
     /**
-     * Obligatoire seulement à la création
+     * ================= PASSWORD =================
+     * Obligatoire à la création
+     * Facultatif à la modification
      */
-
-    /**
-     * Facultatif lors du update
-     */
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    @Size(
+            min = 6,
+            message = "Le mot de passe doit contenir au moins 6 caractères"
+    )
     private String password;
 
-    @Size(max = 20, message = "Le NPI ne doit pas dépasser 20 caractères")
+    /**
+     * ================= NPI =================
+     */
+    @Size(
+            max = 20,
+            message = "Le NPI ne doit pas dépasser 20 caractères"
+    )
     private String npi;
 
+    /**
+     * ================= NOM =================
+     */
     @NotBlank(message = "Le nom est obligatoire")
-    @Size(max = 50, message = "Le nom ne doit pas dépasser 50 caractères")
+    @Size(
+            max = 50,
+            message = "Le nom ne doit pas dépasser 50 caractères"
+    )
     private String nom;
 
+    /**
+     * ================= PRENOMS =================
+     */
     @NotBlank(message = "Le prénom est obligatoire")
-    @Size(max = 100, message = "Le prénom ne doit pas dépasser 100 caractères")
+    @Size(
+            max = 100,
+            message = "Le prénom ne doit pas dépasser 100 caractères"
+    )
     private String prenoms;
 
+    /**
+     * ================= SEXE =================
+     */
     @NotNull(message = "Le sexe est obligatoire")
     private Sexe sexe;
 
+    /**
+     * ================= ROLE =================
+     */
     @NotNull(message = "Le rôle est obligatoire")
     private Role role;
 
+    /**
+     * ================= PROFIL =================
+     */
+    @NotBlank(message = "Le code profil est obligatoire")
+    private String codeProfil;
+
+    /**
+     * ================= DATE NAISSANCE =================
+     */
     @NotNull(message = "La date de naissance est obligatoire")
-    @Past(message = "La date de naissance doit être dans le passé")
+    @Past(
+            message = "La date de naissance doit être dans le passé"
+    )
     private LocalDate dateNaissance;
 
+    /**
+     * ================= DATE PRISE SERVICE =================
+     */
     @NotNull(message = "La date de prise de service est obligatoire")
-    @PastOrPresent(message = "La date de prise de service ne peut pas être dans le futur")
+    @PastOrPresent(
+            message = "La date de prise de service ne peut pas être dans le futur"
+    )
     private LocalDate datePriseService;
 
+    /**
+     * ================= UNITE =================
+     */
     @NotBlank(message = "Le code de l'unité est obligatoire")
     private String codeUnite;
 
+    // =====================================================
     // ================= GETTERS / SETTERS =================
-
+    // =====================================================
 
     public String getPassword() {
         return password;
@@ -101,6 +146,15 @@ public class AgentRequest {
 
     public AgentRequest setRole(Role role) {
         this.role = role;
+        return this;
+    }
+
+    public String getCodeProfil() {
+        return codeProfil;
+    }
+
+    public AgentRequest setCodeProfil(String codeProfil) {
+        this.codeProfil = codeProfil;
         return this;
     }
 

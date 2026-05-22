@@ -5,9 +5,15 @@ import com.example.SIGR.dto.response.AgentResponse;
 import com.example.SIGR.services.AgentService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
@@ -26,7 +32,16 @@ import java.util.List;
 @RequestMapping("/api/agents")
 @Tag(
         name = "Agent",
-        description = "API de gestion des agents basée sur le matricule métier"
+        description = """
+                API de gestion des agents.
+
+                Profils supportés :
+                - ADMINISTRATEUR_GENERAL
+                - CMMR
+                - CORRESPONDANT_RISQUE
+                - RESPONSABLE_MITIGATION
+                - LECTEUR
+                """
 )
 public class AgentController {
 
@@ -48,12 +63,17 @@ public class AgentController {
             description = """
                     Crée un nouvel agent.
 
-                    Le matricule est généré automatiquement par le système.
+                    Le matricule est généré automatiquement.
+                    Le profil permet d'attribuer les permissions métier.
                     """,
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
+                    description = "Informations du nouvel agent",
                     content = @Content(
                             mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = AgentRequest.class
+                            ),
                             examples = @ExampleObject(
                                     name = "Exemple création agent",
                                     value = """
@@ -64,6 +84,7 @@ public class AgentController {
                                               "prenoms": "Ulrich",
                                               "sexe": "MASCULIN",
                                               "role": "AGENT",
+                                              "codeProfil": "RESP_MITIGATION",
                                               "dateNaissance": "1998-05-10",
                                               "datePriseService": "2024-01-15",
                                               "codeUnite": "DGB"
@@ -71,20 +92,25 @@ public class AgentController {
                                             """
                             )
                     )
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "Agent créé avec succès"
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Données invalides"
-                    )
-            }
+            )
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Agent créé avec succès"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Données invalides"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Conflit de données"
+            )
+    })
     public ResponseEntity<AgentResponse> create(
-            @Valid @RequestBody
+            @Valid
+            @RequestBody
             AgentRequest request
     ) {
 
@@ -103,8 +129,21 @@ public class AgentController {
     @GetMapping("/me")
     @Operation(
             summary = "Mon profil",
-            description = "Retourne les informations de l'utilisateur connecté"
+            description = """
+                    Retourne les informations
+                    de l'utilisateur connecté.
+                    """
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Profil récupéré avec succès"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Utilisateur non authentifié"
+            )
+    })
     public ResponseEntity<AgentResponse> me(
             Authentication authentication
     ) {
@@ -123,8 +162,22 @@ public class AgentController {
     @GetMapping
     @Operation(
             summary = "Lister tous les agents",
-            description = "Retourne la liste complète des agents"
+            description = """
+                    Retourne la liste complète des agents.
+                    Accessible uniquement aux administrateurs
+                    et managers.
+                    """
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Liste des agents récupérée"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Accès refusé"
+            )
+    })
     public ResponseEntity<List<AgentResponse>> getAll() {
 
         return ResponseEntity.ok(
@@ -135,13 +188,41 @@ public class AgentController {
     /**
      * ================= GET BY MATRICULE =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("""
+            hasAnyAuthority('ADMIN', 'MANAGER')
+            or #matricule == authentication.name
+            """)
     @GetMapping("/{matricule}")
     @Operation(
             summary = "Rechercher un agent par matricule",
-            description = "Retourne les informations d'un agent à partir de son matricule"
+            description = """
+                    Retourne les informations d'un agent
+                    à partir de son matricule métier.
+
+                    Un utilisateur simple peut uniquement
+                    consulter son propre profil.
+                    """
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Agent trouvé"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Accès interdit"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agent introuvable"
+            )
+    })
     public ResponseEntity<AgentResponse> getByMatricule(
+
+            @Parameter(
+                    description = "Matricule métier de l'agent",
+                    example = "AGT-001"
+            )
             @PathVariable String matricule
     ) {
 
@@ -165,8 +246,12 @@ public class AgentController {
                     """,
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
+                    description = "Nouvelles informations de l'agent",
                     content = @Content(
                             mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = AgentRequest.class
+                            ),
                             examples = @ExampleObject(
                                     name = "Exemple modification agent",
                                     value = """
@@ -177,6 +262,7 @@ public class AgentController {
                                               "prenoms": "Ulrich Junior",
                                               "sexe": "MASCULIN",
                                               "role": "MANAGER",
+                                              "codeProfil": "CMMR",
                                               "dateNaissance": "1998-05-10",
                                               "datePriseService": "2024-01-15",
                                               "codeUnite": "DGB"
@@ -186,10 +272,32 @@ public class AgentController {
                     )
             )
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Agent modifié avec succès"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Données invalides"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agent introuvable"
+            )
+    })
     public ResponseEntity<AgentResponse> update(
+
+            @Parameter(
+                    description = "Matricule métier de l'agent",
+                    example = "AGT-001"
+            )
             @PathVariable String matricule,
-            @Valid @RequestBody
+
+            @Valid
+            @RequestBody
             AgentRequest request,
+
             Authentication authentication
     ) {
 
@@ -228,9 +336,30 @@ public class AgentController {
                     - enabled=false
                     """
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Statut modifié avec succès"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agent introuvable"
+            )
+    })
     public ResponseEntity<AgentResponse> changeStatus(
+
+            @Parameter(
+                    description = "Matricule métier de l'agent",
+                    example = "AGT-001"
+            )
             @PathVariable String matricule,
+
+            @Parameter(
+                    description = "Statut du compte",
+                    example = "true"
+            )
             @RequestParam Boolean enabled,
+
             Authentication authentication
     ) {
 
@@ -261,10 +390,29 @@ public class AgentController {
     @DeleteMapping("/{matricule}")
     @Operation(
             summary = "Supprimer un agent",
-            description = "Supprime un agent via son matricule"
+            description = """
+                    Supprime un agent
+                    via son matricule métier.
+                    """
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Agent supprimé avec succès"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Agent introuvable"
+            )
+    })
     public ResponseEntity<Void> delete(
+
+            @Parameter(
+                    description = "Matricule métier de l'agent",
+                    example = "AGT-001"
+            )
             @PathVariable String matricule,
+
             Authentication authentication
     ) {
 

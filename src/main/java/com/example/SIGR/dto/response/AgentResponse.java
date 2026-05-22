@@ -8,17 +8,17 @@ import java.time.LocalDate;
 public class AgentResponse {
 
     /**
-     * ID technique UUID
+     * ================= ID =================
      */
     private String id;
 
     /**
-     * Matricule métier
+     * ================= MATRICULE =================
      */
     private String matricule;
 
     /**
-     * Numéro personnel d'identification
+     * ================= INFORMATIONS =================
      */
     private String npi;
 
@@ -28,25 +28,40 @@ public class AgentResponse {
 
     private Sexe sexe;
 
+    /**
+     * ================= ROLE =================
+     */
     private Role role;
 
     /**
-     * Statut du compte
+     * ================= PROFIL =================
+     */
+    private String codeProfil;
+
+    private String libelleProfil;
+
+    /**
+     * ================= STATUS =================
      */
     private Boolean enabled;
 
+    /**
+     * ================= DATES =================
+     */
     private LocalDate dateNaissance;
 
     private LocalDate datePriseService;
 
     /**
-     * Informations de l'unité administrative
+     * ================= UNITE =================
      */
     private String codeUnite;
 
     private String libelleUnite;
 
-    // ================= CONSTRUCTEUR =================
+    // =========================================================
+    // ================= CONSTRUCTEUR ==========================
+    // =========================================================
 
     public AgentResponse(
             String id,
@@ -56,6 +71,8 @@ public class AgentResponse {
             String prenoms,
             Sexe sexe,
             Role role,
+            String codeProfil,
+            String libelleProfil,
             Boolean enabled,
             LocalDate dateNaissance,
             LocalDate datePriseService,
@@ -69,6 +86,8 @@ public class AgentResponse {
         this.prenoms = prenoms;
         this.sexe = sexe;
         this.role = role;
+        this.codeProfil = codeProfil;
+        this.libelleProfil = libelleProfil;
         this.enabled = enabled;
         this.dateNaissance = dateNaissance;
         this.datePriseService = datePriseService;
@@ -76,7 +95,9 @@ public class AgentResponse {
         this.libelleUnite = libelleUnite;
     }
 
-    // ================= GETTERS =================
+    // =========================================================
+    // ================= GETTERS ===============================
+    // =========================================================
 
     public String getId() {
         return id;
@@ -104,6 +125,14 @@ public class AgentResponse {
 
     public Role getRole() {
         return role;
+    }
+
+    public String getCodeProfil() {
+        return codeProfil;
+    }
+
+    public String getLibelleProfil() {
+        return libelleProfil;
     }
 
     public Boolean getEnabled() {

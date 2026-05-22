@@ -3,8 +3,10 @@ package com.example.SIGR.services;
 import com.example.SIGR.dto.request.AgentRequest;
 import com.example.SIGR.dto.response.AgentResponse;
 import com.example.SIGR.entity.Agent;
+import com.example.SIGR.entity.Profil;
 import com.example.SIGR.entity.UniteAdministrative;
 import com.example.SIGR.repository.AgentRepository;
+import com.example.SIGR.repository.ProfilRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,15 +20,18 @@ public class AgentServiceImpl implements AgentService {
 
     private final AgentRepository agentRepository;
     private final UniteAdministrativeRepository uniteRepository;
+    private final ProfilRepository profilRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AgentServiceImpl(
             AgentRepository agentRepository,
             UniteAdministrativeRepository uniteRepository,
+            ProfilRepository profilRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.agentRepository = agentRepository;
         this.uniteRepository = uniteRepository;
+        this.profilRepository = profilRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -63,6 +68,17 @@ public class AgentServiceImpl implements AgentService {
                         new RuntimeException(
                                 "Unité introuvable : "
                                         + request.getCodeUnite()
+                        )
+                );
+
+        // ================= PROFIL =================
+
+        Profil profil = profilRepository
+                .findByCode(request.getCodeProfil())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Profil introuvable : "
+                                        + request.getCodeProfil()
                         )
                 );
 
@@ -106,6 +122,10 @@ public class AgentServiceImpl implements AgentService {
         agent.setDatePriseService(request.getDatePriseService());
 
         agent.setUnite(unite);
+
+        // ================= PROFIL =================
+
+        agent.setProfil(profil);
 
         Agent saved = agentRepository.save(agent);
 
@@ -229,6 +249,23 @@ public class AgentServiceImpl implements AgentService {
             agent.setUnite(unite);
         }
 
+        // ================= PROFIL =================
+
+        if (request.getCodeProfil() != null
+                && !request.getCodeProfil().isBlank()) {
+
+            Profil profil = profilRepository
+                    .findByCode(request.getCodeProfil())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Profil introuvable : "
+                                            + request.getCodeProfil()
+                            )
+                    );
+
+            agent.setProfil(profil);
+        }
+
         Agent updated = agentRepository.save(agent);
 
         return toResponse(updated);
@@ -275,7 +312,7 @@ public class AgentServiceImpl implements AgentService {
 
     private AgentResponse toResponse(Agent agent) {
 
-        return new AgentResponse(
+       return new AgentResponse(
                 agent.getId(),
                 agent.getMatricule(),
                 agent.getNpi(),
@@ -283,6 +320,12 @@ public class AgentServiceImpl implements AgentService {
                 agent.getPrenoms(),
                 agent.getSexe(),
                 agent.getRole(),
+                agent.getProfil() != null
+                        ? agent.getProfil().getCode()
+                        : null,
+                agent.getProfil() != null
+                        ? agent.getProfil().getLibelle()
+                        : null,
                 agent.getEnabled(),
                 agent.getDateNaissance(),
                 agent.getDatePriseService(),

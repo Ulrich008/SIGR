@@ -82,6 +82,10 @@ public class Agent {
     @OneToMany(mappedBy = "agent")
     private List<Affectation> affectations;
 
+
+    @ManyToOne
+    @JoinColumn(name = "id_profil")
+    private Profil profil;
     // ================= GETTERS / SETTERS =================
 
     public String getId() {
@@ -109,6 +113,14 @@ public class Agent {
     public Agent setPassword(String password) {
         this.password = password;
         return this;
+    }
+
+    public Profil getProfil() {
+        return profil;
+    }
+
+    public void setProfil(Profil profil) {
+        this.profil = profil;
     }
 
     public Boolean getEnabled() {
