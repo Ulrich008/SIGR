@@ -91,6 +91,11 @@ public class AgentRequest {
     @NotBlank(message = "Le code de l'unité est obligatoire")
     private String codeUnite;
 
+    /**
+     * ================= MINISTERE =================
+     */
+    private String codeMinistere;  // ← ajouté pour multi-ministères
+
     // =====================================================
     // ================= GETTERS / SETTERS =================
     // =====================================================
@@ -182,6 +187,15 @@ public class AgentRequest {
 
     public AgentRequest setCodeUnite(String codeUnite) {
         this.codeUnite = codeUnite;
+        return this;
+    }
+
+    public String getCodeMinistere() {
+        return codeMinistere;
+    }
+
+    public AgentRequest setCodeMinistere(String codeMinistere) {
+        this.codeMinistere = codeMinistere;
         return this;
     }
 }

@@ -3,9 +3,11 @@ package com.example.SIGR.services;
 import com.example.SIGR.dto.request.AgentRequest;
 import com.example.SIGR.dto.response.AgentResponse;
 import com.example.SIGR.entity.Agent;
+import com.example.SIGR.entity.Ministere;
 import com.example.SIGR.entity.Profil;
 import com.example.SIGR.entity.UniteAdministrative;
 import com.example.SIGR.repository.AgentRepository;
+import com.example.SIGR.repository.MinistereRepository;
 import com.example.SIGR.repository.ProfilRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
 
@@ -21,17 +23,20 @@ public class AgentServiceImpl implements AgentService {
     private final AgentRepository agentRepository;
     private final UniteAdministrativeRepository uniteRepository;
     private final ProfilRepository profilRepository;
+    private final MinistereRepository ministereRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AgentServiceImpl(
             AgentRepository agentRepository,
             UniteAdministrativeRepository uniteRepository,
             ProfilRepository profilRepository,
+            MinistereRepository ministereRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.agentRepository = agentRepository;
         this.uniteRepository = uniteRepository;
         this.profilRepository = profilRepository;
+        this.ministereRepository = ministereRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -82,6 +87,21 @@ public class AgentServiceImpl implements AgentService {
                         )
                 );
 
+        // ================= MINISTERE =================
+
+        Ministere ministere = null;
+        if (request.getCodeMinistere() != null
+                && !request.getCodeMinistere().isBlank()) {
+            ministere = ministereRepository
+                    .findByCode(request.getCodeMinistere())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Ministère introuvable : "
+                                            + request.getCodeMinistere()
+                            )
+                    );
+        }
+
         // ================= GENERATION MATRICULE =================
 
         long total = agentRepository.count() + 1;
@@ -126,6 +146,10 @@ public class AgentServiceImpl implements AgentService {
         // ================= PROFIL =================
 
         agent.setProfil(profil);
+
+        // ================= MINISTERE =================
+
+        agent.setMinistere(ministere);
 
         Agent saved = agentRepository.save(agent);
 
@@ -266,6 +290,23 @@ public class AgentServiceImpl implements AgentService {
             agent.setProfil(profil);
         }
 
+        // ================= MINISTERE =================
+
+        if (request.getCodeMinistere() != null
+                && !request.getCodeMinistere().isBlank()) {
+
+            Ministere ministere = ministereRepository
+                    .findByCode(request.getCodeMinistere())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Ministère introuvable : "
+                                            + request.getCodeMinistere()
+                            )
+                    );
+
+            agent.setMinistere(ministere);
+        }
+
         Agent updated = agentRepository.save(agent);
 
         return toResponse(updated);
@@ -334,6 +375,12 @@ public class AgentServiceImpl implements AgentService {
                         : null,
                 agent.getUnite() != null
                         ? agent.getUnite().getLibelle()
+                        : null,
+                agent.getMinistere() != null
+                        ? agent.getMinistere().getCode()
+                        : null,
+                agent.getMinistere() != null
+                        ? agent.getMinistere().getNom()
                         : null
         );
     }

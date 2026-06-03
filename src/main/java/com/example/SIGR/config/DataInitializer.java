@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DataInitializer implements CommandLineRunner {
+public class    DataInitializer implements CommandLineRunner {
 
     private final AgentRepository agentRepository;
     private final PasswordEncoder passwordEncoder;

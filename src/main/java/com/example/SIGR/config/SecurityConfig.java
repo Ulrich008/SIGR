@@ -32,14 +32,18 @@ public class SecurityConfig {
 
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
+    private final MinistereFilterConfig ministereFilterConfig;
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            CustomAccessDeniedHandler customAccessDeniedHandler
+            CustomAccessDeniedHandler customAccessDeniedHandler,
+            MinistereFilterConfig ministereFilterConfig
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.ministereFilterConfig = ministereFilterConfig;
     }
 
     /**
@@ -144,6 +148,14 @@ public class SecurityConfig {
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
+                )
+
+                /**
+                 * Filtre Ministère pour multi-ministères
+                 */
+                .addFilterAfter(
+                        ministereFilterConfig,
+                        JwtAuthenticationFilter.class
                 );
 
         return http.build();

@@ -43,7 +43,12 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
         CAST((e.probabiliteInherente - e.prevention) AS integer),
         CAST(((e.impactInherent - e.protection) * (e.probabiliteInherente - e.prevention)) AS integer),
 
-        e.rangPriorite,
+        CASE
+            WHEN e.rangPriorite = 1 THEN '1-Zone d''observation (Actions non nécessaires - Réévaluation périodique)'
+            WHEN e.rangPriorite = 2 THEN '2- Zone d''amélioration (Actions de remédiation à moyen terme)'
+            WHEN e.rangPriorite = 3 THEN '3 -Zone d''audit et de traitement des risques prioritaires (Actions de remédiation immédiates)'
+            ELSE 'Zone d''observation (Actions non nécessaires - Réévaluation périodique)'
+        END,
 
         e.controleExistants,
         e.controleInexistants,

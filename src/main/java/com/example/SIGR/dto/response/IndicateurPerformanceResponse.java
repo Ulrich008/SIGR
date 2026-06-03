@@ -13,26 +13,50 @@ public class IndicateurPerformanceResponse {
     private String libelle;
 
     /**
-     * Valeur automatiquement fixée à %
+     * Code de l'unité de mesure
      */
-    private String uniteMesure;
+    private String codeUniteMesure;
+
+    /**
+     * Libellé de l'unité de mesure
+     */
+    private String libelleUniteMesure;
+
+    /**
+     * Type de l'unité de mesure (NUMERIQUE ou DATE)
+     */
+    private String typeUniteMesure;
 
     /**
      * Fréquence de mesure
      */
     private Frequence frequence;
 
-    private Double valeurCible;
+    private String valeurCible; // Peut être un nombre ou une date (string)
 
-    private Double valeurObtenue;
+    private String valeurObtenue; // Peut être un nombre ou une date (string)
 
-    private Double seuilAlerte;
+    private LocalDate seuilAlerte;
 
-    private LocalDate dateMesure;
+    private LocalDate dateDebut;
+
+    private LocalDate dateFin;
 
     private String codeProcessus;
 
     private String nomProcessus;
+
+    private String codeRisque;
+
+    private String libelleRisque;
+
+    private String codePlanMitigation;
+
+    private String libellePlanMitigation;
+
+    private String codeAction;
+
+    private String libelleAction;
 
     /**
      * Valeur calculée automatiquement
@@ -49,14 +73,23 @@ public class IndicateurPerformanceResponse {
             String id,
             String code,
             String libelle,
-            String uniteMesure,
+            String codeUniteMesure,
+            String libelleUniteMesure,
+            String typeUniteMesure,
             Frequence frequence,
-            Double valeurCible,
-            Double valeurObtenue,
-            Double seuilAlerte,
-            LocalDate dateMesure,
+            String valeurCible,
+            String valeurObtenue,
+            LocalDate seuilAlerte,
+            LocalDate dateDebut,
+            LocalDate dateFin,
             String codeProcessus,
             String nomProcessus,
+            String codeRisque,
+            String libelleRisque,
+            String codePlanMitigation,
+            String libellePlanMitigation,
+            String codeAction,
+            String libelleAction,
             Double ecartCible,
             String statut
     ) {
@@ -64,14 +97,23 @@ public class IndicateurPerformanceResponse {
         this.id = id;
         this.code = code;
         this.libelle = libelle;
-        this.uniteMesure = uniteMesure;
+        this.codeUniteMesure = codeUniteMesure;
+        this.libelleUniteMesure = libelleUniteMesure;
+        this.typeUniteMesure = typeUniteMesure;
         this.frequence = frequence;
         this.valeurCible = valeurCible;
         this.valeurObtenue = valeurObtenue;
         this.seuilAlerte = seuilAlerte;
-        this.dateMesure = dateMesure;
+        this.dateDebut = dateDebut;
+        this.dateFin = dateFin;
         this.codeProcessus = codeProcessus;
         this.nomProcessus = nomProcessus;
+        this.codeRisque = codeRisque;
+        this.libelleRisque = libelleRisque;
+        this.codePlanMitigation = codePlanMitigation;
+        this.libellePlanMitigation = libellePlanMitigation;
+        this.codeAction = codeAction;
+        this.libelleAction = libelleAction;
         this.ecartCible = ecartCible;
         this.statut = statut;
     }
@@ -90,28 +132,40 @@ public class IndicateurPerformanceResponse {
         return libelle;
     }
 
-    public String getUniteMesure() {
-        return uniteMesure;
+    public String getCodeUniteMesure() {
+        return codeUniteMesure;
+    }
+
+    public String getLibelleUniteMesure() {
+        return libelleUniteMesure;
+    }
+
+    public String getTypeUniteMesure() {
+        return typeUniteMesure;
     }
 
     public Frequence getFrequence() {
         return frequence;
     }
 
-    public Double getValeurCible() {
+    public String getValeurCible() {
         return valeurCible;
     }
 
-    public Double getValeurObtenue() {
+    public String getValeurObtenue() {
         return valeurObtenue;
     }
 
-    public Double getSeuilAlerte() {
+    public LocalDate getSeuilAlerte() {
         return seuilAlerte;
     }
 
-    public LocalDate getDateMesure() {
-        return dateMesure;
+    public LocalDate getDateDebut() {
+        return dateDebut;
+    }
+
+    public LocalDate getDateFin() {
+        return dateFin;
     }
 
     public String getCodeProcessus() {
@@ -120,6 +174,30 @@ public class IndicateurPerformanceResponse {
 
     public String getNomProcessus() {
         return nomProcessus;
+    }
+
+    public String getCodeRisque() {
+        return codeRisque;
+    }
+
+    public String getLibelleRisque() {
+        return libelleRisque;
+    }
+
+    public String getCodePlanMitigation() {
+        return codePlanMitigation;
+    }
+
+    public String getLibellePlanMitigation() {
+        return libellePlanMitigation;
+    }
+
+    public String getCodeAction() {
+        return codeAction;
+    }
+
+    public String getLibelleAction() {
+        return libelleAction;
     }
 
     public Double getEcartCible() {

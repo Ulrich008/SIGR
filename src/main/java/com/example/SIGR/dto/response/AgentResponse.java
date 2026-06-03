@@ -59,6 +59,13 @@ public class AgentResponse {
 
     private String libelleUnite;
 
+    /**
+     * ================= MINISTERE =================
+     */
+    private String codeMinistere;
+
+    private String libelleMinistere;
+
     // =========================================================
     // ================= CONSTRUCTEUR ==========================
     // =========================================================
@@ -77,7 +84,9 @@ public class AgentResponse {
             LocalDate dateNaissance,
             LocalDate datePriseService,
             String codeUnite,
-            String libelleUnite
+            String libelleUnite,
+            String codeMinistere,
+            String libelleMinistere
     ) {
         this.id = id;
         this.matricule = matricule;
@@ -93,6 +102,8 @@ public class AgentResponse {
         this.datePriseService = datePriseService;
         this.codeUnite = codeUnite;
         this.libelleUnite = libelleUnite;
+        this.codeMinistere = codeMinistere;
+        this.libelleMinistere = libelleMinistere;
     }
 
     // =========================================================
@@ -153,5 +164,13 @@ public class AgentResponse {
 
     public String getLibelleUnite() {
         return libelleUnite;
+    }
+
+    public String getCodeMinistere() {
+        return codeMinistere;
+    }
+
+    public String getLibelleMinistere() {
+        return libelleMinistere;
     }
 }

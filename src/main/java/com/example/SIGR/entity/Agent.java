@@ -1,14 +1,22 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.envers.Audited;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "agent")
-public class Agent {
+@Audited
+@FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
+@Filter(name = "ministereFilter", condition = "code_ministere = :codeMinistere")
+public class Agent extends Auditable {
 
     /**
      * ID technique UUID
@@ -67,6 +75,13 @@ public class Agent {
     @ManyToOne
     @JoinColumn(name = "id_unite")
     private UniteAdministrative unite;
+
+    /**
+     * Un agent appartient à un ministère (pour le filtrage multi-ministères)
+     */
+    @ManyToOne
+    @JoinColumn(name = "code_ministere")
+    private Ministere ministere;
 
     /**
      * Un agent peut être responsable de plusieurs actions
@@ -201,6 +216,15 @@ public class Agent {
 
     public Agent setUnite(UniteAdministrative unite) {
         this.unite = unite;
+        return this;
+    }
+
+    public Ministere getMinistere() {
+        return ministere;
+    }
+
+    public Agent setMinistere(Ministere ministere) {
+        this.ministere = ministere;
         return this;
     }
 

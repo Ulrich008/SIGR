@@ -1,11 +1,14 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import jakarta.persistence.*;
+import org.hibernate.envers.Audited;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "affectation")
-public class Affectation {
+@Audited
+public class Affectation extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
