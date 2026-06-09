@@ -278,7 +278,7 @@ public class EvaluationServiceImpl implements EvaluationService {
             return 2;
         }
 
-        // Risque faible
+        // Risque faible 
         return 1;
     }
 
