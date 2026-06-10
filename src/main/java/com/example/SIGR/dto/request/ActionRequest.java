@@ -2,16 +2,18 @@ package com.example.SIGR.dto.request;
 
 import com.example.SIGR.entity.StatutAction;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ActionRequest {
 
-    @NotBlank(message = "Le libellé est obligatoire")
-    @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
-    private String libelle;
+    @NotEmpty(message = "Au moins un libellé est obligatoire")
+    @Size(min = 1, message = "Au moins un libellé est obligatoire")
+    private List<String> libelles;
 
     @NotNull(message = "La date de début est obligatoire")
     private LocalDate dateDebut;
@@ -26,17 +28,23 @@ public class ActionRequest {
     @NotBlank(message = "Le code du plan est obligatoire")
     private String codePlan;
 
+    @NotBlank(message = "Le code du risque est obligatoire")
+    private String codeRisque;
+
+    @NotBlank(message = "La bonne pratique est obligatoire")
+    private String bonnePratique;
+
     @NotBlank(message = "Le matricule du responsable est obligatoire")
     private String matriculeResponsable;
 
 
 
-    public String getLibelle() {
-        return libelle;
+    public List<String> getLibelles() {
+        return libelles;
     }
 
-    public ActionRequest setLibelle(String libelle) {
-        this.libelle = libelle;
+    public ActionRequest setLibelles(List<String> libelles) {
+        this.libelles = libelles;
         return this;
     }
 
@@ -73,6 +81,24 @@ public class ActionRequest {
 
     public ActionRequest setCodePlan(String codePlan) {
         this.codePlan = codePlan;
+        return this;
+    }
+
+    public String getCodeRisque() {
+        return codeRisque;
+    }
+
+    public ActionRequest setCodeRisque(String codeRisque) {
+        this.codeRisque = codeRisque;
+        return this;
+    }
+
+    public String getBonnePratique() {
+        return bonnePratique;
+    }
+
+    public ActionRequest setBonnePratique(String bonnePratique) {
+        this.bonnePratique = bonnePratique;
         return this;
     }
 

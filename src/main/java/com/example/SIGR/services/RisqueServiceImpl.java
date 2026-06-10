@@ -94,10 +94,11 @@ public class RisqueServiceImpl implements RisqueService {
         risque.setCode(code);
 
         risque.setLibelle(request.getLibelle());
-        risque.setCauseProbable(request.getCauseProbable());
-        risque.setConsequenceProbable(
+        risque.setCauseProbableList(request.getCauseProbable());
+        risque.setConsequenceProbableList(
                 request.getConsequenceProbable()
         );
+        risque.setBonnesPratiquesList(request.getBonnesPratiques());
         risque.setStatut(request.getStatut());
         risque.setDateIdentification(
                 request.getDateIdentification()
@@ -221,12 +222,13 @@ public class RisqueServiceImpl implements RisqueService {
         // ================= UPDATE =================
 
         risque.setLibelle(request.getLibelle());
-        risque.setCauseProbable(
+        risque.setCauseProbableList(
                 request.getCauseProbable()
         );
-        risque.setConsequenceProbable(
+        risque.setConsequenceProbableList(
                 request.getConsequenceProbable()
         );
+        risque.setBonnesPratiquesList(request.getBonnesPratiques());
         risque.setStatut(request.getStatut());
         risque.setDateIdentification(
                 request.getDateIdentification()
@@ -255,8 +257,9 @@ public class RisqueServiceImpl implements RisqueService {
                 risque.getId(),
                 risque.getCode(),
                 risque.getLibelle(),
-                risque.getCauseProbable(),
-                risque.getConsequenceProbable(),
+                risque.getCauseProbableList(),
+                risque.getConsequenceProbableList(),
+                risque.getBonnesPratiquesList(),
                 risque.getStatut(),
                 risque.getDateIdentification(),
 

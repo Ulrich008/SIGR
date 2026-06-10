@@ -11,8 +11,9 @@ public class RisqueResponse {
     private String id;
     private String code;
     private String libelle;
-    private String causeProbable;
-    private String consequenceProbable;
+    private List<String> causeProbable;
+    private List<String> consequenceProbable;
+    private List<String> bonnesPratiques;
 
     private StatutRisque statut;
 
@@ -34,8 +35,9 @@ public class RisqueResponse {
             String id,
             String code,
             String libelle,
-            String causeProbable,
-            String consequenceProbable,
+            List<String> causeProbable,
+            List<String> consequenceProbable,
+            List<String> bonnesPratiques,
             StatutRisque statut,
             LocalDate dateIdentification,
             String codeProcessus,
@@ -49,6 +51,7 @@ public class RisqueResponse {
         this.libelle = libelle;
         this.causeProbable = causeProbable;
         this.consequenceProbable = consequenceProbable;
+        this.bonnesPratiques = bonnesPratiques;
         this.statut = statut;
         this.dateIdentification = dateIdentification;
         this.codeProcessus = codeProcessus;
@@ -69,12 +72,16 @@ public class RisqueResponse {
         return libelle;
     }
 
-    public String getCauseProbable() {
+    public List<String> getCauseProbable() {
         return causeProbable;
     }
 
-    public String getConsequenceProbable() {
+    public List<String> getConsequenceProbable() {
         return consequenceProbable;
+    }
+
+    public List<String> getBonnesPratiques() {
+        return bonnesPratiques;
     }
 
     public StatutRisque getStatut() {

@@ -56,7 +56,9 @@ public class ActionServiceImpl implements ActionService {
 
         Action action = new Action()
                 .setCode(code)
-                .setLibelle(request.getLibelle())
+                .setLibelles(request.getLibelles())
+                .setCodeRisque(request.getCodeRisque())
+                .setBonnePratique(request.getBonnePratique())
                 .setDateDebut(request.getDateDebut())
                 .setDateFin(request.getDateFin())
                 .setStatut(request.getStatut())
@@ -103,7 +105,9 @@ public class ActionServiceImpl implements ActionService {
         Agent responsable = agentRepository.findByMatricule(request.getMatriculeResponsable())
                 .orElseThrow(() -> new RuntimeException("Agent introuvable : " + request.getMatriculeResponsable()));
 
-        action.setLibelle(request.getLibelle())
+        action.setLibelles(request.getLibelles())
+                .setCodeRisque(request.getCodeRisque())
+                .setBonnePratique(request.getBonnePratique())
                 .setDateDebut(request.getDateDebut())
                 .setDateFin(request.getDateFin())
                 .setStatut(request.getStatut())
@@ -128,11 +132,13 @@ public class ActionServiceImpl implements ActionService {
 
         return new ActionResponse(
                 action.getCode(),
-                action.getLibelle(),
+                action.getLibelles(),
                 action.getDateDebut(),
                 action.getDateFin(),
                 action.getStatut(),
                 action.getPlanMitigation().getCode(),
+                action.getCodeRisque(),
+                action.getBonnePratique(),
                 action.getResponsable().getMatricule(),
                 action.getResponsable().getNom()
         );

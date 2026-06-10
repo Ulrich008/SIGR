@@ -9,6 +9,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "action")
@@ -25,8 +26,14 @@ public class Action extends Auditable {
     @Column(name = "code_action", length = 50, unique = true, nullable = false)
     private String code;
 
-    @Column(name = "libelle", length = 200)
+    @Column(name = "libelle", length = 2000)
     private String libelle;
+
+    @Column(name = "code_risque", length = 50)
+    private String codeRisque;
+
+    @Column(name = "bonne_pratique", length = 500)
+    private String bonnePratique;
 
     /**
      * Date de début de l'action
@@ -88,6 +95,44 @@ public class Action extends Auditable {
 
     public Action setLibelle(String libelle) {
         this.libelle = libelle;
+        return this;
+    }
+
+    // Helpers pour convertir entre String (stockage) et List<String> (API)
+    public List<String> getLibelles() {
+        if (libelle == null || libelle.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return java.util.Arrays.asList(libelle.split(";")).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Action setLibelles(List<String> libelles) {
+        if (libelles == null || libelles.isEmpty()) {
+            this.libelle = null;
+        } else {
+            this.libelle = String.join("; ", libelles);
+        }
+        return this;
+    }
+
+    public String getCodeRisque() {
+        return codeRisque;
+    }
+
+    public Action setCodeRisque(String codeRisque) {
+        this.codeRisque = codeRisque;
+        return this;
+    }
+
+    public String getBonnePratique() {
+        return bonnePratique;
+    }
+
+    public Action setBonnePratique(String bonnePratique) {
+        this.bonnePratique = bonnePratique;
         return this;
     }
 
