@@ -1,5 +1,7 @@
 package com.example.SIGR.dto.response;
 
+import com.example.SIGR.entity.StrategieRisque;
+
 import java.time.LocalDate;
 
 public class EvaluationResponse {
@@ -34,6 +36,11 @@ public class EvaluationResponse {
 
     private Integer rangPriorite;
     private String libellePriorite;
+
+    // ================= STRATEGIE RISQUE =================
+
+    private StrategieRisque strategieRisque;
+    private String strategieRisqueDescription;
 
     // ================= INFORMATIONS =================
 
@@ -75,6 +82,9 @@ public class EvaluationResponse {
             Integer rangPriorite,
             String libellePriorite,
 
+            StrategieRisque strategieRisque,
+            String strategieRisqueDescription,
+
             LocalDate dateDebut,
             LocalDate dateFin,
 
@@ -108,6 +118,9 @@ public class EvaluationResponse {
 
         this.rangPriorite = rangPriorite;
         this.libellePriorite = libellePriorite;
+
+        this.strategieRisque = strategieRisque;
+        this.strategieRisqueDescription = strategieRisqueDescription;
 
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
@@ -182,6 +195,14 @@ public class EvaluationResponse {
 
     public String getLibellePriorite() {
         return libellePriorite;
+    }
+
+    public StrategieRisque getStrategieRisque() {
+        return strategieRisque;
+    }
+
+    public String getStrategieRisqueDescription() {
+        return strategieRisqueDescription;
     }
 
     public LocalDate getDateDebut() {

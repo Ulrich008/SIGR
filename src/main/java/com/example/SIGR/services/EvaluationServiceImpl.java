@@ -5,6 +5,7 @@ import com.example.SIGR.dto.response.EvaluationResponse;
 import com.example.SIGR.entity.Agent;
 import com.example.SIGR.entity.Evaluation;
 import com.example.SIGR.entity.Risque;
+import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.repository.AgentRepository;
 import com.example.SIGR.repository.EvaluationRepository;
 import com.example.SIGR.repository.RisqueRepository;
@@ -88,6 +89,14 @@ public class EvaluationServiceImpl implements EvaluationService {
                 )
         );
 
+        // ================= STRATEGIE RISQUE =================
+        // Appliquer automatiquement la stratégie de risque au risque parent
+        StrategieRisque strategieCalculee = evaluation.getStrategieRisqueCalculee();
+        if (strategieCalculee != null) {
+            risque.setStrategieRisque(strategieCalculee);
+            risqueRepository.save(risque);
+        }
+
         Evaluation saved = evaluationRepository.save(evaluation);
 
         return toResponse(saved);
@@ -166,6 +175,14 @@ public class EvaluationServiceImpl implements EvaluationService {
                         evaluation.getScoreResiduel()
                 )
         );
+
+        // ================= STRATEGIE RISQUE =================
+        // Appliquer automatiquement la stratégie de risque au risque parent
+        StrategieRisque strategieCalculee = evaluation.getStrategieRisqueCalculee();
+        if (strategieCalculee != null) {
+            risque.setStrategieRisque(strategieCalculee);
+            risqueRepository.save(risque);
+        }
 
         Evaluation updated = evaluationRepository.save(evaluation);
 
@@ -312,6 +329,18 @@ public class EvaluationServiceImpl implements EvaluationService {
     // ================= RESPONSE =================
     private EvaluationResponse toResponse(Evaluation e) {
 
+        StrategieRisque strategieCalculee = e.getStrategieRisqueCalculee();
+        String strategieDescription = null;
+        
+        if (strategieCalculee != null) {
+            strategieDescription = switch (strategieCalculee) {
+                case TRAITER -> "Mettre en place des dispositifs de contrôle interne pour réduire le risque";
+                case TRANSFERER -> "Partager le risque avec une autre entité (ex : contrat d'assurance, externalisation, sous-traitance)";
+                case TOLERER -> "Ne prendre aucune mesure particulière - le risque est jugé comme étant acceptable";
+                case TERMINER -> "Abandonner l'activité à laquelle le risque est lié";
+            };
+        }
+
         return new EvaluationResponse(
 
                 // ================= IDENTIFIANTS =================
@@ -340,6 +369,10 @@ public class EvaluationServiceImpl implements EvaluationService {
                 // ================= PRIORITE =================
                 e.getRangPriorite(),
                 getLibellePriorite(e.getRangPriorite()),
+
+                // ================= STRATEGIE RISQUE =================
+                strategieCalculee,
+                strategieDescription,
 
                 // ================= DATES =================
                 e.getDateDebut(),

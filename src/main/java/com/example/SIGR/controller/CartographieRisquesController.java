@@ -68,9 +68,9 @@ public class CartographieRisquesController {
                                             {
                                               "titre": "Cartographie des risques 2026",
                                               "periode": "2026-01-01",
-                                              "seuilFaible": 30,
-                                              "seuilMoyen": 60,
-                                              "seuilEleve": 90,
+                                              "seuilFaible": 7,
+                                              "seuilMoyen": 14,
+                                              "seuilEleve": 25,
                                               "statut": "BROUILLON"
                                             }
                                             """

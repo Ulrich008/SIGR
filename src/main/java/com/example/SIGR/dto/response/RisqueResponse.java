@@ -1,6 +1,7 @@
 package com.example.SIGR.dto.response;
 
 import com.example.SIGR.entity.StatutRisque;
+import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
 
 import java.time.LocalDate;
@@ -16,6 +17,8 @@ public class RisqueResponse {
     private List<String> bonnesPratiques;
 
     private StatutRisque statut;
+
+    private StrategieRisque strategieRisque;
 
     private LocalDate dateIdentification;
 
@@ -39,6 +42,7 @@ public class RisqueResponse {
             List<String> consequenceProbable,
             List<String> bonnesPratiques,
             StatutRisque statut,
+            StrategieRisque strategieRisque,
             LocalDate dateIdentification,
             String codeProcessus,
             String nomProcessus,
@@ -53,6 +57,7 @@ public class RisqueResponse {
         this.consequenceProbable = consequenceProbable;
         this.bonnesPratiques = bonnesPratiques;
         this.statut = statut;
+        this.strategieRisque = strategieRisque;
         this.dateIdentification = dateIdentification;
         this.codeProcessus = codeProcessus;
         this.nomProcessus = nomProcessus;
@@ -86,6 +91,10 @@ public class RisqueResponse {
 
     public StatutRisque getStatut() {
         return statut;
+    }
+
+    public StrategieRisque getStrategieRisque() {
+        return strategieRisque;
     }
 
     public LocalDate getDateIdentification() {

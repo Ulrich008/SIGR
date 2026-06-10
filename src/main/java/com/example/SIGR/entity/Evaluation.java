@@ -130,6 +130,32 @@ public class Evaluation extends Auditable {
         return impact * proba;
     }
 
+    /**
+     * Stratégie de risque calculée automatiquement en fonction du score résiduel
+     * - Score 1-7 (Faible) → TOLERER
+     * - Score 8-14 (Moyen) → TRAITER
+     * - Score 15-25 (Élevé) → TRANSFERER
+     * - Score >25 (Très élevé) → TERMINER
+     */
+    @Transient
+    public StrategieRisque getStrategieRisqueCalculee() {
+        Integer score = getScoreResiduel();
+        
+        if (score == null) {
+            return null;
+        }
+        
+        if (score <= 7) {
+            return StrategieRisque.TOLERER;
+        } else if (score <= 14) {
+            return StrategieRisque.TRAITER;
+        } else if (score <= 25) {
+            return StrategieRisque.TRANSFERER;
+        } else {
+            return StrategieRisque.TERMINER;
+        }
+    }
+
     // ================= GETTERS / SETTERS =================
 
     public String getId() {

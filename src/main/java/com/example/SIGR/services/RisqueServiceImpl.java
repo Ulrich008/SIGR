@@ -100,6 +100,7 @@ public class RisqueServiceImpl implements RisqueService {
         );
         risque.setBonnesPratiquesList(request.getBonnesPratiques());
         risque.setStatut(request.getStatut());
+        risque.setStrategieRisque(request.getStrategieRisque());
         risque.setDateIdentification(
                 request.getDateIdentification()
         );
@@ -230,6 +231,7 @@ public class RisqueServiceImpl implements RisqueService {
         );
         risque.setBonnesPratiquesList(request.getBonnesPratiques());
         risque.setStatut(request.getStatut());
+        risque.setStrategieRisque(request.getStrategieRisque());
         risque.setDateIdentification(
                 request.getDateIdentification()
         );
@@ -261,6 +263,7 @@ public class RisqueServiceImpl implements RisqueService {
                 risque.getConsequenceProbableList(),
                 risque.getBonnesPratiquesList(),
                 risque.getStatut(),
+                risque.getStrategieRisque(),
                 risque.getDateIdentification(),
 
                 risque.getProcessus() != null
