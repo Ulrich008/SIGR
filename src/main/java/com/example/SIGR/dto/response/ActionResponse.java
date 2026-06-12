@@ -3,11 +3,12 @@ package com.example.SIGR.dto.response;
 import com.example.SIGR.entity.StatutAction;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ActionResponse {
 
     private String code;
-    private String libelle;
+    private List<String> libelles;
     private LocalDate dateDebut;
     private LocalDate dateFin;
 
@@ -17,26 +18,32 @@ public class ActionResponse {
      * Références métier uniquement
      */
     private String codePlan;
+    private String codeRisque;
+    private String bonnePratique;
 
     private String matriculeResponsable;
     private String nomResponsable;
 
     public ActionResponse(
             String code,
-            String libelle,
+            List<String> libelles,
             LocalDate dateDebut,
             LocalDate dateFin,
             StatutAction statut,
             String codePlan,
+            String codeRisque,
+            String bonnePratique,
             String matriculeResponsable,
             String nomResponsable
     ) {
         this.code = code;
-        this.libelle = libelle;
+        this.libelles = libelles;
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
         this.statut = statut;
         this.codePlan = codePlan;
+        this.codeRisque = codeRisque;
+        this.bonnePratique = bonnePratique;
         this.matriculeResponsable = matriculeResponsable;
         this.nomResponsable = nomResponsable;
     }
@@ -47,8 +54,8 @@ public class ActionResponse {
         return code;
     }
 
-    public String getLibelle() {
-        return libelle;
+    public List<String> getLibelles() {
+        return libelles;
     }
 
     public LocalDate getDateDebut() {
@@ -65,6 +72,14 @@ public class ActionResponse {
 
     public String getCodePlan() {
         return codePlan;
+    }
+
+    public String getCodeRisque() {
+        return codeRisque;
+    }
+
+    public String getBonnePratique() {
+        return bonnePratique;
     }
 
     public String getMatriculeResponsable() {

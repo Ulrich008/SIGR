@@ -59,6 +59,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Hibernate Envers pour l'historisation complète des données -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-envers</artifactId>
+		</dependency>
+
 		<!-- Spring Security (inclut déjà spring-security-crypto) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

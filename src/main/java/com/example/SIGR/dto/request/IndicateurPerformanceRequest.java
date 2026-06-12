@@ -17,20 +17,26 @@ public class IndicateurPerformanceRequest {
     @NotNull(message = "La fréquence est obligatoire")
     private Frequence frequence;
 
-    @PositiveOrZero(message = "La valeur cible doit être >= 0")
-    private Double valeurCible;
+    private String valeurCible; // Peut être un nombre ou une date (string)
 
-    @PositiveOrZero(message = "La valeur obtenue doit être >= 0")
-    private Double valeurObtenue;
+    private String valeurObtenue; // Peut être un nombre ou une date (string)
 
-    @PositiveOrZero(message = "Le seuil d'alerte doit être >= 0")
-    private Double seuilAlerte;
+    private LocalDate seuilAlerte;
 
-    @NotNull(message = "La date de mesure est obligatoire")
-    private LocalDate dateMesure;
+    private String codeUniteMesure;
+
+    private LocalDate dateDebut;
+
+    private LocalDate dateFin;
 
     @NotBlank(message = "Le code du processus est obligatoire")
     private String codeProcessus;
+
+    private String codeRisque;
+
+    private String codePlanMitigation;
+
+    private String codeAction;
 
     // ================= GETTERS / SETTERS =================
 
@@ -61,39 +67,57 @@ public class IndicateurPerformanceRequest {
         return this;
     }
 
-    public Double getValeurCible() {
+    public String getValeurCible() {
         return valeurCible;
     }
 
-    public IndicateurPerformanceRequest setValeurCible(Double valeurCible) {
+    public IndicateurPerformanceRequest setValeurCible(String valeurCible) {
         this.valeurCible = valeurCible;
         return this;
     }
 
-    public Double getValeurObtenue() {
+    public String getValeurObtenue() {
         return valeurObtenue;
     }
 
-    public IndicateurPerformanceRequest setValeurObtenue(Double valeurObtenue) {
+    public IndicateurPerformanceRequest setValeurObtenue(String valeurObtenue) {
         this.valeurObtenue = valeurObtenue;
         return this;
     }
 
-    public Double getSeuilAlerte() {
+    public LocalDate getSeuilAlerte() {
         return seuilAlerte;
     }
 
-    public IndicateurPerformanceRequest setSeuilAlerte(Double seuilAlerte) {
+    public IndicateurPerformanceRequest setSeuilAlerte(LocalDate seuilAlerte) {
         this.seuilAlerte = seuilAlerte;
         return this;
     }
 
-    public LocalDate getDateMesure() {
-        return dateMesure;
+    public String getCodeUniteMesure() {
+        return codeUniteMesure;
     }
 
-    public IndicateurPerformanceRequest setDateMesure(LocalDate dateMesure) {
-        this.dateMesure = dateMesure;
+    public IndicateurPerformanceRequest setCodeUniteMesure(String codeUniteMesure) {
+        this.codeUniteMesure = codeUniteMesure;
+        return this;
+    }
+
+    public LocalDate getDateDebut() {
+        return dateDebut;
+    }
+
+    public IndicateurPerformanceRequest setDateDebut(LocalDate dateDebut) {
+        this.dateDebut = dateDebut;
+        return this;
+    }
+
+    public LocalDate getDateFin() {
+        return dateFin;
+    }
+
+    public IndicateurPerformanceRequest setDateFin(LocalDate dateFin) {
+        this.dateFin = dateFin;
         return this;
     }
 
@@ -103,6 +127,33 @@ public class IndicateurPerformanceRequest {
 
     public IndicateurPerformanceRequest setCodeProcessus(String codeProcessus) {
         this.codeProcessus = codeProcessus;
+        return this;
+    }
+
+    public String getCodeRisque() {
+        return codeRisque;
+    }
+
+    public IndicateurPerformanceRequest setCodeRisque(String codeRisque) {
+        this.codeRisque = codeRisque;
+        return this;
+    }
+
+    public String getCodePlanMitigation() {
+        return codePlanMitigation;
+    }
+
+    public IndicateurPerformanceRequest setCodePlanMitigation(String codePlanMitigation) {
+        this.codePlanMitigation = codePlanMitigation;
+        return this;
+    }
+
+    public String getCodeAction() {
+        return codeAction;
+    }
+
+    public IndicateurPerformanceRequest setCodeAction(String codeAction) {
+        this.codeAction = codeAction;
         return this;
     }
 }

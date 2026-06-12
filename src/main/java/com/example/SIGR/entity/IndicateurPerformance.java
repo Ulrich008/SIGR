@@ -1,11 +1,21 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "indicateur_performance")
-public class IndicateurPerformance {
+@Audited
+@FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
+@Filter(name = "ministereFilter", condition = "code_processus IN (SELECT code FROM processus WHERE id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere))")
+public class IndicateurPerformance extends Auditable {
 
     // 🔥 ID technique auto-généré
     @Id
@@ -20,41 +30,100 @@ public class IndicateurPerformance {
     @Column(length = 200)
     private String libelle;
 
-    @Column(name = "unite_mesure", length = 50)
-    private String uniteMesure = "%";
+    @ManyToOne
+    @JoinColumn(name = "code_unite_mesure")
+    private UniteMesure uniteMesure;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
     private Frequence frequence;
 
     @Column(name = "valeur_cible")
-    private Double valeurCible;
+    private String valeurCible;
 
     @Column(name = "valeur_obtenue")
-    private Double valeurObtenue;
+    private String valeurObtenue;
 
     @Column(name = "seuil_alerte")
-    private Double seuilAlerte;
+    private LocalDate seuilAlerte;
 
-    @Column(name = "date_mesure")
-    private LocalDate dateMesure;
+    @Column(name = "date_debut")
+    private LocalDate dateDebut;
+
+    @Column(name = "date_fin")
+    private LocalDate dateFin;
 
     @ManyToOne
     @JoinColumn(name = "code_processus", nullable = false)
     private Processus processus;
+
+    /**
+     * Relation optionnelle avec un risque
+     */
+    @ManyToOne
+    @JoinColumn(name = "code_risque")
+    private Risque risque;
+
+    /**
+     * Relation optionnelle avec un plan de mitigation
+     */
+    @ManyToOne
+    @JoinColumn(name = "code_plan_mitigation")
+    private PlanMitigation planMitigation;
+
+    /**
+     * Relation optionnelle avec une action
+     */
+    @ManyToOne
+    @JoinColumn(name = "code_action")
+    private Action action;
 
     // ===================== CALCULS =====================
 
     @Transient
     public Double getEcartCible() {
         if (valeurCible == null || valeurObtenue == null) return null;
-        return valeurObtenue - valeurCible;
+        
+        // Si l'unité de mesure est de type DATE, calculer l'écart en nombre de jours
+        if (uniteMesure != null && uniteMesure.getTypeUnite() == UniteMesure.TypeUnite.DATE) {
+            try {
+                LocalDate dateCible = LocalDate.parse(valeurCible);
+                LocalDate dateObtenue = LocalDate.parse(valeurObtenue);
+                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dateCible, dateObtenue);
+                return (double) daysBetween;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        
+        // Sinon, calculer l'écart numérique
+        try {
+            double cible = Double.parseDouble(valeurCible);
+            double obtenue = Double.parseDouble(valeurObtenue);
+            return obtenue - cible;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Transient
     public String getStatut() {
-        if (valeurObtenue == null || seuilAlerte == null) return "INCONNU";
-        return valeurObtenue >= seuilAlerte ? "ALERTE" : "OK";
+
+        if (dateFin == null || seuilAlerte == null) {
+            return "Informations de suivi non disponibles";
+        }
+
+        LocalDate currentDate = LocalDate.now();
+
+        if (currentDate.isAfter(dateFin)) {
+            return "Échéance dépassée - Action de mitigation en retard";
+        }
+
+        if (currentDate.isAfter(seuilAlerte)) {
+            return "Attention : échéance proche, suivi renforcé requis";
+        }
+
+        return "Plan de mitigation en cours conformément au calendrier";
     }
 
     // ===================== GETTERS / SETTERS =====================
@@ -86,11 +155,11 @@ public class IndicateurPerformance {
         return this;
     }
 
-    public String getUniteMesure() {
+    public UniteMesure getUniteMesure() {
         return uniteMesure;
     }
 
-    public IndicateurPerformance setUniteMesure(String uniteMesure) {
+    public IndicateurPerformance setUniteMesure(UniteMesure uniteMesure) {
         this.uniteMesure = uniteMesure;
         return this;
     }
@@ -105,39 +174,48 @@ public class IndicateurPerformance {
     }
 
 
-    public Double getValeurCible() {
+    public String getValeurCible() {
         return valeurCible;
     }
 
-    public IndicateurPerformance setValeurCible(Double valeurCible) {
+    public IndicateurPerformance setValeurCible(String valeurCible) {
         this.valeurCible = valeurCible;
         return this;
     }
 
-    public Double getValeurObtenue() {
+    public String getValeurObtenue() {
         return valeurObtenue;
     }
 
-    public IndicateurPerformance setValeurObtenue(Double valeurObtenue) {
+    public IndicateurPerformance setValeurObtenue(String valeurObtenue) {
         this.valeurObtenue = valeurObtenue;
         return this;
     }
 
-    public Double getSeuilAlerte() {
+    public LocalDate getSeuilAlerte() {
         return seuilAlerte;
     }
 
-    public IndicateurPerformance setSeuilAlerte(Double seuilAlerte) {
+    public IndicateurPerformance setSeuilAlerte(LocalDate seuilAlerte) {
         this.seuilAlerte = seuilAlerte;
         return this;
     }
 
-    public LocalDate getDateMesure() {
-        return dateMesure;
+    public LocalDate getDateDebut() {
+        return dateDebut;
     }
 
-    public IndicateurPerformance setDateMesure(LocalDate dateMesure) {
-        this.dateMesure = dateMesure;
+    public IndicateurPerformance setDateDebut(LocalDate dateDebut) {
+        this.dateDebut = dateDebut;
+        return this;
+    }
+
+    public LocalDate getDateFin() {
+        return dateFin;
+    }
+
+    public IndicateurPerformance setDateFin(LocalDate dateFin) {
+        this.dateFin = dateFin;
         return this;
     }
 
@@ -147,6 +225,33 @@ public class IndicateurPerformance {
 
     public IndicateurPerformance setProcessus(Processus processus) {
         this.processus = processus;
+        return this;
+    }
+
+    public Risque getRisque() {
+        return risque;
+    }
+
+    public IndicateurPerformance setRisque(Risque risque) {
+        this.risque = risque;
+        return this;
+    }
+
+    public PlanMitigation getPlanMitigation() {
+        return planMitigation;
+    }
+
+    public IndicateurPerformance setPlanMitigation(PlanMitigation planMitigation) {
+        this.planMitigation = planMitigation;
+        return this;
+    }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public IndicateurPerformance setAction(Action action) {
+        this.action = action;
         return this;
     }
 }

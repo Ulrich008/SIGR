@@ -23,6 +23,10 @@ public class LoginResponse {
 
     private String role;
 
+    private String codeUnite;
+
+    private String codeMinistere;  // ← ajouté pour multi-ministères
+
     // ================= CONSTRUCTEUR =================
 
     public LoginResponse(
@@ -30,13 +34,17 @@ public class LoginResponse {
             String matricule,
             String nom,
             String prenoms,
-            String role
+            String role,
+            String codeUnite,
+            String codeMinistere
     ) {
         this.token = token;
         this.matricule = matricule;
         this.nom = nom;
         this.prenoms = prenoms;
         this.role = role;
+        this.codeUnite = codeUnite;
+        this.codeMinistere = codeMinistere;
     }
 
     // ================= GETTERS =================
@@ -63,5 +71,13 @@ public class LoginResponse {
 
     public String getRole() {
         return role;
+    }
+
+    public String getCodeUnite() {
+        return codeUnite;
+    }
+
+    public String getCodeMinistere() {
+        return codeMinistere;
     }
 }

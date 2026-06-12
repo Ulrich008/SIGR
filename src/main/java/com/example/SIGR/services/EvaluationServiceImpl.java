@@ -5,10 +5,13 @@ import com.example.SIGR.dto.response.EvaluationResponse;
 import com.example.SIGR.entity.Agent;
 import com.example.SIGR.entity.Evaluation;
 import com.example.SIGR.entity.Risque;
+import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.repository.AgentRepository;
 import com.example.SIGR.repository.EvaluationRepository;
 import com.example.SIGR.repository.RisqueRepository;
+
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,63 +32,94 @@ public class EvaluationServiceImpl implements EvaluationService {
         this.agentRepository = agentRepository;
     }
 
+    // ================= CARTOGRAPHIE =================
     @Override
     public List<CartographieRisqueDetailResponse> getCartographieDetail() {
         return evaluationRepository.findCartographieRisquesDetail();
     }
 
-    // ================= CREATION =================
+    // ================= CREATE =================
     @Override
     public EvaluationResponse create(EvaluationRequest request) {
+
         Risque risque = risqueRepository.findByCode(request.getCodeRisque())
                 .orElseThrow(() ->
-                        new RuntimeException("Risque introuvable : " + request.getCodeRisque())
+                        new RuntimeException(
+                                "Risque introuvable : " + request.getCodeRisque()
+                        )
                 );
 
         Agent agent = null;
+
         if (request.getMatriculeAgent() != null
                 && !request.getMatriculeAgent().isBlank()) {
+
             agent = agentRepository.findByMatricule(request.getMatriculeAgent())
                     .orElseThrow(() ->
                             new RuntimeException(
-                                    "Agent introuvable : " + request.getMatriculeAgent()
+                                    "Agent introuvable : "
+                                            + request.getMatriculeAgent()
                             )
                     );
         }
 
         long total = evaluationRepository.count() + 1;
         String code = String.format("EVAL-%03d", total);
+
         while (evaluationRepository.existsByCode(code)) {
             total++;
             code = String.format("EVAL-%03d", total);
         }
 
         Evaluation evaluation = new Evaluation();
-        evaluation.setCode(code);
-        mapRequestToEntity(evaluation, request, risque, agent);
 
-        // ================= CALCUL PRIORITE =================
-        evaluation.setRangPriorite(
-                calculerRangPriorite(evaluation.getScoreResiduel())
+        evaluation.setCode(code);
+
+        mapRequestToEntity(
+                evaluation,
+                request,
+                risque,
+                agent
         );
 
+        // ================= PRIORITE =================
+        evaluation.setRangPriorite(
+                calculerRangPriorite(
+                        evaluation.getScoreResiduel()
+                )
+        );
+
+        // ================= STRATEGIE RISQUE =================
+        // Appliquer automatiquement la stratégie de risque au risque parent
+        StrategieRisque strategieCalculee = evaluation.getStrategieRisqueCalculee();
+        if (strategieCalculee != null) {
+            risque.setStrategieRisque(strategieCalculee);
+            risqueRepository.save(risque);
+        }
+
         Evaluation saved = evaluationRepository.save(evaluation);
+
         return toResponse(saved);
     }
 
     // ================= GET BY CODE =================
     @Override
     public EvaluationResponse getByCode(String code) {
+
         Evaluation evaluation = evaluationRepository.findByCode(code)
                 .orElseThrow(() ->
-                        new RuntimeException("Evaluation introuvable : " + code)
+                        new RuntimeException(
+                                "Evaluation introuvable : " + code
+                        )
                 );
+
         return toResponse(evaluation);
     }
 
     // ================= GET ALL =================
     @Override
     public List<EvaluationResponse> getAll() {
+
         return evaluationRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -94,46 +128,78 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     // ================= UPDATE =================
     @Override
-    public EvaluationResponse update(String code, EvaluationRequest request) {
+    public EvaluationResponse update(
+            String code,
+            EvaluationRequest request
+    ) {
+
         Evaluation evaluation = evaluationRepository.findByCode(code)
                 .orElseThrow(() ->
-                        new RuntimeException("Evaluation introuvable : " + code)
+                        new RuntimeException(
+                                "Evaluation introuvable : " + code
+                        )
                 );
 
         Risque risque = risqueRepository.findByCode(request.getCodeRisque())
                 .orElseThrow(() ->
-                        new RuntimeException("Risque introuvable : " + request.getCodeRisque())
+                        new RuntimeException(
+                                "Risque introuvable : "
+                                        + request.getCodeRisque()
+                        )
                 );
 
         Agent agent = null;
+
         if (request.getMatriculeAgent() != null
                 && !request.getMatriculeAgent().isBlank()) {
+
             agent = agentRepository.findByMatricule(request.getMatriculeAgent())
                     .orElseThrow(() ->
                             new RuntimeException(
-                                    "Agent introuvable : " + request.getMatriculeAgent()
+                                    "Agent introuvable : "
+                                            + request.getMatriculeAgent()
                             )
                     );
         }
 
-        mapRequestToEntity(evaluation, request, risque, agent);
+        mapRequestToEntity(
+                evaluation,
+                request,
+                risque,
+                agent
+        );
 
         // ================= RECALCUL PRIORITE =================
         evaluation.setRangPriorite(
-                calculerRangPriorite(evaluation.getScoreResiduel())
+                calculerRangPriorite(
+                        evaluation.getScoreResiduel()
+                )
         );
 
+        // ================= STRATEGIE RISQUE =================
+        // Appliquer automatiquement la stratégie de risque au risque parent
+        StrategieRisque strategieCalculee = evaluation.getStrategieRisqueCalculee();
+        if (strategieCalculee != null) {
+            risque.setStrategieRisque(strategieCalculee);
+            risqueRepository.save(risque);
+        }
+
         Evaluation updated = evaluationRepository.save(evaluation);
+
         return toResponse(updated);
     }
 
     // ================= DELETE =================
     @Override
     public void delete(String code) {
+
         Evaluation evaluation = evaluationRepository.findByCode(code)
                 .orElseThrow(() ->
-                        new RuntimeException("Evaluation introuvable : " + code)
+                        new RuntimeException(
+                                "Evaluation introuvable : " + code
+                        )
                 );
+
         evaluationRepository.delete(evaluation);
     }
 
@@ -144,90 +210,195 @@ public class EvaluationServiceImpl implements EvaluationService {
             Risque risque,
             Agent agent
     ) {
+
         // ================= RISQUE INHERENT =================
-        evaluation.setImpactInherent(request.getImpactInherent());
-        evaluation.setProbabiliteInherente(request.getProbabiliteInherente());
+        evaluation.setImpactInherent(
+                request.getImpactInherent()
+        );
+
+        evaluation.setProbabiliteInherente(
+                request.getProbabiliteInherente()
+        );
 
         // ================= MAITRISE =================
-        evaluation.setProtection(request.getProtection());
-        evaluation.setPrevention(request.getPrevention());
+        evaluation.setProtection(
+                request.getProtection()
+        );
+
+        evaluation.setPrevention(
+                request.getPrevention()
+        );
 
         // ================= CONTROLES =================
-        evaluation.setControleExistants(request.getControleExistants());
-        evaluation.setControleInexistants(request.getControleInexistants());
-        evaluation.setDejaSurvenu(request.getDejaSurvenu());
+        evaluation.setControleExistants(
+                request.getControleExistants()
+        );
+
+        evaluation.setControleInexistants(
+                request.getControleInexistants()
+        );
+
+        evaluation.setDejaSurvenu(
+                request.getDejaSurvenu()
+        );
 
         // ================= DATES =================
-        if (request.getDateDebut() != null && request.getDateFin() != null) {
-            if (!request.getDateFin().isAfter(request.getDateDebut())) {
+        if (request.getDateDebut() != null
+                && request.getDateFin() != null) {
+
+            if (!request.getDateFin()
+                    .isAfter(request.getDateDebut())) {
+
                 throw new IllegalArgumentException(
                         "La date de fin doit être supérieure à la date de début"
                 );
             }
         }
-        evaluation.setDateDebut(request.getDateDebut());
-        evaluation.setDateFin(request.getDateFin());
+
+        evaluation.setDateDebut(
+                request.getDateDebut()
+        );
+
+        evaluation.setDateFin(
+                request.getDateFin()
+        );
 
         // ================= TEXTE =================
-        evaluation.setBonnesPratiques(request.getBonnesPratiques());
-        evaluation.setRecommandation(request.getRecommandation());
+        evaluation.setBonnesPratiques(
+                request.getBonnesPratiques()
+        );
+
+        evaluation.setRecommandation(
+                request.getRecommandation()
+        );
 
         // ================= RELATIONS =================
         evaluation.setRisque(risque);
+
         evaluation.setEvaluePar(agent);
     }
 
     // ================= CALCUL PRIORITE =================
     private Integer calculerRangPriorite(Integer scoreResiduel) {
+
         if (scoreResiduel == null) {
-            return 3;
-        }
-        // Risque critique
-        if (scoreResiduel >= 15) {
             return 1;
         }
+
+        // Risque critique
+        if (scoreResiduel >= 15) {
+            return 3;
+        }
+
         // Risque moyen
         if (scoreResiduel >= 8) {
             return 2;
         }
-        // Risque faible
-        return 3;
+
+        // Risque faible 
+        return 1;
+    }
+
+    // ================= LIBELLE PRIORITE =================
+    private String getLibellePriorite(Integer rangPriorite) {
+
+        if (rangPriorite == null) {
+            return "Zone d’observation (Actions non nécessaires - Réévaluation périodique)";
+        }
+
+        return switch (rangPriorite) {
+
+            case 1 ->
+                    "1-Zone d’audit et de traitement des risques prioritaires "
+                            + "(Actions de remédiation immédiates)";
+
+            case 2 ->
+                    "2- Zone d’amélioration "
+                            + "(Actions de remédiation à moyen terme)";
+
+            case 3 ->
+                    "3 -Zone d’observation "
+                            + "(Actions non nécessaires - Réévaluation périodique)";
+
+            default ->
+                    "1 - Zone d’observation "
+                            + "(Actions non nécessaires - Réévaluation périodique)";
+        };
     }
 
     // ================= RESPONSE =================
     private EvaluationResponse toResponse(Evaluation e) {
+
+        StrategieRisque strategieCalculee = e.getStrategieRisqueCalculee();
+        String strategieDescription = null;
+        
+        if (strategieCalculee != null) {
+            strategieDescription = switch (strategieCalculee) {
+                case TRAITER -> "Mettre en place des dispositifs de contrôle interne pour réduire le risque";
+                case TRANSFERER -> "Partager le risque avec une autre entité (ex : contrat d'assurance, externalisation, sous-traitance)";
+                case TOLERER -> "Ne prendre aucune mesure particulière - le risque est jugé comme étant acceptable";
+                case TERMINER -> "Abandonner l'activité à laquelle le risque est lié";
+            };
+        }
+
         return new EvaluationResponse(
+
+                // ================= IDENTIFIANTS =================
                 e.getId(),
                 e.getCode(),
+
                 // ================= INHERENT =================
                 e.getImpactInherent(),
                 e.getProbabiliteInherente(),
                 e.getScoreInherent(),
+
                 // ================= MAITRISE =================
                 e.getProtection(),
                 e.getPrevention(),
+
                 // ================= CONTROLES =================
                 e.getControleExistants(),
                 e.getControleInexistants(),
                 e.getDejaSurvenu(),
+
                 // ================= RESIDUEL =================
                 e.getImpactResiduel(),
                 e.getProbabiliteResiduelle(),
                 e.getScoreResiduel(),
+
                 // ================= PRIORITE =================
                 e.getRangPriorite(),
+                getLibellePriorite(e.getRangPriorite()),
+
+                // ================= STRATEGIE RISQUE =================
+                strategieCalculee,
+                strategieDescription,
+
                 // ================= DATES =================
                 e.getDateDebut(),
                 e.getDateFin(),
+
                 // ================= TEXTE =================
                 e.getRecommandation(),
                 e.getBonnesPratiques(),
+
                 // ================= RISQUE =================
-                e.getRisque() != null ? e.getRisque().getId() : null,
-                e.getRisque() != null ? e.getRisque().getLibelle() : null,
+                e.getRisque() != null
+                        ? e.getRisque().getId()
+                        : null,
+
+                e.getRisque() != null
+                        ? e.getRisque().getLibelle()
+                        : null,
+
                 // ================= AGENT =================
-                e.getEvaluePar() != null ? e.getEvaluePar().getMatricule() : null,
-                e.getEvaluePar() != null ? e.getEvaluePar().getNom() : null
+                e.getEvaluePar() != null
+                        ? e.getEvaluePar().getMatricule()
+                        : null,
+
+                e.getEvaluePar() != null
+                        ? e.getEvaluePar().getNom()
+                        : null
         );
     }
 }

@@ -1,12 +1,15 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import jakarta.persistence.*;
+import org.hibernate.envers.Audited;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "type_unite")
-public class TypeUnite {
+@Audited
+public class TypeUnite extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -34,7 +34,7 @@ public class CartographieRisqueDetailResponse {
     private Integer probabiliteResiduelle;
     private Integer scoreResiduel;
 
-    private Integer rangPriorite;
+    private String libellePriorite;
 
     // ================= CONTROLES =================
     private String controleExistants;
@@ -75,7 +75,7 @@ public class CartographieRisqueDetailResponse {
             Integer probabiliteResiduelle,
             Integer scoreResiduel,
 
-            Integer rangPriorite,
+            String libellePriorite,
 
             String controleExistants,
             String controleInexistants,
@@ -111,7 +111,7 @@ public class CartographieRisqueDetailResponse {
         this.probabiliteResiduelle = probabiliteResiduelle;
         this.scoreResiduel = scoreResiduel;
 
-        this.rangPriorite = rangPriorite;
+        this.libellePriorite = libellePriorite;
 
         this.controleExistants = controleExistants;
         this.controleInexistants = controleInexistants;
@@ -163,7 +163,7 @@ public class CartographieRisqueDetailResponse {
 
     public Integer getScoreResiduel() { return scoreResiduel; }
 
-    public Integer getRangPriorite() { return rangPriorite; }
+    public String getLibellePriorite() { return libellePriorite; }
 
     public String getControleExistants() { return controleExistants; }
 

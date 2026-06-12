@@ -13,6 +13,7 @@ public class ProcessusRequest {
     @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
+    @NotBlank(message = "La finalité est obligatoire")
     @Size(max = 1000, message = "La finalité est trop longue")
     private String finalite;
 

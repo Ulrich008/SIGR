@@ -1,5 +1,7 @@
 package com.example.SIGR.dto.response;
 
+import com.example.SIGR.entity.StrategieRisque;
+
 import java.time.LocalDate;
 
 public class EvaluationResponse {
@@ -33,6 +35,12 @@ public class EvaluationResponse {
     // ================= PRIORISATION =================
 
     private Integer rangPriorite;
+    private String libellePriorite;
+
+    // ================= STRATEGIE RISQUE =================
+
+    private StrategieRisque strategieRisque;
+    private String strategieRisqueDescription;
 
     // ================= INFORMATIONS =================
 
@@ -72,6 +80,10 @@ public class EvaluationResponse {
             Integer scoreResiduel,
 
             Integer rangPriorite,
+            String libellePriorite,
+
+            StrategieRisque strategieRisque,
+            String strategieRisqueDescription,
 
             LocalDate dateDebut,
             LocalDate dateFin,
@@ -82,7 +94,7 @@ public class EvaluationResponse {
             String idRisque,
             String libelleRisque,
 
-            String idAgent,
+            String matriculeAgent,
             String nomAgent
     ) {
 
@@ -105,6 +117,10 @@ public class EvaluationResponse {
         this.scoreResiduel = scoreResiduel;
 
         this.rangPriorite = rangPriorite;
+        this.libellePriorite = libellePriorite;
+
+        this.strategieRisque = strategieRisque;
+        this.strategieRisqueDescription = strategieRisqueDescription;
 
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
@@ -115,41 +131,109 @@ public class EvaluationResponse {
         this.idRisque = idRisque;
         this.libelleRisque = libelleRisque;
 
-        this.matriculeAgent = idAgent;
+        this.matriculeAgent = matriculeAgent;
         this.nomAgent = nomAgent;
     }
 
     // ================= GETTERS =================
 
-    public String getId() { return id; }
-    public String getCode() { return code; }
+    public String getId() {
+        return id;
+    }
 
-    public Integer getImpactInherent() { return impactInherent; }
-    public Integer getProbabiliteInherente() { return probabiliteInherente; }
-    public Integer getScoreInherent() { return scoreInherent; }
+    public String getCode() {
+        return code;
+    }
 
-    public Integer getProtection() { return protection; }
-    public Integer getPrevention() { return prevention; }
+    public Integer getImpactInherent() {
+        return impactInherent;
+    }
 
-    public String getControleExistants() { return controleExistants; }
-    public String getControleInexistants() { return controleInexistants; }
-    public Boolean getDejaSurvenu() { return dejaSurvenu; }
+    public Integer getProbabiliteInherente() {
+        return probabiliteInherente;
+    }
 
-    public Integer getImpactResiduel() { return impactResiduel; }
-    public Integer getProbabiliteResiduelle() { return probabiliteResiduelle; }
-    public Integer getScoreResiduel() { return scoreResiduel; }
+    public Integer getScoreInherent() {
+        return scoreInherent;
+    }
 
-    public Integer getRangPriorite() { return rangPriorite; }
+    public Integer getProtection() {
+        return protection;
+    }
 
-    public LocalDate getDateDebut() { return dateDebut; }
-    public LocalDate getDateFin() { return dateFin; }
+    public Integer getPrevention() {
+        return prevention;
+    }
 
-    public String getRecommandation() { return recommandation; }
-    public String getBonnesPratiques() { return bonnesPratiques; }
+    public String getControleExistants() {
+        return controleExistants;
+    }
 
-    public String getIdRisque() { return idRisque; }
-    public String getLibelleRisque() { return libelleRisque; }
+    public String getControleInexistants() {
+        return controleInexistants;
+    }
 
-    public String getIdAgent() { return matriculeAgent; }
-    public String getNomAgent() { return nomAgent; }
+    public Boolean getDejaSurvenu() {
+        return dejaSurvenu;
+    }
+
+    public Integer getImpactResiduel() {
+        return impactResiduel;
+    }
+
+    public Integer getProbabiliteResiduelle() {
+        return probabiliteResiduelle;
+    }
+
+    public Integer getScoreResiduel() {
+        return scoreResiduel;
+    }
+
+    public Integer getRangPriorite() {
+        return rangPriorite;
+    }
+
+    public String getLibellePriorite() {
+        return libellePriorite;
+    }
+
+    public StrategieRisque getStrategieRisque() {
+        return strategieRisque;
+    }
+
+    public String getStrategieRisqueDescription() {
+        return strategieRisqueDescription;
+    }
+
+    public LocalDate getDateDebut() {
+        return dateDebut;
+    }
+
+    public LocalDate getDateFin() {
+        return dateFin;
+    }
+
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public String getBonnesPratiques() {
+        return bonnesPratiques;
+    }
+
+    public String getIdRisque() {
+        return idRisque;
+    }
+
+    public String getLibelleRisque() {
+        return libelleRisque;
+    }
+
+    public String getMatriculeAgent() {
+        return matriculeAgent;
+    }
+
+    public String getNomAgent() {
+        return nomAgent;
+    }
 }

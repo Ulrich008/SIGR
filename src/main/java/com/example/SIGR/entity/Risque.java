@@ -1,12 +1,22 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "risque")
-public class Risque {
+@Audited
+@FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
+@Filter(name = "ministereFilter", condition = "code_processus IN (SELECT code FROM processus WHERE id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere))")
+public class Risque extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -19,15 +29,22 @@ public class Risque {
     @Column(name = "libelle_risque", length = 200)
     private String libelle;
 
-    @Column(name = "cause_probable", length = 500)
+    @Column(name = "cause_probable", length = 2000)
     private String causeProbable;
 
-    @Column(name = "consequence_probable", length = 500)
+    @Column(name = "consequence_probable", length = 2000)
     private String consequenceProbable;
+
+    @Column(name = "bonnes_pratiques", length = 2000)
+    private String bonnesPratiques;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statut_risque", length = 50)
     private StatutRisque statut;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "strategie_risque", length = 50)
+    private StrategieRisque strategieRisque;
 
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
@@ -39,6 +56,7 @@ public class Risque {
      */
     @ManyToOne
     @JoinColumn(name = "code_processus", nullable = false)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Processus processus;
 
     /**
@@ -94,8 +112,72 @@ public class Risque {
     public String getConsequenceProbable() { return consequenceProbable; }
     public Risque setConsequenceProbable(String consequenceProbable) { this.consequenceProbable = consequenceProbable; return this; }
 
+    public String getBonnesPratiques() { return bonnesPratiques; }
+    public Risque setBonnesPratiques(String bonnesPratiques) { this.bonnesPratiques = bonnesPratiques; return this; }
+
+    // Helpers pour convertir entre String (stockage) et List<String> (API)
+    public List<String> getCauseProbableList() {
+        if (causeProbable == null || causeProbable.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return java.util.Arrays.asList(causeProbable.split(";")).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Risque setCauseProbableList(List<String> causeProbableList) {
+        if (causeProbableList == null || causeProbableList.isEmpty()) {
+            this.causeProbable = null;
+        } else {
+            this.causeProbable = String.join("; ", causeProbableList);
+        }
+        return this;
+    }
+
+    public List<String> getConsequenceProbableList() {
+        if (consequenceProbable == null || consequenceProbable.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return java.util.Arrays.asList(consequenceProbable.split(";")).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Risque setConsequenceProbableList(List<String> consequenceProbableList) {
+        if (consequenceProbableList == null || consequenceProbableList.isEmpty()) {
+            this.consequenceProbable = null;
+        } else {
+            this.consequenceProbable = String.join("; ", consequenceProbableList);
+        }
+        return this;
+    }
+
+    public List<String> getBonnesPratiquesList() {
+        if (bonnesPratiques == null || bonnesPratiques.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        return java.util.Arrays.asList(bonnesPratiques.split(";")).stream()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Risque setBonnesPratiquesList(List<String> bonnesPratiquesList) {
+        if (bonnesPratiquesList == null || bonnesPratiquesList.isEmpty()) {
+            this.bonnesPratiques = null;
+        } else {
+            this.bonnesPratiques = String.join("; ", bonnesPratiquesList);
+        }
+        return this;
+    }
+
     public StatutRisque getStatut() { return statut; }
     public Risque setStatut(StatutRisque statut) { this.statut = statut; return this; }
+
+    public StrategieRisque getStrategieRisque() { return strategieRisque; }
+    public Risque setStrategieRisque(StrategieRisque strategieRisque) { this.strategieRisque = strategieRisque; return this; }
 
     public LocalDate getDateIdentification() { return dateIdentification; }
     public Risque setDateIdentification(LocalDate dateIdentification) { this.dateIdentification = dateIdentification; return this; }

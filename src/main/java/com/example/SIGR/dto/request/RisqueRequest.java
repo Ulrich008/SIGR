@@ -1,10 +1,12 @@
 package com.example.SIGR.dto.request;
 
 import com.example.SIGR.entity.StatutRisque;
+import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class RisqueRequest {
 
@@ -15,14 +17,16 @@ public class RisqueRequest {
     @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
-    @Size(max = 1000, message = "La cause probable est trop longue")
-    private String causeProbable;
+    private List<String> causeProbable;
 
-    @Size(max = 1000, message = "La conséquence probable est trop longue")
-    private String consequenceProbable;
+    private List<String> consequenceProbable;
+
+    private List<String> bonnesPratiques;
 
     @NotNull(message = "Le statut est obligatoire")
     private StatutRisque statut;
+
+    private StrategieRisque strategieRisque;
 
     @NotNull(message = "La date d'identification est obligatoire")
     private LocalDate dateIdentification;
@@ -57,21 +61,30 @@ public class RisqueRequest {
     }
 
 
-    public String getCauseProbable() {
+    public List<String> getCauseProbable() {
         return causeProbable;
     }
 
-    public RisqueRequest setCauseProbable(String causeProbable) {
+    public RisqueRequest setCauseProbable(List<String> causeProbable) {
         this.causeProbable = causeProbable;
         return this;
     }
 
-    public String getConsequenceProbable() {
+    public List<String> getConsequenceProbable() {
         return consequenceProbable;
     }
 
-    public RisqueRequest setConsequenceProbable(String consequenceProbable) {
+    public RisqueRequest setConsequenceProbable(List<String> consequenceProbable) {
         this.consequenceProbable = consequenceProbable;
+        return this;
+    }
+
+    public List<String> getBonnesPratiques() {
+        return bonnesPratiques;
+    }
+
+    public RisqueRequest setBonnesPratiques(List<String> bonnesPratiques) {
+        this.bonnesPratiques = bonnesPratiques;
         return this;
     }
 
@@ -81,6 +94,15 @@ public class RisqueRequest {
 
     public RisqueRequest setStatut(StatutRisque statut) {
         this.statut = statut;
+        return this;
+    }
+
+    public StrategieRisque getStrategieRisque() {
+        return strategieRisque;
+    }
+
+    public RisqueRequest setStrategieRisque(StrategieRisque strategieRisque) {
+        this.strategieRisque = strategieRisque;
         return this;
     }
 

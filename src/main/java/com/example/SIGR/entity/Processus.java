@@ -1,11 +1,19 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.envers.Audited;
 import java.util.List;
 
 @Entity
 @Table(name = "processus")
-public class Processus {
+@Audited
+@FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
+@Filter(name = "ministereFilter", condition = "id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere)")
+public class Processus extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -44,6 +52,12 @@ public class Processus {
      */
     @OneToMany(mappedBy = "processus")
     private List<IndicateurPerformance> indicateurs;
+
+    /*
+     * Un processus peut avoir plusieurs missions associées.
+     */
+    @OneToMany(mappedBy = "processus")
+    private List<Mission> missions;
 
     // ================= GETTERS / SETTERS =================
 
@@ -116,6 +130,15 @@ public class Processus {
 
     public Processus setIndicateurs(List<IndicateurPerformance> indicateurs) {
         this.indicateurs = indicateurs;
+        return this;
+    }
+
+    public List<Mission> getMissions() {
+        return missions;
+    }
+
+    public Processus setMissions(List<Mission> missions) {
+        this.missions = missions;
         return this;
     }
 }

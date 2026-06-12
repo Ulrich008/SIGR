@@ -1,6 +1,7 @@
 package com.example.SIGR.dto.response;
 
 import com.example.SIGR.entity.StatutRisque;
+import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
 
 import java.time.LocalDate;
@@ -11,10 +12,13 @@ public class RisqueResponse {
     private String id;
     private String code;
     private String libelle;
-    private String causeProbable;
-    private String consequenceProbable;
+    private List<String> causeProbable;
+    private List<String> consequenceProbable;
+    private List<String> bonnesPratiques;
 
     private StatutRisque statut;
+
+    private StrategieRisque strategieRisque;
 
     private LocalDate dateIdentification;
 
@@ -34,9 +38,11 @@ public class RisqueResponse {
             String id,
             String code,
             String libelle,
-            String causeProbable,
-            String consequenceProbable,
+            List<String> causeProbable,
+            List<String> consequenceProbable,
+            List<String> bonnesPratiques,
             StatutRisque statut,
+            StrategieRisque strategieRisque,
             LocalDate dateIdentification,
             String codeProcessus,
             String nomProcessus,
@@ -49,7 +55,9 @@ public class RisqueResponse {
         this.libelle = libelle;
         this.causeProbable = causeProbable;
         this.consequenceProbable = consequenceProbable;
+        this.bonnesPratiques = bonnesPratiques;
         this.statut = statut;
+        this.strategieRisque = strategieRisque;
         this.dateIdentification = dateIdentification;
         this.codeProcessus = codeProcessus;
         this.nomProcessus = nomProcessus;
@@ -69,16 +77,24 @@ public class RisqueResponse {
         return libelle;
     }
 
-    public String getCauseProbable() {
+    public List<String> getCauseProbable() {
         return causeProbable;
     }
 
-    public String getConsequenceProbable() {
+    public List<String> getConsequenceProbable() {
         return consequenceProbable;
+    }
+
+    public List<String> getBonnesPratiques() {
+        return bonnesPratiques;
     }
 
     public StatutRisque getStatut() {
         return statut;
+    }
+
+    public StrategieRisque getStrategieRisque() {
+        return strategieRisque;
     }
 
     public LocalDate getDateIdentification() {

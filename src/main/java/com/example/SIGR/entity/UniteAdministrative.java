@@ -1,11 +1,19 @@
 package com.example.SIGR.entity;
 
+import com.example.SIGR.entity.audit.Auditable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.envers.Audited;
 import java.util.List;
 
 @Entity
 @Table(name = "unite_administrative")
-public class UniteAdministrative {
+@Audited
+@FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
+@Filter(name = "ministereFilter", condition = "code_ministere = :codeMinistere")
+public class UniteAdministrative extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
