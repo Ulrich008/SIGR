@@ -15,7 +15,8 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "https://sigr.lisabenin.org"
         ));
 
         configuration.setAllowedMethods(List.of(
