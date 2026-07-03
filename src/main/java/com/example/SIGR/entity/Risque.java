@@ -42,6 +42,10 @@ public class Risque extends Auditable {
     @Column(name = "statut_risque", length = 50)
     private StatutRisque statut;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "strategie_risque", length = 50)
+    private StrategieRisque strategieRisque;
+
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
 
@@ -171,6 +175,9 @@ public class Risque extends Auditable {
 
     public StatutRisque getStatut() { return statut; }
     public Risque setStatut(StatutRisque statut) { this.statut = statut; return this; }
+
+    public StrategieRisque getStrategieRisque() { return strategieRisque; }
+    public Risque setStrategieRisque(StrategieRisque strategieRisque) { this.strategieRisque = strategieRisque; return this; }
 
     public LocalDate getDateIdentification() { return dateIdentification; }
     public Risque setDateIdentification(LocalDate dateIdentification) { this.dateIdentification = dateIdentification; return this; }

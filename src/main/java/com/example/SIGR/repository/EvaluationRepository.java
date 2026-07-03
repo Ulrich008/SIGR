@@ -57,7 +57,7 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
         e.recommandation,
         e.dateDebut,
         e.dateFin,
-        e.bonnesPratiques,
+        r.bonnesPratiques,
 
         ag.nom
 

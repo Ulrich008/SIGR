@@ -1,6 +1,7 @@
 package com.example.SIGR.dto.request;
 
 import com.example.SIGR.entity.StatutRisque;
+import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
 import jakarta.validation.constraints.*;
 
@@ -24,6 +25,8 @@ public class RisqueRequest {
 
     @NotNull(message = "Le statut est obligatoire")
     private StatutRisque statut;
+
+    private StrategieRisque strategieRisque;
 
     @NotNull(message = "La date d'identification est obligatoire")
     private LocalDate dateIdentification;
@@ -91,6 +94,15 @@ public class RisqueRequest {
 
     public RisqueRequest setStatut(StatutRisque statut) {
         this.statut = statut;
+        return this;
+    }
+
+    public StrategieRisque getStrategieRisque() {
+        return strategieRisque;
+    }
+
+    public RisqueRequest setStrategieRisque(StrategieRisque strategieRisque) {
+        this.strategieRisque = strategieRisque;
         return this;
     }
 
