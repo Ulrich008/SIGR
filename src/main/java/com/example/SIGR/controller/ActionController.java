@@ -33,7 +33,14 @@ public class ActionController {
     }
 
     // ================= CREATE =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    /**
+     * ADMIN :
+     * - Création des actions
+     *
+     * RESPONSABLE_RISQUES :
+     * - Création des actions (Mitigation)
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Créer une action",
@@ -67,22 +74,30 @@ public class ActionController {
     }
 
     // ================= GET ALL =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    /**
+     * Tous les profils :
+     * - Consultation en lecture seule (Mitigation)
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister toutes les actions",
-            description = "Retourne la liste complète des actions"
+            description = "Retourne la liste complète des actions (lecture seule pour tous les profils)"
     )
     public ResponseEntity<List<ActionResponse>> getAll() {
         return ResponseEntity.ok(actionService.getAll());
     }
 
     // ================= GET BY CODE =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    /**
+     * Tous les profils :
+     * - Consultation en lecture seule (Mitigation)
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer une action par code",
-            description = "Retourne une action à partir de son code métier"
+            description = "Retourne une action à partir de son code métier (lecture seule pour tous les profils)"
     )
     public ResponseEntity<ActionResponse> getByCode(
             @PathVariable String code
@@ -91,7 +106,17 @@ public class ActionController {
     }
 
     // ================= UPDATE =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    /**
+     * ADMIN :
+     * - Modification des actions
+     *
+     * RESPONSABLE_RISQUES :
+     * - Modification des actions (Mitigation)
+     *
+     * RESPONSABLE_ACTION :
+     * - Modification uniquement des actions qui lui sont affectées (Mitigation)
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une action",
@@ -124,7 +149,14 @@ public class ActionController {
     }
 
     // ================= DELETE =================
-    @PreAuthorize("hasAuthority('ADMIN')")
+    /**
+     * ADMIN :
+     * - Suppression des actions
+     *
+     * RESPONSABLE_RISQUES :
+     * - Suppression des actions (Mitigation)
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une action",

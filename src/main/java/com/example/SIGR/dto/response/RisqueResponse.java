@@ -1,5 +1,6 @@
 package com.example.SIGR.dto.response;
 
+import com.example.SIGR.entity.AvisRisque;
 import com.example.SIGR.entity.StatutRisque;
 import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
@@ -34,6 +35,12 @@ public class RisqueResponse {
      */
     private List<String> risquesResiduelsIds;
 
+    private AvisRisque avis;
+
+    private String motif;
+
+    private Boolean transmis;
+
     public RisqueResponse(
             String id,
             String code,
@@ -48,7 +55,10 @@ public class RisqueResponse {
             String nomProcessus,
             String idCartographie,
             TypeRisque typeRisque,
-            List<String> risquesResiduelsIds
+            List<String> risquesResiduelsIds,
+            AvisRisque avis,
+            String motif,
+            Boolean transmis
     ) {
         this.id = id;
         this.code = code ;
@@ -64,6 +74,9 @@ public class RisqueResponse {
         this.idCartographie = idCartographie;
         this.typeRisque = typeRisque;
         this.risquesResiduelsIds = risquesResiduelsIds;
+        this.avis = avis;
+        this.motif = motif;
+        this.transmis = transmis;
     }
 
     public String getCode() {
@@ -119,5 +132,17 @@ public class RisqueResponse {
 
     public List<String> getRisquesResiduelsIds() {
         return risquesResiduelsIds;
+    }
+
+    public AvisRisque getAvis() {
+        return avis;
+    }
+
+    public String getMotif() {
+        return motif;
+    }
+
+    public Boolean getTransmis() {
+        return transmis;
     }
 }

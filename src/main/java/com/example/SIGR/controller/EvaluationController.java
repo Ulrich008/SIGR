@@ -46,7 +46,14 @@ public class EvaluationController {
 
     // ================= CREATION =================
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    /**
+     * ADMIN :
+     * - Création des évaluations
+     *
+     * RESPONSABLE_RISQUES :
+     * - Création des évaluations (Évaluation)
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping
     @Operation(
             summary = "Créer une évaluation",
@@ -109,11 +116,15 @@ public class EvaluationController {
 
     // ================= LISTE =================
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    /**
+     * Tous les profils :
+     * - Consultation en lecture seule (Évaluation)
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister toutes les évaluations",
-            description = "Retourne la liste complète des évaluations avec leurs scores calculés"
+            description = "Retourne la liste complète des évaluations avec leurs scores calculés (lecture seule pour tous les profils)"
     )
     public ResponseEntity<List<EvaluationResponse>> getAll() {
 
@@ -124,11 +135,15 @@ public class EvaluationController {
 
     // ================= GET BY CODE =================
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    /**
+     * Tous les profils :
+     * - Consultation en lecture seule (Évaluation)
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer une évaluation",
-            description = "Retourne une évaluation via son code métier"
+            description = "Retourne une évaluation via son code métier (lecture seule pour tous les profils)"
     )
     public ResponseEntity<EvaluationResponse> getByCode(
 
@@ -146,7 +161,14 @@ public class EvaluationController {
 
     // ================= UPDATE =================
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    /**
+     * ADMIN :
+     * - Modification des évaluations
+     *
+     * RESPONSABLE_RISQUES :
+     * - Modification des évaluations (Évaluation)
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une évaluation",
@@ -217,7 +239,14 @@ public class EvaluationController {
 
     // ================= DELETE =================
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    /**
+     * ADMIN :
+     * - Suppression des évaluations
+     *
+     * RESPONSABLE_RISQUES :
+     * - Suppression des évaluations (Évaluation)
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une évaluation",
@@ -237,7 +266,11 @@ public class EvaluationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    /**
+     * Tous les profils :
+     * - Consultation en lecture seule (Évaluation)
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/detail")
     @Operation(
             summary = "Détail complet de la cartographie des risques",
@@ -246,7 +279,7 @@ public class EvaluationController {
                     - processus associé
                     - unité administrative
                     - scores inhérents et résiduels
-                    - contrôles et plan d'action
+                    - contrôles et plan d'action (lecture seule pour tous les profils)
                     """
     )
     public ResponseEntity<List<CartographieRisqueDetailResponse>> getDetail() {

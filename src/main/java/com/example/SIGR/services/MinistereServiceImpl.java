@@ -113,4 +113,10 @@ public class MinistereServiceImpl implements MinistereService {
                 ministere.getCreePar()
         );
     }
+
+    // ================= GET CODE MINISTERE OF CURRENT USER =================
+    @Override
+    public String getCodeMinistereOfCurrentUser() {
+        return SecurityUtils.getCurrentMinistereCode();
+    }
 }

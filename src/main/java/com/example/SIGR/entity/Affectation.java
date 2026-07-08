@@ -5,9 +5,15 @@ import jakarta.persistence.*;
 import org.hibernate.envers.Audited;
 import java.time.LocalDate;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 @Entity
 @Table(name = "affectation")
 @Audited
+@FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
+@Filter(name = "ministereFilter", condition = "id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere)")
 public class Affectation extends Auditable {
 
     @Id

@@ -127,6 +127,19 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         List<CartographieRisqueDetailResponse> data =
                 evaluationRepository.findCartographieRisquesDetail();
 
+        return generateExcelFromData(data);
+    }
+
+    @Override
+    public byte[] generateExcelByUnite(String codeUnite) {
+        List<CartographieRisqueDetailResponse> data =
+                evaluationRepository.findCartographieRisquesDetailByUnite(codeUnite);
+
+        return generateExcelFromData(data);
+    }
+
+    private byte[] generateExcelFromData(List<CartographieRisqueDetailResponse> data) {
+
         try (
                 InputStream templateStream = getClass()
                         .getResourceAsStream("/templates/cartographie-risques-template.xlsx");

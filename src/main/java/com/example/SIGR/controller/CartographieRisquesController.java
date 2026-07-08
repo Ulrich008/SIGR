@@ -50,10 +50,10 @@ public class CartographieRisquesController {
      * ADMIN :
      * - Création des cartographies
      *
-     * MANAGER :
+     * RESPONSABLE_RISQUES :
      * - Création des cartographies
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Créer une cartographie de risques",
@@ -104,17 +104,14 @@ public class CartographieRisquesController {
     /**
      * ================= GET ALL =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
+     * Tous les profils :
+     * - Consultation en lecture seule
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister toutes les cartographies",
-            description = "Retourne toutes les cartographies"
+            description = "Retourne toutes les cartographies (lecture seule pour tous les profils)"
     )
     public ResponseEntity<List<CartographieRisquesResponse>> getAll() {
 
@@ -126,20 +123,14 @@ public class CartographieRisquesController {
     /**
      * ================= GET BY CODE =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     *
-     * AGENT :
-     * - Consultation autorisée
+     * Tous les profils :
+     * - Consultation en lecture seule
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Obtenir une cartographie",
-            description = "Recherche via le code métier"
+            description = "Recherche via le code métier (lecture seule pour tous les profils)"
     )
     public ResponseEntity<CartographieRisquesResponse> getByCode(
             @PathVariable String code
@@ -156,10 +147,10 @@ public class CartographieRisquesController {
      * ADMIN :
      * - Modification des cartographies
      *
-     * MANAGER :
+     * RESPONSABLE_RISQUES :
      * - Modification des cartographies
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PutMapping(
             value = "/{code}",
             consumes = MediaType.APPLICATION_JSON_VALUE
@@ -201,11 +192,17 @@ public class CartographieRisquesController {
                 .build();
     }
 
+    /**
+     * ================= EXPORT EXCEL =================
+     *
+     * Tous les profils :
+     * - Consultation en lecture seule
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/export/excel")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
     @Operation(
             summary = "Exporter la cartographie en Excel",
-            description = "Génère un fichier Excel contenant la cartographie détaillée des risques"
+            description = "Génère un fichier Excel contenant la cartographie détaillée des risques (lecture seule pour tous les profils)"
     )
     public ResponseEntity<byte[]> exportExcel() {
 
@@ -219,6 +216,36 @@ public class CartographieRisquesController {
                 .header(
                         "Content-Disposition",
                         "attachment; filename=cartographie-risques.xlsx"
+                )
+                .body(excel);
+    }
+
+    /**
+     * ================= EXPORT EXCEL PAR UNITE =================
+     *
+     * Tous les profils :
+     * - Consultation en lecture seule
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/export/excel/unite/{codeUnite}")
+    @Operation(
+            summary = "Exporter la cartographie par unité administrative en Excel",
+            description = "Génère un fichier Excel contenant la cartographie détaillée des risques pour une unité administrative spécifique (lecture seule pour tous les profils)"
+    )
+    public ResponseEntity<byte[]> exportExcelByUnite(
+            @PathVariable String codeUnite
+    ) {
+
+        byte[] excel = cartographieRisquesService.generateExcelByUnite(codeUnite);
+
+        return ResponseEntity.ok()
+                .header(
+                        "Content-Type",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                .header(
+                        "Content-Disposition",
+                        "attachment; filename=cartographie-risques-" + codeUnite + ".xlsx"
                 )
                 .body(excel);
     }

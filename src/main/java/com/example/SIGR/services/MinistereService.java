@@ -19,4 +19,7 @@ public interface MinistereService {
 
     // optionnel (très utile)
     MinistereResponse getByCode(String code);
+
+    // Récupérer le code du ministère de l'utilisateur connecté
+    String getCodeMinistereOfCurrentUser();
 }

@@ -32,18 +32,14 @@ public class SecurityConfig {
 
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    private final MinistereFilterConfig ministereFilterConfig;
-
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            CustomAccessDeniedHandler customAccessDeniedHandler,
-            MinistereFilterConfig ministereFilterConfig
+            CustomAccessDeniedHandler customAccessDeniedHandler
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
-        this.ministereFilterConfig = ministereFilterConfig;
     }
 
     /**
@@ -130,6 +126,12 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
+                        // ================= ENUMS (données de référence) =================
+
+                        .requestMatchers(
+                                "/api/plans-audit/enums/**"
+                        ).permitAll()
+
                         // ================= OPTIONS =================
 
                         .requestMatchers(
@@ -148,14 +150,6 @@ public class SecurityConfig {
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
-                )
-
-                /**
-                 * Filtre Ministère pour multi-ministères
-                 */
-                .addFilterAfter(
-                        ministereFilterConfig,
-                        JwtAuthenticationFilter.class
                 );
 
         return http.build();
