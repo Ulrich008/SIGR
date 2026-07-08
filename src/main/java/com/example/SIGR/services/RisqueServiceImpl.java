@@ -110,6 +110,9 @@ public class RisqueServiceImpl implements RisqueService {
 
         risque.setProcessus(processus);
         risque.setCartographie(cartographie);
+        risque.setAvis(request.getAvis());
+        risque.setMotif(request.getMotif());
+        risque.setTransmis(request.getTransmis() != null ? request.getTransmis() : false);
 
         Risque saved =
                 risqueRepository.save(risque);
@@ -241,6 +244,11 @@ public class RisqueServiceImpl implements RisqueService {
 
         risque.setProcessus(processus);
         risque.setCartographie(cartographie);
+        risque.setAvis(request.getAvis());
+        risque.setMotif(request.getMotif());
+        if (request.getTransmis() != null) {
+            risque.setTransmis(request.getTransmis());
+        }
 
         Risque updated =
                 risqueRepository.save(risque);
@@ -285,7 +293,11 @@ public class RisqueServiceImpl implements RisqueService {
                           .stream()
                           .map(RisqueResiduel::getCode)
                           .toList()
-                        : List.of()
+                        : List.of(),
+
+                risque.getAvis(),
+                risque.getMotif(),
+                risque.getTransmis() != null ? risque.getTransmis() : false
         );
     }
 

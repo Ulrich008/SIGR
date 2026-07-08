@@ -1,5 +1,6 @@
 package com.example.SIGR.dto.request;
 
+import com.example.SIGR.entity.AvisRisque;
 import com.example.SIGR.entity.StatutRisque;
 import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
@@ -39,6 +40,13 @@ public class RisqueRequest {
 
     @NotNull(message = "Le type de risque est obligatoire")
     private TypeRisque typeRisque;
+
+    private AvisRisque avis;
+
+    @Size(max = 1000, message = "Le motif ne doit pas dépasser 1000 caractères")
+    private String motif;
+
+    private Boolean transmis = false;
 
     // ================= GETTERS / SETTERS =================
 
@@ -140,6 +148,33 @@ public class RisqueRequest {
 
     public RisqueRequest setTypeRisque(TypeRisque typeRisque) {
         this.typeRisque = typeRisque;
+        return this;
+    }
+
+    public AvisRisque getAvis() {
+        return avis;
+    }
+
+    public RisqueRequest setAvis(AvisRisque avis) {
+        this.avis = avis;
+        return this;
+    }
+
+    public String getMotif() {
+        return motif;
+    }
+
+    public RisqueRequest setMotif(String motif) {
+        this.motif = motif;
+        return this;
+    }
+
+    public Boolean getTransmis() {
+        return transmis;
+    }
+
+    public RisqueRequest setTransmis(Boolean transmis) {
+        this.transmis = transmis;
         return this;
     }
 }

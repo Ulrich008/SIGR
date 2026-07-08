@@ -54,10 +54,10 @@ public class RisqueController {
      * ADMIN :
      * - Création des risques
      *
-     * MANAGER :
-     * - Création des risques
+     * RESPONSABLE_RISQUES :
+     * - Création des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping
     @Operation(
             summary = "Créer un risque",
@@ -124,17 +124,14 @@ public class RisqueController {
     /**
      * ================= LISTE =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
+     * Tous les profils :
+     * - Consultation en lecture seule (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les risques",
-            description = "Retourne la liste complète des risques"
+            description = "Retourne la liste complète des risques (lecture seule pour tous les profils)"
     )
     public ResponseEntity<List<RisqueResponse>> getAll() {
 
@@ -146,20 +143,14 @@ public class RisqueController {
     /**
      * ================= RECHERCHE PAR CODE =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     *
-     * AGENT :
-     * - Consultation autorisée
+     * Tous les profils :
+     * - Consultation en lecture seule (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Rechercher un risque par code",
-            description = "Retourne les informations d'un risque via son code métier"
+            description = "Retourne les informations d'un risque via son code métier (lecture seule pour tous les profils)"
     )
     public ResponseEntity<RisqueResponse> getByCode(
 
@@ -182,10 +173,10 @@ public class RisqueController {
      * ADMIN :
      * - Modification des risques
      *
-     * MANAGER :
-     * - Modification des risques
+     * RESPONSABLE_RISQUES :
+     * - Modification des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un risque",
@@ -221,8 +212,11 @@ public class RisqueController {
      *
      * ADMIN :
      * - Suppression des risques
+     *
+     * RESPONSABLE_RISQUES :
+     * - Suppression des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un risque",

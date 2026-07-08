@@ -46,6 +46,16 @@ public class Risque extends Auditable {
     @Column(name = "strategie_risque", length = 50)
     private StrategieRisque strategieRisque;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "avis_risque", length = 50)
+    private AvisRisque avis;
+
+    @Column(name = "motif", length = 1000)
+    private String motif;
+
+    @Column(name = "transmis")
+    private Boolean transmis = false;
+
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
 
@@ -178,6 +188,15 @@ public class Risque extends Auditable {
 
     public StrategieRisque getStrategieRisque() { return strategieRisque; }
     public Risque setStrategieRisque(StrategieRisque strategieRisque) { this.strategieRisque = strategieRisque; return this; }
+
+    public AvisRisque getAvis() { return avis; }
+    public Risque setAvis(AvisRisque avis) { this.avis = avis; return this; }
+
+    public String getMotif() { return motif; }
+    public Risque setMotif(String motif) { this.motif = motif; return this; }
+
+    public Boolean getTransmis() { return transmis; }
+    public Risque setTransmis(Boolean transmis) { this.transmis = transmis; return this; }
 
     public LocalDate getDateIdentification() { return dateIdentification; }
     public Risque setDateIdentification(LocalDate dateIdentification) { this.dateIdentification = dateIdentification; return this; }

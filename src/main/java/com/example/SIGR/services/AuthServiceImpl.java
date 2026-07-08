@@ -76,6 +76,8 @@ public class AuthServiceImpl implements AuthService {
                 agent.getNom(),
                 agent.getPrenoms(),
                 agent.getRole().name(),
+                agent.getProfil() != null ? agent.getProfil().getCode() : null,
+                agent.getProfil() != null ? agent.getProfil().getLibelle() : null,
                 agent.getUnite() != null ? agent.getUnite().getCode() : null,
                 agent.getMinistere() != null ? agent.getMinistere().getCode() : null
         );
