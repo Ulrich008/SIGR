@@ -7,6 +7,8 @@ import com.example.SIGR.entity.UniteAdministrative;
 import com.example.SIGR.repository.MinistereRepository;
 import com.example.SIGR.repository.TypeUniteRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
+import com.example.SIGR.security.SecurityUtils;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -46,6 +48,8 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
                     "Une unité existe déjà avec ce libellé : " + request.getLibelle()
             );
         }
+
+        verifierAccesMinistere(request.getCodeMinistere());
 
         Ministere ministere = ministereRepository.findByCode(request.getCodeMinistere())
                 .orElseThrow(() ->
@@ -127,6 +131,7 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
 
         // ================= MINISTERE =================
         if (request.getCodeMinistere() != null && !request.getCodeMinistere().isBlank()) {
+            verifierAccesMinistere(request.getCodeMinistere());
             Ministere ministere = ministereRepository.findByCode(request.getCodeMinistere())
                     .orElseThrow(() ->
                             new RuntimeException("Ministère introuvable : " + request.getCodeMinistere())
@@ -169,6 +174,28 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     // =========================================================
     // HELPERS
     // =========================================================
+
+    /**
+     * Un ADMIN ne peut créer/déplacer une unité que dans son propre
+     * ministère. Le SUPER_ADMIN n'est soumis à aucune restriction.
+     */
+    private void verifierAccesMinistere(String codeMinistereCible) {
+
+        if (SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            return;
+        }
+
+        String codeMinistereCourant = SecurityUtils.getCurrentMinistereCode();
+
+        if (codeMinistereCourant == null
+                || !codeMinistereCourant.equals(codeMinistereCible)) {
+
+            throw new AccessDeniedException(
+                    "Vous ne pouvez gérer que les unités de votre propre ministère"
+            );
+        }
+    }
+
     private UniteAdministrative resolveParent(String idUniteParent) {
         if (idUniteParent == null || idUniteParent.isBlank()) {
             return null;

@@ -4,6 +4,7 @@ import com.example.SIGR.dto.request.MinistereRequest;
 import com.example.SIGR.dto.response.MinistereResponse;
 import com.example.SIGR.entity.Ministere;
 import com.example.SIGR.repository.MinistereRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import com.example.SIGR.security.SecurityUtils;
 
@@ -22,6 +23,12 @@ public class MinistereServiceImpl implements MinistereService {
     // ================= CREATE =================
     @Override
     public MinistereResponse create(MinistereRequest request) {
+
+        // Seul le super-admin peut créer un nouveau ministère (action globale,
+        // hors périmètre d'un ADMIN qui gère uniquement son propre ministère)
+        if (!SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            throw new AccessDeniedException("Seul un super-administrateur peut créer un ministère");
+        }
 
         if (ministereRepository.existsByCode(request.getCode())) {
             throw new RuntimeException("Code déjà utilisé : " + request.getCode());
@@ -62,6 +69,21 @@ public class MinistereServiceImpl implements MinistereService {
     // ================= GET ALL =================
     @Override
     public List<MinistereResponse> getAll() {
+
+        // Un ADMIN ne doit voir que son propre ministère dans la liste des
+        // structures ; un SUPER_ADMIN voit tous les ministères. Le Ministere
+        // n'a pas de filtre Hibernate par ministère (il ne serait filtré que
+        // par lui-même) : la restriction se fait donc explicitement ici.
+        if (!SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            String codeMinistereCourant = SecurityUtils.getCurrentMinistereCode();
+
+            return ministereRepository.findAll()
+                    .stream()
+                    .filter(m -> m.getCode().equals(codeMinistereCourant))
+                    .map(this::toResponse)
+                    .collect(Collectors.toList());
+        }
+
         return ministereRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -74,6 +96,8 @@ public class MinistereServiceImpl implements MinistereService {
 
         Ministere ministere = ministereRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ministère introuvable, id : " + id));
+
+        verifierAccesMinistere(ministere);
 
         if (ministereRepository.existsByNom(request.getNom())
                 && !ministere.getNom().equals(request.getNom())) {
@@ -94,11 +118,35 @@ public class MinistereServiceImpl implements MinistereService {
     @Override
     public void delete(String id) {
 
-        if (!ministereRepository.existsById(id)) {
-            throw new RuntimeException("Ministère introuvable, id : " + id);
-        }
+        Ministere ministere = ministereRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ministère introuvable, id : " + id));
+
+        verifierAccesMinistere(ministere);
 
         ministereRepository.deleteById(id);
+    }
+
+    // ================= CONTRÔLE D'ACCÈS PAR MINISTÈRE =================
+
+    /**
+     * Un ADMIN ne peut modifier/supprimer que son propre ministère.
+     * Le SUPER_ADMIN n'est soumis à aucune restriction.
+     */
+    private void verifierAccesMinistere(Ministere ministere) {
+
+        if (SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            return;
+        }
+
+        String codeMinistereCourant = SecurityUtils.getCurrentMinistereCode();
+
+        if (codeMinistereCourant == null
+                || !codeMinistereCourant.equals(ministere.getCode())) {
+
+            throw new AccessDeniedException(
+                    "Vous ne pouvez gérer que votre propre ministère"
+            );
+        }
     }
 
     // ================= MAPPER =================

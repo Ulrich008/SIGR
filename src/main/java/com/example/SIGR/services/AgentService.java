@@ -18,6 +18,13 @@ public interface AgentService {
     AgentResponse getByMatricule(String matricule);
 
     /**
+     * Profil de l'agent actuellement connecté. Contrairement à
+     * getByMatricule, ignore le filtre par ministère : un agent doit
+     * toujours pouvoir se retrouver lui-même.
+     */
+    AgentResponse getMe(String matricule);
+
+    /**
      * Liste de tous les agents
      */
     List<AgentResponse> getAll();
@@ -36,4 +43,11 @@ public interface AgentService {
      * Suppression d'un agent
      */
     void delete(String matricule);
+
+    /**
+     * Génère un PDF listant les agents d'un ministère.
+     * ADMIN : le ministère est imposé (le sien), codeMinistere est ignoré.
+     * SUPER_ADMIN : codeMinistere est obligatoire, n'importe quel ministère.
+     */
+    byte[] generateAgentsPdf(String codeMinistere);
 }

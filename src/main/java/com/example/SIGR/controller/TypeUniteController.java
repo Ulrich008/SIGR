@@ -43,7 +43,7 @@ public class TypeUniteController {
      * ADMIN :
      * - Peut créer des types d'unités
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un type d'unité",
@@ -79,13 +79,10 @@ public class TypeUniteController {
     /**
      * ================= LISTE =================
      *
-     * ADMIN :
-     * - Accès total
-     *
-     * MANAGER :
-     * - Consultation des types d'unités
+     * Tous les profils authentifiés :
+     * - Consultation en lecture seule (données de référence)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les types d'unités",
@@ -101,16 +98,10 @@ public class TypeUniteController {
     /**
      * ================= RECHERCHE PAR CODE =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     *
-     * AGENT :
-     * - Consultation simple
+     * Tous les profils authentifiés :
+     * - Consultation en lecture seule (données de référence)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer un type d'unité par code",
@@ -128,10 +119,10 @@ public class TypeUniteController {
     /**
      * ================= MODIFICATION =================
      *
-     * ADMIN :
-     * - Peut modifier tous les types d'unités
+     * SUPER_ADMIN uniquement :
+     * - Seul un super administrateur peut modifier un type d'unité
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un type d'unité",
@@ -170,10 +161,10 @@ public class TypeUniteController {
     /**
      * ================= SUPPRESSION =================
      *
-     * ADMIN :
-     * - Peut supprimer un type d'unité
+     * SUPER_ADMIN uniquement :
+     * - Seul un super administrateur peut supprimer un type d'unité
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un type d'unité",

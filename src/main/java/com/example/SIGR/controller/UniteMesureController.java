@@ -20,7 +20,7 @@ public class UniteMesureController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UniteMesureResponse> create(@RequestBody UniteMesureRequest request) {
         return ResponseEntity.ok(service.create(request));
     }
@@ -36,7 +36,7 @@ public class UniteMesureController {
     }
 
     @PutMapping("/{code}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UniteMesureResponse> update(
             @PathVariable String code,
             @RequestBody UniteMesureRequest request
@@ -45,7 +45,7 @@ public class UniteMesureController {
     }
 
     @DeleteMapping("/{code}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String code) {
         service.delete(code);
         return ResponseEntity.noContent().build();

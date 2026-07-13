@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "plan_mitigation")
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
-@Filter(name = "ministereFilter", condition = "id_risque IN (SELECT id_risque FROM risque WHERE code_processus IN (SELECT code FROM processus WHERE id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere)))")
+@Filter(name = "ministereFilter", condition = "id_risque IN (SELECT r.id_risque FROM risque r WHERE r.code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)))")
 public class PlanMitigation extends Auditable {
 
     @Id

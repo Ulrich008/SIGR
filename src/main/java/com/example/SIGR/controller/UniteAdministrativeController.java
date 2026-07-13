@@ -82,13 +82,10 @@ public class UniteAdministrativeController {
     /**
      * ================= LISTE =================
      *
-     * ADMIN :
-     * - Accès total
-     *
-     * MANAGER :
-     * - Consultation des unités administratives
+     * Tous les profils authentifiés :
+     * - Consultation en lecture seule (données de référence)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister toutes les unités",
@@ -104,16 +101,10 @@ public class UniteAdministrativeController {
     /**
      * ================= RECHERCHE PAR CODE =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     *
-     * AGENT :
-     * - Consultation simple
+     * Tous les profils authentifiés :
+     * - Consultation en lecture seule (données de référence)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer une unité par son code",

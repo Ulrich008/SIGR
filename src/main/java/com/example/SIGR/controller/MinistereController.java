@@ -37,7 +37,7 @@ public class MinistereController {
     /**
      * ================= CREATE =================
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un ministère",
@@ -75,7 +75,7 @@ public class MinistereController {
     /**
      * ================= GET ALL =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les ministères",
@@ -91,7 +91,7 @@ public class MinistereController {
     /**
      * ================= GET BY ID =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     @Operation(
             summary = "Récupérer un ministère par ID",
@@ -109,7 +109,7 @@ public class MinistereController {
     /**
      * ================= GET BY CODE =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/code/{code}")
     @Operation(
             summary = "Récupérer un ministère par code métier",

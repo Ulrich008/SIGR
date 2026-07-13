@@ -85,11 +85,8 @@ public class AffectationController {
      *
      * ADMIN :
      * - Accès total
-     *
-     * MANAGER :
-     * - Consultation des affectations
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     @Operation(
             summary = "Lister toutes les affectations",
@@ -108,13 +105,10 @@ public class AffectationController {
      * ADMIN :
      * - Consultation complète
      *
-     * MANAGER :
-     * - Consultation complète
-     *
      * AGENT :
      * - Peut consulter uniquement sa propre affectation
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'AGENT')")
     @GetMapping("/{code}")
     @Operation(
             summary = "Rechercher une affectation par code",
@@ -130,19 +124,19 @@ public class AffectationController {
 
         String currentUser = authentication.getName();
 
-        boolean isAdminOrManager =
+        boolean isAdmin =
                 authentication.getAuthorities()
                         .stream()
                         .anyMatch(auth ->
                                 auth.getAuthority().equals("ADMIN")
-                                        || auth.getAuthority().equals("MANAGER")
+                                        || auth.getAuthority().equals("SUPER_ADMIN")
                         );
 
         /**
-         * ADMIN et MANAGER :
+         * ADMIN (et SUPER_ADMIN via la hiérarchie) :
          * accès total
          */
-        if (isAdminOrManager) {
+        if (isAdmin) {
             return ResponseEntity.ok(response);
         }
 

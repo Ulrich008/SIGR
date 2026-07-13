@@ -17,6 +17,9 @@ public class CartographieRisquesResponse {
 
     private StatutCartographie statut;
 
+    private String codeUniteAdministrative;
+    private String libelleUniteAdministrative;
+
     private int nombreRisques;
 
     public CartographieRisquesResponse(
@@ -28,6 +31,8 @@ public class CartographieRisquesResponse {
             Integer seuilMoyen,
             Integer seuilEleve,
             StatutCartographie statut,
+            String codeUniteAdministrative,
+            String libelleUniteAdministrative,
             int nombreRisques
     ) {
         this.id = id;
@@ -38,6 +43,8 @@ public class CartographieRisquesResponse {
         this.seuilMoyen = seuilMoyen;
         this.seuilEleve = seuilEleve;
         this.statut = statut;
+        this.codeUniteAdministrative = codeUniteAdministrative;
+        this.libelleUniteAdministrative = libelleUniteAdministrative;
         this.nombreRisques = nombreRisques;
     }
 
@@ -71,6 +78,14 @@ public class CartographieRisquesResponse {
 
     public StatutCartographie getStatut() {
         return statut;
+    }
+
+    public String getCodeUniteAdministrative() {
+        return codeUniteAdministrative;
+    }
+
+    public String getLibelleUniteAdministrative() {
+        return libelleUniteAdministrative;
     }
 
     public int getNombreRisques() {

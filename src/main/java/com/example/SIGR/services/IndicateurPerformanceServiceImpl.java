@@ -119,6 +119,12 @@ public class IndicateurPerformanceServiceImpl
         // ✅ Validation métier
         validerChamps(request);
 
+        if (repository.existsByLibelleIgnoreCase(request.getLibelle())) {
+            throw new RuntimeException(
+                    "Un indicateur avec ce libellé existe déjà : " + request.getLibelle()
+            );
+        }
+
         // ================= PROCESSUS =================
         Processus processus = processusRepository
                 .findByCode(request.getCodeProcessus())
@@ -173,12 +179,14 @@ public class IndicateurPerformanceServiceImpl
         }
 
         // ================= GENERATION CODE =================
-        long total = repository.count() + 1;
-        String code = String.format("KPI-%03d", total);
+        // Format : I_A_R_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+        String sigleUnite = processus.getUnite().getCode();
+        long total = repository.countByProcessus_Unite_Code(sigleUnite) + 1;
+        String code = "I_A_R_" + sigleUnite + String.format("%03d", total);
 
         while (repository.existsByCode(code)) {
             total++;
-            code = String.format("KPI-%03d", total);
+            code = "I_A_R_" + sigleUnite + String.format("%03d", total);
         }
 
         // ================= CREATION =================
@@ -239,6 +247,12 @@ public class IndicateurPerformanceServiceImpl
                 .orElseThrow(() ->
                         new RuntimeException("KPI introuvable : " + code)
                 );
+
+        if (repository.existsByLibelleIgnoreCaseAndCodeNot(request.getLibelle(), code)) {
+            throw new RuntimeException(
+                    "Un indicateur avec ce libellé existe déjà : " + request.getLibelle()
+            );
+        }
 
         // ================= PROCESSUS =================
         Processus processus = processusRepository

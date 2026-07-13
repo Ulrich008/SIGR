@@ -53,7 +53,7 @@ public class CartographieRisquesController {
      * RESPONSABLE_RISQUES :
      * - Création des cartographies
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Créer une cartographie de risques",
@@ -150,7 +150,7 @@ public class CartographieRisquesController {
      * RESPONSABLE_RISQUES :
      * - Modification des cartographies
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @PutMapping(
             value = "/{code}",
             consumes = MediaType.APPLICATION_JSON_VALUE
@@ -175,7 +175,7 @@ public class CartographieRisquesController {
      * ADMIN :
      * - Suppression des cartographies
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une cartographie",

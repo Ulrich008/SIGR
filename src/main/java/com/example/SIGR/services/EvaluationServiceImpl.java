@@ -63,12 +63,14 @@ public class EvaluationServiceImpl implements EvaluationService {
                     );
         }
 
-        long total = evaluationRepository.count() + 1;
-        String code = String.format("EVAL-%03d", total);
+        // Format : Re_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+        String sigleUnite = risque.getProcessus().getUnite().getCode();
+        long total = evaluationRepository.countByRisque_Processus_Unite_Code(sigleUnite) + 1;
+        String code = "Re_" + sigleUnite + String.format("%03d", total);
 
         while (evaluationRepository.existsByCode(code)) {
             total++;
-            code = String.format("EVAL-%03d", total);
+            code = "Re_" + sigleUnite + String.format("%03d", total);
         }
 
         Evaluation evaluation = new Evaluation();

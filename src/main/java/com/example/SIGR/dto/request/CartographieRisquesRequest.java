@@ -32,6 +32,9 @@ public class CartographieRisquesRequest {
     @NotNull(message = "Le statut est obligatoire")
     private StatutCartographie statut;
 
+    @NotBlank(message = "L'unité administrative est obligatoire")
+    private String codeUniteAdministrative;
+
     // ================= GETTERS / SETTERS =================
 
     public String getCode() {
@@ -94,6 +97,15 @@ public class CartographieRisquesRequest {
 
     public CartographieRisquesRequest setStatut(StatutCartographie statut) {
         this.statut = statut;
+        return this;
+    }
+
+    public String getCodeUniteAdministrative() {
+        return codeUniteAdministrative;
+    }
+
+    public CartographieRisquesRequest setCodeUniteAdministrative(String codeUniteAdministrative) {
+        this.codeUniteAdministrative = codeUniteAdministrative;
         return this;
     }
 }

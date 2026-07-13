@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
@@ -48,6 +52,34 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Hiérarchie des rôles techniques : SUPER_ADMIN hérite de tous les
+     * droits d'ADMIN. Ainsi @PreAuthorize("hasAuthority('ADMIN')") (ou
+     * hasAnyAuthority(...'ADMIN'...)) laisse aussi passer SUPER_ADMIN,
+     * sans avoir à lister SUPER_ADMIN partout dans les contrôleurs.
+     * Les profils métier (CMMR, CCI, PILOTE, RESPONSABLE_RISQUES,
+     * RESPONSABLE_ACTION, AUDITEUR) restent hors hiérarchie : ce sont
+     * des autorisations métier distinctes, pas des rôles techniques.
+     *
+     * Déclaré en @Bean static, comme recommandé par Spring Security,
+     * pour que la hiérarchie soit disponible avant l'initialisation
+     * des proxys de sécurité des méthodes (@EnableMethodSecurity).
+     */
+    @Bean
+    static RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy("SUPER_ADMIN > ADMIN");
+    }
+
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+            RoleHierarchy roleHierarchy
+    ) {
+        DefaultMethodSecurityExpressionHandler handler =
+                new DefaultMethodSecurityExpressionHandler();
+        handler.setRoleHierarchy(roleHierarchy);
+        return handler;
     }
 
     /**

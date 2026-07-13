@@ -16,6 +16,8 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
 
     boolean existsByCode(String code);
 
+    long countByRisque_Processus_Unite_Code(String codeUnite);
+
     // ================= CARTOGRAPHIE DETAILLEE =================
     @Query("""
     SELECT new com.example.SIGR.dto.response.CartographieRisqueDetailResponse(

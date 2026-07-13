@@ -77,7 +77,7 @@ public class ProfilController {
     /**
      * ================= GET ALL =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les profils",
@@ -93,7 +93,7 @@ public class ProfilController {
     /**
      * ================= GET BY CODE =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Rechercher un profil par code",

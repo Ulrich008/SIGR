@@ -12,4 +12,6 @@ public interface CartographieRisquesRepository extends JpaRepository<Cartographi
     boolean existsByCode(String code);
 
     Optional<CartographieRisques> findByCode(String code);
+
+    long countByUniteAdministrative_Code(String codeUnite);
 }

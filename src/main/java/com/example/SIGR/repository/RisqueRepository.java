@@ -13,5 +13,9 @@ public interface RisqueRepository extends JpaRepository<Risque, String> {
 
     boolean existsByLibelleIgnoreCase(String libelle);
 
+    boolean existsByLibelleIgnoreCaseAndCodeNot(String libelle, String code);
+
     Optional<Risque> findByLibelleIgnoreCase(String libelle);
+
+    long countByProcessus_Unite_Code(String codeUnite);
 }

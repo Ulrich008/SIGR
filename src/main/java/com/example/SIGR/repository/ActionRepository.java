@@ -17,4 +17,8 @@ public interface ActionRepository extends JpaRepository<Action, String> {
     boolean existsByLibelle(String libelle);
     
     List<Action> findByPlanMitigation(PlanMitigation planMitigation);
+
+    List<Action> findByCodeRisque(String codeRisque);
+
+    long countByPlanMitigation_Risque_Processus_Unite_Code(String codeUnite);
 }

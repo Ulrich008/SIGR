@@ -13,7 +13,6 @@ import com.example.SIGR.repository.UniteAdministrativeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +38,7 @@ public class PlanAuditServiceImpl implements PlanAuditService {
     // ================= CREATE =================
     @Override
     public PlanAuditResponse create(PlanAuditRequest request) {
-        // ✅ Vérification doublon libellé à la création
+        //  Vérification doublon libellé à la création
         if (planAuditRepository.existsByLibelle(request.getLibelle())) {
             throw new RuntimeException(
                     "Un plan d'audit avec ce libellé existe déjà : " + request.getLibelle()
@@ -65,7 +64,7 @@ public class PlanAuditServiceImpl implements PlanAuditService {
         }
 
         PlanAudit planAudit = new PlanAudit();
-        planAudit.setCode(generateCode());
+        planAudit.setCode(generateCode(unite.getCode()));
         planAudit.setLibelle(request.getLibelle());
         planAudit.setDateCreation(request.getDateCreation());
         planAudit.setUniteAdministrative(unite);
@@ -179,7 +178,15 @@ public class PlanAuditServiceImpl implements PlanAuditService {
     }
 
     // ================= CODE GENERATION =================
-    private String generateCode() {
-        return "PA-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    // Format : PA_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+    private String generateCode(String sigleUnite) {
+        long compteur = planAuditRepository.countByUniteAdministrative_Code(sigleUnite) + 1;
+
+        String code = "PA_" + sigleUnite + String.format("%03d", compteur);
+        while (planAuditRepository.existsByCode(code)) {
+            compteur++;
+            code = "PA_" + sigleUnite + String.format("%03d", compteur);
+        }
+        return code;
     }
 }

@@ -1,13 +1,10 @@
 package com.example.SIGR.security;
 
-import com.example.SIGR.entity.Agent;
 import com.example.SIGR.repository.AgentRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class SecurityUtils {
@@ -46,18 +43,39 @@ public class SecurityUtils {
                 .orElse(null);
     }
 
+    /**
+     * Vérifie si l'utilisateur courant possède une autorité précise
+     * (ex: "SUPER_ADMIN"). Utilisé pour les contournements globaux
+     * (super-admin) qui ne doivent pas dépendre de l'ordre non garanti
+     * d'un Set<GrantedAuthority>.
+     */
+    public static boolean hasAuthority(String authority) {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals(authority));
+    }
+
+    /**
+     * Recherche le ministère de l'utilisateur courant en se retrouvant
+     * lui-même via son matricule. Passe par une requête SQL native
+     * (AgentRepository.findCodeMinistereByMatricule) plutôt que par
+     * findByMatricule : une requête dérivée JPQL respecte le filtre
+     * Hibernate "ministereFilter" actif sur la session, alors que c'est
+     * précisément ce filtre que cette méthode sert à calculer. En passant
+     * par le filtre, un blocage auto-référentiel serait possible. Une
+     * requête native est entièrement immunisée contre ce filtre.
+     */
     public static String getCurrentMinistereCode() {
         String matricule = getCurrentUser();
         if (matricule == null) {
             return null;
         }
 
-        Optional<Agent> optionalAgent = staticAgentRepository.findByMatricule(matricule);
-
-        if (optionalAgent.isEmpty() || optionalAgent.get().getMinistere() == null) {
-            return null;
-        }
-
-        return optionalAgent.get().getMinistere().getCode();
+        return staticAgentRepository.findCodeMinistereByMatricule(matricule);
     }
 }
