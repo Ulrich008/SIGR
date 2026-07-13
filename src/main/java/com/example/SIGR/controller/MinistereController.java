@@ -126,8 +126,10 @@ public class MinistereController {
 
     /**
      * ================= UPDATE =================
+     * Réservé au SUPER_ADMIN : un ADMIN peut consulter son propre
+     * ministère mais ne peut ni le modifier, ni le supprimer.
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Modifier un ministère",
@@ -161,8 +163,9 @@ public class MinistereController {
 
     /**
      * ================= DELETE =================
+     * Réservé au SUPER_ADMIN (voir update ci-dessus).
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Supprimer un ministère",
