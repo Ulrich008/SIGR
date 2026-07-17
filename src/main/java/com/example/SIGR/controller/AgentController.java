@@ -159,14 +159,20 @@ public class AgentController {
 
     /**
      * ================= LISTE =================
+     * ADMIN/SUPER_ADMIN : tous les agents de leur périmètre (ministère,
+     * filtré par Hibernate). AGENT : uniquement les agents de sa propre
+     * unité administrative (voir AgentServiceImpl.getAll) — nécessaire
+     * pour les formulaires qui doivent proposer une liste d'agents
+     * (ex: responsable d'une action) sans exposer tout le ministère.
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN', 'AGENT')")
     @GetMapping
     @Operation(
             summary = "Lister tous les agents",
             description = """
-                    Retourne la liste complète des agents.
-                    Accessible uniquement aux administrateurs.
+                    Retourne la liste des agents visibles pour l'utilisateur connecté :
+                    tout le ministère pour un ADMIN/SUPER_ADMIN, uniquement sa propre
+                    unité administrative pour un AGENT.
                     """
     )
     @ApiResponses(value = {

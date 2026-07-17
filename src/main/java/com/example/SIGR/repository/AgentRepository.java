@@ -32,6 +32,16 @@ public interface AgentRepository extends JpaRepository<Agent, String> {
     String findCodeMinistereByMatricule(@Param("matricule") String matricule);
 
     /**
+     * Code (métier) de l'unité administrative de l'agent, en requête SQL
+     * native pour les mêmes raisons que findCodeMinistereByMatricule
+     * ci-dessus. Sert à restreindre la liste des agents visibles par un
+     * AGENT (profil métier) à sa propre unité administrative.
+     */
+    @Query(value = "SELECT ua.code_unite FROM agent a JOIN unite_administrative ua ON ua.id_unite = a.id_unite " +
+            "WHERE a.matricule_agent = :matricule", nativeQuery = true)
+    String findCodeUniteByMatricule(@Param("matricule") String matricule);
+
+    /**
      * Vérifie si un agent existe par son NPI
      */
     boolean existsByNpi(String npi);

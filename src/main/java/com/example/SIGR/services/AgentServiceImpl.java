@@ -244,8 +244,28 @@ public class AgentServiceImpl implements AgentService {
     @Override
     public List<AgentResponse> getAll() {
 
-        return agentRepository.findAll()
-                .stream()
+        List<Agent> agents = agentRepository.findAll();
+
+        // Un AGENT (profil métier) ne doit voir que les agents de sa propre
+        // unité administrative, pas tout son ministère (déjà restreint par
+        // le filtre Hibernate pour ADMIN/SUPER_ADMIN, mais un AGENT a besoin
+        // d'un périmètre plus étroit — typiquement pour choisir un
+        // responsable dans un formulaire sans exposer tout le ministère).
+        if (SecurityUtils.hasAuthority("AGENT")) {
+
+            String matricule = SecurityUtils.getCurrentUser();
+            String codeUniteCourant = matricule != null
+                    ? agentRepository.findCodeUniteByMatricule(matricule)
+                    : null;
+
+            agents = agents.stream()
+                    .filter(a -> codeUniteCourant != null
+                            && a.getUnite() != null
+                            && codeUniteCourant.equals(a.getUnite().getCode()))
+                    .collect(Collectors.toList());
+        }
+
+        return agents.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
