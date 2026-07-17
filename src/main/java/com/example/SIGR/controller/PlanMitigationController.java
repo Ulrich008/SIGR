@@ -33,7 +33,7 @@ public class PlanMitigationController {
     }
 
     // ================= CREATE =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @PostMapping
     @Operation(
             summary = "Créer un plan de mitigation",
@@ -65,7 +65,7 @@ public class PlanMitigationController {
     }
 
     // ================= GET ALL =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les plans de mitigation",
@@ -76,7 +76,7 @@ public class PlanMitigationController {
     }
 
     // ================= GET BY CODE =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer un plan de mitigation par code métier"
@@ -88,7 +88,7 @@ public class PlanMitigationController {
     }
 
     // ================= UPDATE =================
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un plan de mitigation par code métier",
@@ -118,7 +118,7 @@ public class PlanMitigationController {
     }
 
     // ================= DELETE =================
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un plan de mitigation par code métier"

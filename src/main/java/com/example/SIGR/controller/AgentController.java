@@ -18,7 +18,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,7 +58,7 @@ public class AgentController {
     /**
      * ================= CREATION =================
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPER_ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un agent",
@@ -149,7 +151,7 @@ public class AgentController {
     ) {
 
         return ResponseEntity.ok(
-                agentService.getByMatricule(
+                agentService.getMe(
                         authentication.getName()
                 )
         );
@@ -157,15 +159,20 @@ public class AgentController {
 
     /**
      * ================= LISTE =================
+     * ADMIN/SUPER_ADMIN : tous les agents de leur périmètre (ministère,
+     * filtré par Hibernate). AGENT : uniquement les agents de sa propre
+     * unité administrative (voir AgentServiceImpl.getAll) — nécessaire
+     * pour les formulaires qui doivent proposer une liste d'agents
+     * (ex: responsable d'une action) sans exposer tout le ministère.
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN', 'AGENT')")
     @GetMapping
     @Operation(
             summary = "Lister tous les agents",
             description = """
-                    Retourne la liste complète des agents.
-                    Accessible uniquement aux administrateurs
-                    et managers.
+                    Retourne la liste des agents visibles pour l'utilisateur connecté :
+                    tout le ministère pour un ADMIN/SUPER_ADMIN, uniquement sa propre
+                    unité administrative pour un AGENT.
                     """
     )
     @ApiResponses(value = {
@@ -186,10 +193,49 @@ public class AgentController {
     }
 
     /**
+     * ================= EXPORT PDF =================
+     *
+     * ADMIN :
+     * - Génère le PDF des agents de son propre ministère
+     *   (codeMinistere est ignoré, forcé côté service)
+     *
+     * SUPER_ADMIN :
+     * - Génère le PDF des agents du ministère de son choix
+     *   (codeMinistere obligatoire)
+     */
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/export/pdf")
+    @Operation(
+            summary = "Générer le PDF de la liste des agents d'un ministère",
+            description = """
+                    Un ADMIN reçoit toujours la liste de son propre ministère.
+                    Un SUPER_ADMIN doit préciser le code du ministère souhaité.
+                    """
+    )
+    public ResponseEntity<byte[]> exportAgentsPdf(
+            @Parameter(description = "Code du ministère (obligatoire pour un SUPER_ADMIN)")
+            @RequestParam(required = false) String codeMinistere
+    ) {
+
+        byte[] pdf = agentService.generateAgentsPdf(codeMinistere);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(
+                        org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename("agents.pdf")
+                                .build()
+                                .toString()
+                )
+                .body(pdf);
+    }
+
+    /**
      * ================= GET BY MATRICULE =================
      */
     @PreAuthorize("""
-            hasAnyAuthority('ADMIN', 'MANAGER')
+            hasAuthority('ADMIN')
             or #matricule == authentication.name
             """)
     @GetMapping("/{matricule}")
@@ -261,7 +307,7 @@ public class AgentController {
                                               "nom": "ASSOGBA",
                                               "prenoms": "Ulrich Junior",
                                               "sexe": "MASCULIN",
-                                              "role": "MANAGER",
+                                              "role": "AGENT",
                                               "codeProfil": "CMMR",
                                               "dateNaissance": "1998-05-10",
                                               "datePriseService": "2024-01-15",

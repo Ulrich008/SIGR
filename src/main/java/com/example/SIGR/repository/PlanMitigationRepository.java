@@ -19,4 +19,6 @@ public interface PlanMitigationRepository extends JpaRepository<PlanMitigation, 
     boolean existsByLibelleAndCodeNot(String libelle, String code);
     
     List<PlanMitigation> findByRisque(Risque risque);
+
+    long countByRisque_Processus_Unite_Code(String codeUnite);
 }

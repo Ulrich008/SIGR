@@ -45,13 +45,15 @@ public class ActionServiceImpl implements ActionService {
                 .orElseThrow(() -> new RuntimeException("Agent introuvable : " + request.getMatriculeResponsable()));
 
         // ================= GENERATION CODE AUTO =================
-        long count = actionRepository.count() + 1;
+        // Format : A_R_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+        String sigleUnite = plan.getRisque().getProcessus().getUnite().getCode();
+        long count = actionRepository.countByPlanMitigation_Risque_Processus_Unite_Code(sigleUnite) + 1;
 
-        String code = String.format("ACT-%03d", count);
+        String code = "A_R_" + sigleUnite + String.format("%03d", count);
 
         while (actionRepository.existsByCode(code)) {
             count++;
-            code = String.format("ACT-%03d", count);
+            code = "A_R_" + sigleUnite + String.format("%03d", count);
         }
 
         Action action = new Action()

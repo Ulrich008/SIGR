@@ -35,10 +35,13 @@ public class UniteAdministrative extends Auditable {
     private TypeUnite typeUnite;
 
     /**
-     * Plusieurs unités administratives appartiennent à un même ministère
+     * Plusieurs unités administratives appartiennent à un même ministère.
+     * referencedColumnName explicite : sans lui, JPA référence par défaut
+     * la clé primaire (id_ministere, un UUID) au lieu du code métier utilisé
+     * par le filtre Hibernate par ministère.
      */
     @ManyToOne
-    @JoinColumn(name = "code_ministere")
+    @JoinColumn(name = "code_ministere", referencedColumnName = "code_ministere")
     private Ministere ministere;
 
     /**

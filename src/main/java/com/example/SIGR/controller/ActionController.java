@@ -40,7 +40,7 @@ public class ActionController {
      * RESPONSABLE_RISQUES :
      * - Création des actions (Mitigation)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "Créer une action",
@@ -116,7 +116,7 @@ public class ActionController {
      * RESPONSABLE_ACTION :
      * - Modification uniquement des actions qui lui sont affectées (Mitigation)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une action",
@@ -156,7 +156,7 @@ public class ActionController {
      * RESPONSABLE_RISQUES :
      * - Suppression des actions (Mitigation)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une action",

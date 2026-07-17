@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "risque")
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
-@Filter(name = "ministereFilter", condition = "code_processus IN (SELECT code FROM processus WHERE id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere))")
+@Filter(name = "ministereFilter", condition = "code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere))")
 public class Risque extends Auditable {
 
     @Id
@@ -55,6 +55,14 @@ public class Risque extends Auditable {
 
     @Column(name = "transmis")
     private Boolean transmis = false;
+
+    /**
+     * Étape actuelle du circuit de validation
+     * (Formalisation -> Pilote -> CCI -> CMMR -> Validée/Rejetée).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "etape_validation", length = 30)
+    private EtapeValidation etapeValidation = EtapeValidation.FORMALISATION;
 
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
@@ -98,12 +106,6 @@ public class Risque extends Auditable {
      */
     @OneToMany(mappedBy = "risque")
     private List<PlanMitigation> plansMitigation;
-
-    /*
-     * Un risque peut générer plusieurs risques résiduels après traitement
-     */
-    @OneToMany(mappedBy = "risque", cascade = CascadeType.ALL)
-    private List<RisqueResiduel> risquesResiduels;
 
     // ===================== GETTERS / SETTERS =====================
 
@@ -198,6 +200,9 @@ public class Risque extends Auditable {
     public Boolean getTransmis() { return transmis; }
     public Risque setTransmis(Boolean transmis) { this.transmis = transmis; return this; }
 
+    public EtapeValidation getEtapeValidation() { return etapeValidation; }
+    public Risque setEtapeValidation(EtapeValidation etapeValidation) { this.etapeValidation = etapeValidation; return this; }
+
     public LocalDate getDateIdentification() { return dateIdentification; }
     public Risque setDateIdentification(LocalDate dateIdentification) { this.dateIdentification = dateIdentification; return this; }
 
@@ -215,7 +220,4 @@ public class Risque extends Auditable {
 
     public List<PlanMitigation> getPlansMitigation() { return plansMitigation; }
     public Risque setPlansMitigation(List<PlanMitigation> plansMitigation) { this.plansMitigation = plansMitigation; return this; }
-
-    public List<RisqueResiduel> getRisquesResiduels() { return risquesResiduels; }
-    public Risque setRisquesResiduels(List<RisqueResiduel> risquesResiduels) { this.risquesResiduels = risquesResiduels; return this; }
 }

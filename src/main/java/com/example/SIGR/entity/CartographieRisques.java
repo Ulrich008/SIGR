@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "cartographie_risques")
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
-@Filter(name = "ministereFilter", condition = "id_cartographie IN (SELECT id_cartographie FROM risque WHERE code_processus IN (SELECT code FROM processus WHERE id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere)))")
+@Filter(name = "ministereFilter", condition = "id_unite_administrative IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)")
 public class CartographieRisques extends Auditable {
 
     @Id
@@ -24,6 +24,17 @@ public class CartographieRisques extends Auditable {
     // NOUVEAU CHAMP CODE
     @Column(name = "code", length = 50, unique = true, nullable = false)
     private String code;
+
+    /**
+     * Unité administrative rattachée à ce projet de cartographie.
+     * Sert aussi à générer le code (CR_&lt;sigle UA&gt;NNN) et à
+     * filtrer par ministère : contrairement aux risques qu'elle
+     * regroupe, une cartographie peut exister avant qu'aucun risque
+     * n'y soit encore rattaché.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_unite_administrative", nullable = false)
+    private UniteAdministrative uniteAdministrative;
 
     @Column(name = "titre", length = 200)
     private String titre;
@@ -64,6 +75,15 @@ public class CartographieRisques extends Auditable {
 
     public CartographieRisques setCode(String code) {
         this.code = code;
+        return this;
+    }
+
+    public UniteAdministrative getUniteAdministrative() {
+        return uniteAdministrative;
+    }
+
+    public CartographieRisques setUniteAdministrative(UniteAdministrative uniteAdministrative) {
+        this.uniteAdministrative = uniteAdministrative;
         return this;
     }
 

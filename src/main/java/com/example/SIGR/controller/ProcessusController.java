@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -40,13 +39,10 @@ public class ProcessusController {
     /**
      * ================= CREATE =================
      *
-     * ADMIN :
-     * - Peut créer des processus
-     *
-     * MANAGER :
-     * - Peut créer des processus
+     * RESPONSABLE_RISQUES :
+     * - Peut créer des processus (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping
     @Operation(
             summary = "Créer un processus",
@@ -84,13 +80,10 @@ public class ProcessusController {
     /**
      * ================= GET ALL =================
      *
-     * ADMIN :
-     * - Accès total
-     *
-     * MANAGER :
-     * - Consultation complète
+     * Tous les profils :
+     * - Consultation en lecture seule (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les processus",
@@ -106,76 +99,32 @@ public class ProcessusController {
     /**
      * ================= GET BY CODE =================
      *
-     * ADMIN :
-     * - Consultation complète
-     *
-     * MANAGER :
-     * - Consultation complète
-     *
-     * AGENT :
-     * - Peut consulter uniquement les processus
-     *   dont il est propriétaire
+     * Tous les profils :
+     * - Consultation en lecture seule (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer un processus par code",
             description = "Retourne les informations d'un processus à partir de son code"
     )
     public ResponseEntity<ProcessusResponse> getByCode(
-            @PathVariable String code,
-            Authentication authentication
+            @PathVariable String code
     ) {
 
-        ProcessusResponse response =
-                processusService.getByCode(code);
-
-        String currentUser =
-                authentication.getName();
-
-        boolean isAdminOrManager =
-                authentication.getAuthorities()
-                        .stream()
-                        .anyMatch(auth ->
-                                auth.getAuthority().equals("ADMIN")
-                                        || auth.getAuthority().equals("MANAGER")
-                        );
-
-        /**
-         * ADMIN et MANAGER :
-         * accès total
-         */
-        if (isAdminOrManager) {
-
-            return ResponseEntity.ok(response);
-        }
-
-        /**
-         * AGENT :
-         * uniquement ses propres processus
-         */
-        if (!response.getIdProprietaire()
-                .equals(currentUser)) {
-
-            throw new RuntimeException(
-                    "Accès refusé : vous ne pouvez consulter que vos propres processus"
-            );
-        }
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                processusService.getByCode(code)
+        );
     }
 
 
     /**
      * ================= UPDATE =================
      *
-     * ADMIN :
-     * - Peut modifier tous les processus
-     *
-     * MANAGER :
-     * - Peut modifier les processus
+     * RESPONSABLE_RISQUES :
+     * - Peut modifier les processus (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un processus",
@@ -215,10 +164,10 @@ public class ProcessusController {
     /**
      * ================= DELETE =================
      *
-     * ADMIN :
-     * - Peut supprimer un processus
+     * RESPONSABLE_RISQUES :
+     * - Peut supprimer un processus (Formalisation des risques)
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un processus",

@@ -12,7 +12,7 @@ import java.util.List;
 @Table(name = "processus")
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
-@Filter(name = "ministereFilter", condition = "id_unite IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere)")
+@Filter(name = "ministereFilter", condition = "id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)")
 public class Processus extends Auditable {
 
     @Id
@@ -52,12 +52,6 @@ public class Processus extends Auditable {
      */
     @OneToMany(mappedBy = "processus")
     private List<IndicateurPerformance> indicateurs;
-
-    /*
-     * Un processus peut avoir plusieurs missions associées.
-     */
-    @OneToMany(mappedBy = "processus")
-    private List<Mission> missions;
 
     // ================= GETTERS / SETTERS =================
 
@@ -130,15 +124,6 @@ public class Processus extends Auditable {
 
     public Processus setIndicateurs(List<IndicateurPerformance> indicateurs) {
         this.indicateurs = indicateurs;
-        return this;
-    }
-
-    public List<Mission> getMissions() {
-        return missions;
-    }
-
-    public Processus setMissions(List<Mission> missions) {
-        this.missions = missions;
         return this;
     }
 }

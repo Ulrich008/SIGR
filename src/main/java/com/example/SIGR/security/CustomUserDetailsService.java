@@ -38,7 +38,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Rôle technique (AGENT, MANAGER, ADMIN)
+        // Rôle technique (AGENT, ADMIN, SUPER_ADMIN)
         if (agent.getRole() != null) {
             authorities.add(new SimpleGrantedAuthority(agent.getRole().name()));
         }

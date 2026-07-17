@@ -45,17 +45,16 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
                         new RuntimeException("Risque introuvable : " + request.getCodeRisque())
                 );
 
-        // ================= GENERATION CODE ROBUSTE =================
-        String lastCode = repository.findTopByOrderByIdDesc()
-                .map(PlanMitigation::getCode)
-                .orElse("PLAN-000");
+        // ================= GENERATION CODE =================
+        // Format : PM_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+        String sigleUnite = risque.getProcessus().getUnite().getCode();
+        long compteur = repository.countByRisque_Processus_Unite_Code(sigleUnite) + 1;
 
-        int nextNumber = Integer.parseInt(lastCode.replace("PLAN-", "")) + 1;
-
-        String code;
-        do {
-            code = String.format("PLAN-%03d", nextNumber++);
-        } while (repository.existsByCode(code));
+        String code = "PM_" + sigleUnite + String.format("%03d", compteur);
+        while (repository.existsByCode(code)) {
+            compteur++;
+            code = "PM_" + sigleUnite + String.format("%03d", compteur);
+        }
 
         // ================= CREATION =================
         PlanMitigation plan = new PlanMitigation();

@@ -14,4 +14,8 @@ public interface PlanAuditRepository extends JpaRepository<PlanAudit, String> {
     boolean existsByLibelleAndCodeNot(String libelle, String code);
 
     Optional<PlanAudit> findByCode(String code);
+
+    Optional<PlanAudit> findTopByRisque_CodeOrderByDateCreationDesc(String codeRisque);
+
+    long countByUniteAdministrative_Code(String codeUnite);
 }

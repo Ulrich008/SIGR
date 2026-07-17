@@ -45,7 +45,7 @@ public class IndicateurPerformanceController {
     /**
      * ================= CREATE =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @PostMapping
     @Operation(
             summary = "Créer un indicateur de performance",
@@ -107,7 +107,7 @@ public class IndicateurPerformanceController {
     /**
      * ================= GET ALL =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les indicateurs de performance",
@@ -123,7 +123,7 @@ public class IndicateurPerformanceController {
     /**
      * ================= GET BY CODE =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER', 'AGENT')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{code}")
     @Operation(
             summary = "Récupérer un KPI par code",
@@ -159,8 +159,12 @@ public class IndicateurPerformanceController {
 
     /**
      * ================= UPDATE =================
+     *
+     * AUDITEUR :
+     * - Peut valider un indicateur (seule exception à son accès
+     *   normalement en lecture seule sur ce module)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION', 'AUDITEUR')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un indicateur de performance",
@@ -235,7 +239,7 @@ public class IndicateurPerformanceController {
     /**
      * ================= DELETE =================
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un indicateur de performance",

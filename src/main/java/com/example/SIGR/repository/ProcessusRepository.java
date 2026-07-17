@@ -14,4 +14,6 @@ public interface ProcessusRepository extends JpaRepository<Processus, String> {
     boolean existsByLibelleAndCodeNot(String libelle, String code);
 
     Optional<Processus> findByCode(String code);
+
+    long countByUnite_Code(String codeUnite);
 }

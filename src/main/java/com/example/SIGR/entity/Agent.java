@@ -77,10 +77,13 @@ public class Agent extends Auditable {
     private UniteAdministrative unite;
 
     /**
-     * Un agent appartient à un ministère (pour le filtrage multi-ministères)
+     * Un agent appartient à un ministère (pour le filtrage multi-ministères).
+     * referencedColumnName explicite : sans lui, JPA référence par défaut
+     * la clé primaire (id_ministere, un UUID) au lieu du code métier utilisé
+     * partout ailleurs (filtre Hibernate, SecurityUtils...).
      */
     @ManyToOne
-    @JoinColumn(name = "code_ministere")
+    @JoinColumn(name = "code_ministere", referencedColumnName = "code_ministere")
     private Ministere ministere;
 
     /**

@@ -12,9 +12,15 @@ public interface IndicateurPerformanceRepository extends JpaRepository<Indicateu
 
     boolean existsByLibelleIgnoreCase(String libelle);
 
+    boolean existsByLibelleIgnoreCaseAndCodeNot(String libelle, String code);
+
     Optional<IndicateurPerformance> findByCode(String code);
 
 
 
     List<IndicateurPerformance> findByProcessus_Code(String codeProcessus);
+
+    List<IndicateurPerformance> findByRisque_Code(String codeRisque);
+
+    long countByProcessus_Unite_Code(String codeUnite);
 }

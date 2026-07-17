@@ -32,10 +32,12 @@ public class PlanAuditRequest {
     @NotNull(message = "Le type de revue est obligatoire")
     private TypeRevue typeRevue;
 
+    @NotBlank(message = "L'objectif d'audit est obligatoire")
     @Size(max = 1000, message = "L'objectif d'audit ne doit pas dépasser 1000 caractères")
     private String objectifAudit;
 
-    @Size(max = 1000, message = "L'effet d'audit indicatif ne doit pas dépasser 1000 caractères")
+    @NotBlank(message = "L'effort d'audit indicatif est obligatoire")
+    @Size(max = 1000, message = "L'effort d'audit indicatif ne doit pas dépasser 1000 caractères")
     private String effetAuditIndicatif;
 
     // ================= GETTERS / SETTERS =================

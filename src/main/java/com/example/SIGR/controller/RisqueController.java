@@ -1,5 +1,6 @@
 package com.example.SIGR.controller;
 
+import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
 import com.example.SIGR.dto.response.RisqueResponse;
 import com.example.SIGR.services.RisqueService;
@@ -57,7 +58,7 @@ public class RisqueController {
      * RESPONSABLE_RISQUES :
      * - Création des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @PostMapping
     @Operation(
             summary = "Créer un risque",
@@ -176,7 +177,7 @@ public class RisqueController {
      * RESPONSABLE_RISQUES :
      * - Modification des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un risque",
@@ -208,6 +209,69 @@ public class RisqueController {
     }
 
     /**
+     * ================= TRANSMETTRE =================
+     *
+     * RESPONSABLE_RISQUES :
+     * - Fait entrer le dossier dans le circuit de validation
+     *   (Formalisation -> Pilote), une fois les 4 étapes complétées.
+     */
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PatchMapping("/{code}/transmettre")
+    @Operation(
+            summary = "Transmettre un risque au circuit de validation",
+            description = "Fait entrer le risque dans le circuit de validation (étape Pilote de processus)."
+    )
+    public ResponseEntity<RisqueResponse> transmettre(
+
+            @Parameter(
+                    description = "Code métier du risque",
+                    example = "RIS-001"
+            )
+            @PathVariable String code
+    ) {
+
+        return ResponseEntity.ok(
+                risqueService.transmettre(code)
+        );
+    }
+
+    /**
+     * ================= VALIDER / DIFFÉRER / REJETER =================
+     *
+     * CMMR, CCI, PILOTE :
+     * - Se prononcent sur le risque (avis + motif) sans pouvoir en
+     *   modifier le contenu. Chacun ne peut agir que sur les dossiers
+     *   actuellement à sa propre étape (vérifié en service).
+     */
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'PILOTE', 'CCI', 'CMMR')")
+    @PatchMapping("/{code}/avis")
+    @Operation(
+            summary = "Valider, différer ou rejeter un risque",
+            description = """
+                    Enregistre l'avis porté sur un risque (Valider, Différer,
+                    Rejeter) ainsi que son motif éventuel, sans modifier le
+                    contenu du risque. Le motif est obligatoire en cas de
+                    différé ou de rejet. Fait avancer ou reculer le dossier
+                    dans le circuit de validation (Pilote -> CCI -> CMMR).
+                    """
+    )
+    public ResponseEntity<RisqueResponse> validerAvis(
+
+            @Parameter(
+                    description = "Code métier du risque",
+                    example = "RIS-001"
+            )
+            @PathVariable String code,
+
+            @Valid @RequestBody AvisRisqueRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                risqueService.validerAvis(code, request)
+        );
+    }
+
+    /**
      * ================= SUPPRESSION =================
      *
      * ADMIN :
@@ -216,7 +280,7 @@ public class RisqueController {
      * RESPONSABLE_RISQUES :
      * - Suppression des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un risque",

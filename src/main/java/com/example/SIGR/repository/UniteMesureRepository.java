@@ -9,5 +9,9 @@ public interface UniteMesureRepository extends JpaRepository<UniteMesure, String
 
     boolean existsByCode(String code);
 
+    boolean existsByLibelleIgnoreCase(String libelle);
+
+    boolean existsByLibelleIgnoreCaseAndCodeNot(String libelle, String code);
+
     Optional<UniteMesure> findByCode(String code);
 }

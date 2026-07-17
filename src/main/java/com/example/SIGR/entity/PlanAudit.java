@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Table(name = "plan_audit")
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
-@Filter(name = "ministereFilter", condition = "id_unite_administrative IN (SELECT id_unite FROM unite_administrative WHERE code_ministere = :codeMinistere)")
+@Filter(name = "ministereFilter", condition = "id_unite_administrative IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)")
 public class PlanAudit extends Auditable {
 
     @Id

@@ -37,7 +37,7 @@ public class MinistereController {
     /**
      * ================= CREATE =================
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PostMapping
     @Operation(
             summary = "Créer un ministère",
@@ -75,7 +75,7 @@ public class MinistereController {
     /**
      * ================= GET ALL =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     @Operation(
             summary = "Lister tous les ministères",
@@ -91,7 +91,7 @@ public class MinistereController {
     /**
      * ================= GET BY ID =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     @Operation(
             summary = "Récupérer un ministère par ID",
@@ -109,7 +109,7 @@ public class MinistereController {
     /**
      * ================= GET BY CODE =================
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANAGER')")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/code/{code}")
     @Operation(
             summary = "Récupérer un ministère par code métier",
@@ -126,8 +126,10 @@ public class MinistereController {
 
     /**
      * ================= UPDATE =================
+     * Réservé au SUPER_ADMIN : un ADMIN peut consulter son propre
+     * ministère mais ne peut ni le modifier, ni le supprimer.
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Modifier un ministère",
@@ -161,8 +163,9 @@ public class MinistereController {
 
     /**
      * ================= DELETE =================
+     * Réservé au SUPER_ADMIN (voir update ci-dessus).
      */
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Supprimer un ministère",

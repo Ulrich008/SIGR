@@ -3,9 +3,17 @@ package com.example.SIGR.services;
 import com.example.SIGR.dto.request.CartographieRisquesRequest;
 import com.example.SIGR.dto.response.CartographieRisqueDetailResponse;
 import com.example.SIGR.dto.response.CartographieRisquesResponse;
+import com.example.SIGR.entity.Action;
 import com.example.SIGR.entity.CartographieRisques;
+import com.example.SIGR.entity.IndicateurPerformance;
+import com.example.SIGR.entity.PlanAudit;
+import com.example.SIGR.entity.UniteAdministrative;
+import com.example.SIGR.repository.ActionRepository;
 import com.example.SIGR.repository.CartographieRisquesRepository;
 import com.example.SIGR.repository.EvaluationRepository;
+import com.example.SIGR.repository.IndicateurPerformanceRepository;
+import com.example.SIGR.repository.PlanAuditRepository;
+import com.example.SIGR.repository.UniteAdministrativeRepository;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.stereotype.Service;
@@ -24,18 +32,40 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
 
     private final CartographieRisquesRepository repository;
     private final EvaluationRepository evaluationRepository;
+    private final UniteAdministrativeRepository uniteAdministrativeRepository;
+    private final ActionRepository actionRepository;
+    private final PlanAuditRepository planAuditRepository;
+    private final IndicateurPerformanceRepository indicateurPerformanceRepository;
 
-    public CartographieRisquesServiceImpl(CartographieRisquesRepository repository, EvaluationRepository evaluationRepository) {
+    public CartographieRisquesServiceImpl(
+            CartographieRisquesRepository repository,
+            EvaluationRepository evaluationRepository,
+            UniteAdministrativeRepository uniteAdministrativeRepository,
+            ActionRepository actionRepository,
+            PlanAuditRepository planAuditRepository,
+            IndicateurPerformanceRepository indicateurPerformanceRepository
+    ) {
         this.repository = repository;
         this.evaluationRepository = evaluationRepository;
+        this.uniteAdministrativeRepository = uniteAdministrativeRepository;
+        this.actionRepository = actionRepository;
+        this.planAuditRepository = planAuditRepository;
+        this.indicateurPerformanceRepository = indicateurPerformanceRepository;
     }
 
     // ================= GENERATE CODE =================
-    private String generateCode() {
+    // Format : CR_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+    private String generateCode(String sigleUnite) {
 
-        long count = repository.count() + 1;
+        long count = repository.countByUniteAdministrative_Code(sigleUnite) + 1;
+        String code = "CR_" + sigleUnite + String.format("%03d", count);
 
-        return String.format("CARTO-%03d", count);
+        while (repository.existsByCode(code)) {
+            count++;
+            code = "CR_" + sigleUnite + String.format("%03d", count);
+        }
+
+        return code;
     }
 
     // ================= CREATE =================
@@ -47,7 +77,12 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
                     "Titre déjà utilisé : " + request.getTitre());
         }
 
-        String code = generateCode();
+        UniteAdministrative unite = uniteAdministrativeRepository
+                .findByCode(request.getCodeUniteAdministrative())
+                .orElseThrow(() -> new RuntimeException(
+                        "Unité administrative introuvable : " + request.getCodeUniteAdministrative()));
+
+        String code = generateCode(unite.getCode());
 
         CartographieRisques entity = new CartographieRisques()
                 .setCode(code)
@@ -56,7 +91,8 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
                 .setSeuilFaible(request.getSeuilFaible())
                 .setSeuilMoyen(request.getSeuilMoyen())
                 .setSeuilEleve(request.getSeuilEleve())
-                .setStatut(request.getStatut());
+                .setStatut(request.getStatut())
+                .setUniteAdministrative(unite);
 
         return toResponse(repository.save(entity));
     }
@@ -180,11 +216,19 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
             int rowIndex = 3; // ✅ CORRECTION : était 2, doit être 3
 
             for (CartographieRisqueDetailResponse r : data) {
-                // Diviser les recommandations en plusieurs lignes si elles contiennent des séparateurs
-                String[] recommandations = splitRecommandations(value(r.getRecommandation()));
-                
-                // Créer une ligne pour chaque recommandation
-                for (int i = 0; i < recommandations.length; i++) {
+                // Actions de maîtrise réellement rattachées au risque (et non le texte de recommandation de l'évaluation)
+                String[] actionsMaitrise = actionsMaitriseDuRisque(r.getCodeRisque());
+
+                // Plan d'audit le plus récent rattaché au risque (s'il en existe plusieurs)
+                PlanAudit planAudit = planAuditRepository
+                        .findTopByRisque_CodeOrderByDateCreationDesc(r.getCodeRisque())
+                        .orElse(null);
+
+                // Indicateur(s) de performance rattaché(s) au risque
+                String indicateurRealisation = indicateurRealisationDuRisque(r.getCodeRisque());
+
+                // Créer une ligne pour chaque action de maîtrise
+                for (int i = 0; i < actionsMaitrise.length; i++) {
                     Row row = sheet.getRow(rowIndex);
                     if (row == null) {
                         row = sheet.createRow(rowIndex);
@@ -234,14 +278,21 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
                     // COL U (20) — Rang de priorité Échelle 1 à 3
                     setCellWithPriorityColor(row, 20, value(r.getLibellePriorite()),           bodyStyle, greenStyle, yellowStyle, redStyle);
                     // COL V (21) — Actions de maîtrise (Recommandations)
-                    setCell(row, 21, recommandations[i],         bodyStyle);
+                    setCell(row, 21, actionsMaitrise[i],         bodyStyle);
                     // COL W (22) — Début
                     setCell(row, 22, value(r.getDateDebut()),              bodyStyle);
                     // COL X (23) — Fin
                     setCell(row, 23, value(r.getDateFin()),                bodyStyle);
                     // COL Y (24) — Indicateur de réalisation
+                    setCell(row, 24, indicateurRealisation,                bodyStyle);
                     // COL Z (25) — Audit Proposé
-                    setCell(row, 25, value(r.getEvaluePar()),              bodyStyle);
+                    setCell(row, 25, planAudit != null ? value(planAudit.getAuditPropose()) : "", bodyStyle);
+                    // COL AA (26) — Type de revue
+                    setCell(row, 26, planAudit != null ? value(planAudit.getTypeRevue()) : "", bodyStyle);
+                    // COL AB (27) — Objectifs et Périmètre d'Audit
+                    setCell(row, 27, planAudit != null ? value(planAudit.getObjectifAudit()) : "", bodyStyle);
+                    // COL AC (28) — Effort d'Audit Indicatif (Jours/hommes)
+                    setCell(row, 28, planAudit != null ? value(planAudit.getEffetAuditIndicatif()) : "", bodyStyle);
                 }
 
             }
@@ -257,29 +308,52 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
 
 // ================= HELPER =================
 
-    private String[] splitRecommandations(String recommandation) {
-        if (recommandation == null || recommandation.trim().isEmpty()) {
+    /**
+     * Récupère les actions de maîtrise réellement rattachées au risque (entité Action, liée via codeRisque),
+     * et éclate leurs libellés (potentiellement multiples par action) en autant de lignes distinctes.
+     */
+    private String[] actionsMaitriseDuRisque(String codeRisque) {
+        if (codeRisque == null) {
             return new String[]{""};
         }
-        
-        // Diviser par saut de ligne ou point-virgule
-        String[] parts = recommandation.split("[\\n;]");
-        
-        // Nettoyer les parties vides
-        java.util.List<String> cleanedParts = new java.util.ArrayList<>();
-        for (String part : parts) {
-            String trimmed = part.trim();
-            if (!trimmed.isEmpty()) {
-                cleanedParts.add(trimmed);
+
+        List<Action> actions = actionRepository.findByCodeRisque(codeRisque);
+
+        java.util.List<String> libelles = new java.util.ArrayList<>();
+        for (Action action : actions) {
+            for (String libelle : action.getLibelles()) {
+                if (libelle != null && !libelle.trim().isEmpty()) {
+                    libelles.add(libelle.trim());
+                }
             }
         }
-        
-        // Si aucune partie valide, retourner un tableau vide
-        if (cleanedParts.isEmpty()) {
+
+        if (libelles.isEmpty()) {
             return new String[]{""};
         }
-        
-        return cleanedParts.toArray(new String[0]);
+
+        return libelles.toArray(new String[0]);
+    }
+
+    /**
+     * Construit le texte "Indicateur de réalisation" à partir du/des IndicateurPerformance
+     * rattaché(s) au risque : libellé + valeur obtenue / valeur cible.
+     */
+    private String indicateurRealisationDuRisque(String codeRisque) {
+        if (codeRisque == null) {
+            return "";
+        }
+
+        List<IndicateurPerformance> indicateurs = indicateurPerformanceRepository.findByRisque_Code(codeRisque);
+
+        return indicateurs.stream()
+                .map(ip -> {
+                    String libelle = ip.getLibelle() != null ? ip.getLibelle() : "";
+                    String obtenue = ip.getValeurObtenue() != null ? ip.getValeurObtenue() : "-";
+                    String cible = ip.getValeurCible() != null ? ip.getValeurCible() : "-";
+                    return libelle + " : " + obtenue + " / " + cible;
+                })
+                .collect(Collectors.joining("; "));
     }
 
     private void setCell(Row row, int col, String value, CellStyle style) {
@@ -482,6 +556,8 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
                 entity.getSeuilMoyen(),
                 entity.getSeuilEleve(),
                 entity.getStatut(),
+                entity.getUniteAdministrative() != null ? entity.getUniteAdministrative().getCode() : null,
+                entity.getUniteAdministrative() != null ? entity.getUniteAdministrative().getLibelle() : null,
                 nbRisques
         );
     }

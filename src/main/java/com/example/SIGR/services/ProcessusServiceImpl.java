@@ -53,9 +53,16 @@ public class ProcessusServiceImpl implements ProcessusService {
                     );
         }
 
-        // Génération automatique du code
-        long count = processusRepository.count();
-        String code = "PROC-" + String.format("%03d", count + 1);
+        // ================= GENERATION CODE =================
+        // Format : P_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
+        String sigleUnite = unite.getCode();
+        long count = processusRepository.countByUnite_Code(sigleUnite) + 1;
+        String code = "P_" + sigleUnite + String.format("%03d", count);
+
+        while (processusRepository.existsByCode(code)) {
+            count++;
+            code = "P_" + sigleUnite + String.format("%03d", count);
+        }
 
         Processus processus = new Processus();
         processus.setCode(code);

@@ -40,6 +40,12 @@ public class    ProfilServiceImpl implements ProfilService {
             );
         }
 
+        if (profilRepository.existsByLibelleIgnoreCase(request.getLibelle())) {
+            throw new RuntimeException(
+                    "Un profil avec ce libellé existe déjà : " + request.getLibelle()
+            );
+        }
+
         Profil profil = new Profil();
 
         profil.setCode(request.getCode());
@@ -98,6 +104,12 @@ public class    ProfilServiceImpl implements ProfilService {
                                 "Profil introuvable avec le code : " + code
                         )
                 );
+
+        if (profilRepository.existsByLibelleIgnoreCaseAndCodeNot(request.getLibelle(), code)) {
+            throw new RuntimeException(
+                    "Un profil avec ce libellé existe déjà : " + request.getLibelle()
+            );
+        }
 
         profil.setLibelle(request.getLibelle());
         profil.setDescription(request.getDescription());

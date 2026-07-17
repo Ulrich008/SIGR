@@ -1,6 +1,7 @@
 package com.example.SIGR.dto.response;
 
 import com.example.SIGR.entity.AvisRisque;
+import com.example.SIGR.entity.EtapeValidation;
 import com.example.SIGR.entity.StatutRisque;
 import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
@@ -30,16 +31,13 @@ public class RisqueResponse {
 
     private TypeRisque typeRisque;
 
-    /**
-     * Risques résiduels liés (après mitigation)
-     */
-    private List<String> risquesResiduelsIds;
-
     private AvisRisque avis;
 
     private String motif;
 
     private Boolean transmis;
+
+    private EtapeValidation etapeValidation;
 
     public RisqueResponse(
             String id,
@@ -55,10 +53,10 @@ public class RisqueResponse {
             String nomProcessus,
             String idCartographie,
             TypeRisque typeRisque,
-            List<String> risquesResiduelsIds,
             AvisRisque avis,
             String motif,
-            Boolean transmis
+            Boolean transmis,
+            EtapeValidation etapeValidation
     ) {
         this.id = id;
         this.code = code ;
@@ -73,10 +71,10 @@ public class RisqueResponse {
         this.nomProcessus = nomProcessus;
         this.idCartographie = idCartographie;
         this.typeRisque = typeRisque;
-        this.risquesResiduelsIds = risquesResiduelsIds;
         this.avis = avis;
         this.motif = motif;
         this.transmis = transmis;
+        this.etapeValidation = etapeValidation;
     }
 
     public String getCode() {
@@ -130,10 +128,6 @@ public class RisqueResponse {
         return typeRisque;
     }
 
-    public List<String> getRisquesResiduelsIds() {
-        return risquesResiduelsIds;
-    }
-
     public AvisRisque getAvis() {
         return avis;
     }
@@ -144,5 +138,9 @@ public class RisqueResponse {
 
     public Boolean getTransmis() {
         return transmis;
+    }
+
+    public EtapeValidation getEtapeValidation() {
+        return etapeValidation;
     }
 }

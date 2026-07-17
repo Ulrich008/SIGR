@@ -79,7 +79,7 @@ public class PlanAuditController {
      * AUDITEUR :
      * - Peut créer des plans d'audit (Audit)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'AUDITEUR')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'AUDITEUR')")
     @PostMapping
     @Operation(
             summary = "Créer un plan d'audit",
@@ -167,7 +167,7 @@ public class PlanAuditController {
      * AUDITEUR :
      * - Peut modifier les plans d'audit (Audit)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'AUDITEUR')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'AUDITEUR')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un plan d'audit",
@@ -217,7 +217,7 @@ public class PlanAuditController {
      * AUDITEUR :
      * - Peut supprimer un plan d'audit (Audit)
      */
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'AUDITEUR')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'AUDITEUR')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un plan d'audit",

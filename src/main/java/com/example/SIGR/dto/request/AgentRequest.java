@@ -63,8 +63,10 @@ public class AgentRequest {
 
     /**
      * ================= PROFIL =================
+     * Obligatoire uniquement pour le rôle AGENT (voir AgentServiceImpl) :
+     * un ADMIN/SUPER_ADMIN n'a pas de profil métier, son accès vient
+     * uniquement de son rôle technique.
      */
-    @NotBlank(message = "Le code profil est obligatoire")
     private String codeProfil;
 
     /**
@@ -87,14 +89,20 @@ public class AgentRequest {
 
     /**
      * ================= UNITE =================
+     * Obligatoire pour AGENT/ADMIN (voir AgentServiceImpl) : un
+     * SUPER_ADMIN a un accès global et n'est rattaché à aucune unité.
      */
-    @NotBlank(message = "Le code de l'unité est obligatoire")
     private String codeUnite;
 
     /**
      * ================= MINISTERE =================
+     * Obligatoire pour tous les rôles, y compris SUPER_ADMIN : sans ce
+     * champ, impossible de savoir de quel ministère relève l'agent une
+     * fois connecté (même un SUPER_ADMIN doit avoir un ministère de
+     * rattachement, seule son unité administrative est facultative).
      */
-    private String codeMinistere;  // ← ajouté pour multi-ministères
+    @NotBlank(message = "Le code du ministère est obligatoire")
+    private String codeMinistere;
 
     // =====================================================
     // ================= GETTERS / SETTERS =================

@@ -29,6 +29,11 @@ public class UniteMesureServiceImpl implements UniteMesureService {
             throw new RuntimeException("Une unité de mesure avec ce code existe déjà : " + request.getCode());
         }
 
+        if (request.getLibelle() != null
+                && repository.existsByLibelleIgnoreCase(request.getLibelle())) {
+            throw new RuntimeException("Une unité de mesure avec ce libellé existe déjà : " + request.getLibelle());
+        }
+
         UniteMesure entity = new UniteMesure();
         entity.setCode(request.getCode());
         entity.setLibelle(request.getLibelle());
@@ -60,6 +65,9 @@ public class UniteMesureServiceImpl implements UniteMesureService {
                 .orElseThrow(() -> new RuntimeException("Unité de mesure introuvable : " + code));
 
         if (request.getLibelle() != null && !request.getLibelle().isBlank()) {
+            if (repository.existsByLibelleIgnoreCaseAndCodeNot(request.getLibelle(), code)) {
+                throw new RuntimeException("Une unité de mesure avec ce libellé existe déjà : " + request.getLibelle());
+            }
             entity.setLibelle(request.getLibelle());
         }
 
