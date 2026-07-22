@@ -265,7 +265,6 @@ public class EvaluationServiceImpl implements EvaluationService {
                 request.getDateFin()
         );
 
-        // ================= TEXTE =================
         evaluation.setBonnesPratiques(
                 request.getBonnesPratiques()
         );
