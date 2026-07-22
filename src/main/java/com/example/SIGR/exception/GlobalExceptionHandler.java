@@ -47,9 +47,12 @@ public class GlobalExceptionHandler {
         boolean estUneCleEtrangere = cause != null
                 && cause.toLowerCase().contains("foreign key");
 
+        log.warn("DataIntegrityViolationException interceptée : {}", cause);
+
         response.put("message", estUneCleEtrangere
-                ? "Suppression impossible : cet élément est encore utilisé par d'autres données. "
-                        + "Supprimez ou modifiez d'abord les éléments qui en dépendent."
+                ? "Cette opération est impossible : elle fait référence à un élément inexistant, "
+                        + "ou cet élément est encore utilisé par d'autres données. Vérifiez les "
+                        + "informations saisies, ou supprimez/modifiez d'abord les éléments qui en dépendent."
                 : "Cette opération viole une contrainte d'unicité ou d'intégrité des données."
         );
 
