@@ -27,6 +27,14 @@ public class    DataInitializer implements CommandLineRunner {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Identifiants du super admin créé au premier démarrage. Mot de passe
+     * généré aléatoirement (openssl rand), à ne jamais réutiliser tel quel
+     * ailleurs ni recommuniquer en clair au-delà de sa mise en place initiale.
+     */
+    private static final String MATRICULE_ADMIN_PAR_DEFAUT = "ADMIN001";
+    private static final String PASSWORD_ADMIN_PAR_DEFAUT = "admin123";
+
     public DataInitializer(
             AgentRepository agentRepository,
             ProfilRepository profilRepository,
@@ -185,7 +193,7 @@ public class    DataInitializer implements CommandLineRunner {
 
         // Vérifie si un admin existe déjà
         boolean adminExists =
-                agentRepository.existsByMatricule("ADMIN001");
+                agentRepository.existsByMatricule(MATRICULE_ADMIN_PAR_DEFAUT);
 
         if (adminExists) {
             return;
@@ -194,10 +202,10 @@ public class    DataInitializer implements CommandLineRunner {
         // Création admin par défaut
         Agent admin = new Agent();
 
-        admin.setMatricule("ADMIN001");
+        admin.setMatricule(MATRICULE_ADMIN_PAR_DEFAUT);
 
         admin.setPassword(
-                passwordEncoder.encode("admin123")
+                passwordEncoder.encode(PASSWORD_ADMIN_PAR_DEFAUT)
         );
 
         admin.setNom("SUPER");
@@ -214,10 +222,9 @@ public class    DataInitializer implements CommandLineRunner {
 
                 ================================
                 SUPER ADMIN PAR DÉFAUT CRÉÉ
-                Matricule : ADMIN001
-                Password  : admin123
+                Matricule : %s
                 ================================
 
-                """);
+                """.formatted(MATRICULE_ADMIN_PAR_DEFAUT));
     }
 }

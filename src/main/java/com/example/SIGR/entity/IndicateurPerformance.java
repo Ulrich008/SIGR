@@ -24,7 +24,7 @@ public class IndicateurPerformance extends Auditable {
     private String id;
 
     // 🔥 Code métier (unique)
-    @Column(name = "code_indicateur", length = 10, unique = true, nullable = false)
+    @Column(name = "code_indicateur", length = 50, unique = true, nullable = false)
     private String code;
 
     @Column(length = 200)
