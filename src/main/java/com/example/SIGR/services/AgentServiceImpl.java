@@ -169,6 +169,7 @@ public class AgentServiceImpl implements AgentService {
         agent.setRole(request.getRole());
         agent.setDateNaissance(request.getDateNaissance());
         agent.setDatePriseService(request.getDatePriseService());
+        agent.setEmail(request.getEmail());
 
         agent.setUnite(unite);
 
@@ -587,6 +588,11 @@ public class AgentServiceImpl implements AgentService {
             );
         }
 
+        if (request.getEmail() != null) {
+            // Chaîne vide autorisée : permet de retirer un email déjà saisi.
+            agent.setEmail(request.getEmail().isBlank() ? null : request.getEmail());
+        }
+
         // ================= UNITE =================
 
         if (request.getCodeUnite() != null
@@ -860,7 +866,11 @@ public class AgentServiceImpl implements AgentService {
                         : null,
                 agent.getMinistere() != null
                         ? agent.getMinistere().getNom()
-                        : null
+                        : null,
+                agent.getMinistere() != null
+                        ? agent.getMinistere().getSigle()
+                        : null,
+                agent.getEmail()
         );
     }
 }

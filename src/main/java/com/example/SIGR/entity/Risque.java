@@ -72,8 +72,15 @@ public class Risque extends Auditable {
      * Plusieurs risques peuvent appartenir à un même processus
      * => Many Risques → One Processus
      */
+    /**
+     * referencedColumnName explicite : sans lui, JPA référence par défaut
+     * la clé primaire de Processus (id_processus, un UUID) au lieu de son
+     * code métier (code_processus), pourtant utilisé tel quel par le
+     * filtre Hibernate par ministère ci-dessus et par les jointures
+     * ailleurs dans l'application.
+     */
     @ManyToOne
-    @JoinColumn(name = "code_processus", nullable = false)
+    @JoinColumn(name = "code_processus", referencedColumnName = "code_processus", nullable = false)
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Processus processus;
 

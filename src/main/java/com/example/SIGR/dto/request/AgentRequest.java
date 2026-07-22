@@ -104,6 +104,15 @@ public class AgentRequest {
     @NotBlank(message = "Le code du ministère est obligatoire")
     private String codeMinistere;
 
+    /**
+     * ================= EMAIL =================
+     * Optionnel : sert uniquement à l'envoi des notifications critiques
+     * par email. Un agent sans email reste notifié en in-app uniquement.
+     */
+    @Email(message = "L'adresse email n'est pas valide")
+    @Size(max = 150, message = "L'email ne doit pas dépasser 150 caractères")
+    private String email;
+
     // =====================================================
     // ================= GETTERS / SETTERS =================
     // =====================================================
@@ -204,6 +213,15 @@ public class AgentRequest {
 
     public AgentRequest setCodeMinistere(String codeMinistere) {
         this.codeMinistere = codeMinistere;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public AgentRequest setEmail(String email) {
+        this.email = email;
         return this;
     }
 }

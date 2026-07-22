@@ -51,6 +51,7 @@ public class ProcessusServiceImpl implements ProcessusService {
                     .orElseThrow(() ->
                             new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
                     );
+            verifierProprietaireEstPilote(proprietaire);
         }
 
         // ================= GENERATION CODE =================
@@ -121,6 +122,7 @@ public class ProcessusServiceImpl implements ProcessusService {
                     .orElseThrow(() ->
                             new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
                     );
+            verifierProprietaireEstPilote(proprietaire);
         }
 
         processus.setLibelle(request.getLibelle());
@@ -141,6 +143,19 @@ public class ProcessusServiceImpl implements ProcessusService {
                         new RuntimeException("Processus introuvable : " + code)
                 );
         processusRepository.delete(processus);
+    }
+
+    /**
+     * Le propriétaire d'un processus doit obligatoirement avoir le profil
+     * métier Pilote (de processus) : c'est ce profil qui est responsable
+     * du pilotage du processus dont il est propriétaire.
+     */
+    private void verifierProprietaireEstPilote(Agent proprietaire) {
+        if (proprietaire.getProfil() == null || !"PILOTE".equals(proprietaire.getProfil().getCode())) {
+            throw new RuntimeException(
+                    "Le propriétaire d'un processus doit avoir le profil Pilote de processus"
+            );
+        }
     }
 
     // ================= MAPPER =================

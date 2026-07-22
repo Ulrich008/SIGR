@@ -44,7 +44,7 @@ public class Processus extends Auditable {
      * Plusieurs processus peuvent être gérés par le même agent.
      */
     @ManyToOne
-    @JoinColumn(name = "proprietaire_processus")
+    @JoinColumn(name = "proprietaire_processus", referencedColumnName = "matricule_agent")
     private Agent proprietaire;
 
     /*
