@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AgentRepository extends JpaRepository<Agent, String> {
@@ -57,4 +58,13 @@ public interface AgentRepository extends JpaRepository<Agent, String> {
      * les profils métier (RR_, Pt_, CCI_, CMMR_, Au_).
      */
     long countByProfil_CodeAndUnite_Code(String codeProfil, String codeUnite);
+
+    /**
+     * Résout les destinataires d'une notification ciblée par rôle/étape :
+     * tous les agents actifs d'un ministère donné rattachés à un profil
+     * métier donné (RESPONSABLE_RISQUES, PILOTE, CCI, CMMR, RESPONSABLE_ACTION...).
+     * Ignore les comptes désactivés (enabled=false) — inutile de notifier
+     * un agent qui ne peut plus se connecter.
+     */
+    List<Agent> findByMinistere_CodeAndProfil_CodeAndEnabledTrue(String codeMinistere, String codeProfil);
 }

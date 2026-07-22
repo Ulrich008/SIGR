@@ -78,7 +78,7 @@ public class Evaluation extends Auditable {
     private Risque risque;
 
     @ManyToOne
-    @JoinColumn(name = "evalue_par")
+    @JoinColumn(name = "evalue_par", referencedColumnName = "matricule_agent")
     private Agent evaluePar;
 
     // ================= CALCULS METIER =================

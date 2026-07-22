@@ -70,6 +70,14 @@ public class Agent extends Auditable {
     private LocalDate datePriseService;
 
     /**
+     * Adresse email optionnelle, utilisée pour l'envoi des notifications
+     * critiques par email (voir NotificationServiceImpl / EmailService).
+     * Optionnelle : un agent sans email reste notifié en in-app uniquement.
+     */
+    @Column(name = "email_agent", length = 150)
+    private String email;
+
+    /**
      * Plusieurs agents appartiennent à une unité administrative
      */
     @ManyToOne
@@ -246,6 +254,15 @@ public class Agent extends Auditable {
 
     public Agent setAffectations(List<Affectation> affectations) {
         this.affectations = affectations;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Agent setEmail(String email) {
+        this.email = email;
         return this;
     }
 }

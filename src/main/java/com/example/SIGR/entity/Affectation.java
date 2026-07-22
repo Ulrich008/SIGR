@@ -31,7 +31,7 @@ public class Affectation extends Auditable {
      * Plusieurs affectations peuvent concerner un agent
      */
     @ManyToOne
-    @JoinColumn(name = "matricule_agent")
+    @JoinColumn(name = "matricule_agent", referencedColumnName = "matricule_agent")
     private Agent agent;
 
     /**

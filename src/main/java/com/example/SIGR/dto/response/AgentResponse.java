@@ -66,6 +66,13 @@ public class AgentResponse {
 
     private String libelleMinistere;
 
+    private String sigleMinistere;
+
+    /**
+     * ================= EMAIL =================
+     */
+    private String email;
+
     // =========================================================
     // ================= CONSTRUCTEUR ==========================
     // =========================================================
@@ -86,7 +93,9 @@ public class AgentResponse {
             String codeUnite,
             String libelleUnite,
             String codeMinistere,
-            String libelleMinistere
+            String libelleMinistere,
+            String sigleMinistere,
+            String email
     ) {
         this.id = id;
         this.matricule = matricule;
@@ -104,6 +113,8 @@ public class AgentResponse {
         this.libelleUnite = libelleUnite;
         this.codeMinistere = codeMinistere;
         this.libelleMinistere = libelleMinistere;
+        this.sigleMinistere = sigleMinistere;
+        this.email = email;
     }
 
     // =========================================================
@@ -172,5 +183,13 @@ public class AgentResponse {
 
     public String getLibelleMinistere() {
         return libelleMinistere;
+    }
+
+    public String getSigleMinistere() {
+        return sigleMinistere;
+    }
+
+    public String getEmail() {
+        return email;
     }
 }

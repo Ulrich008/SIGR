@@ -31,7 +31,7 @@ public class IndicateurPerformance extends Auditable {
     private String libelle;
 
     @ManyToOne
-    @JoinColumn(name = "code_unite_mesure")
+    @JoinColumn(name = "code_unite_mesure", referencedColumnName = "code_unite_mesure")
     private UniteMesure uniteMesure;
 
     @Enumerated(EnumType.STRING)
@@ -54,28 +54,28 @@ public class IndicateurPerformance extends Auditable {
     private LocalDate dateFin;
 
     @ManyToOne
-    @JoinColumn(name = "code_processus", nullable = false)
+    @JoinColumn(name = "code_processus", referencedColumnName = "code_processus", nullable = false)
     private Processus processus;
 
     /**
      * Relation optionnelle avec un risque
      */
     @ManyToOne
-    @JoinColumn(name = "code_risque")
+    @JoinColumn(name = "code_risque", referencedColumnName = "code")
     private Risque risque;
 
     /**
      * Relation optionnelle avec un plan de mitigation
      */
     @ManyToOne
-    @JoinColumn(name = "code_plan_mitigation")
+    @JoinColumn(name = "code_plan_mitigation", referencedColumnName = "code")
     private PlanMitigation planMitigation;
 
     /**
      * Relation optionnelle avec une action
      */
     @ManyToOne
-    @JoinColumn(name = "code_action")
+    @JoinColumn(name = "code_action", referencedColumnName = "code_action")
     private Action action;
 
     // ===================== CALCULS =====================

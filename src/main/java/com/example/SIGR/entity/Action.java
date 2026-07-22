@@ -66,7 +66,7 @@ public class Action extends Auditable {
      * => Many Actions → One Agent
      */
     @ManyToOne
-    @JoinColumn(name = "matricule_responsable", nullable = false)
+    @JoinColumn(name = "matricule_responsable", referencedColumnName = "matricule_agent", nullable = false)
     private Agent responsable;
 
     // ===================== GETTERS / SETTERS =====================
