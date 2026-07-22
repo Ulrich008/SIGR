@@ -18,7 +18,7 @@ public interface MinistereService {
     void delete(String id);
 
     // optionnel (très utile)
-    MinistereResponse getByCode(String code);
+    MinistereResponse getByCode (String code);
 
     // Récupérer le code du ministère de l'utilisateur connecté
     String getCodeMinistereOfCurrentUser();
