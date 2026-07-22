@@ -44,17 +44,26 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
 
         String cause = ex.getMostSpecificCause().getMessage();
-        boolean estUneCleEtrangere = cause != null
-                && cause.toLowerCase().contains("foreign key");
+        String causeMinuscule = cause != null ? cause.toLowerCase() : "";
+        boolean estUneCleEtrangere = causeMinuscule.contains("foreign key");
+        boolean estValeurTropLongue = causeMinuscule.contains("value too long")
+                || causeMinuscule.contains("right truncation");
 
         log.warn("DataIntegrityViolationException interceptée : {}", cause);
 
-        response.put("message", estUneCleEtrangere
-                ? "Cette opération est impossible : elle fait référence à un élément inexistant, "
-                        + "ou cet élément est encore utilisé par d'autres données. Vérifiez les "
-                        + "informations saisies, ou supprimez/modifiez d'abord les éléments qui en dépendent."
-                : "Cette opération viole une contrainte d'unicité ou d'intégrité des données."
-        );
+        String message;
+        if (estUneCleEtrangere) {
+            message = "Cette opération est impossible : elle fait référence à un élément inexistant, "
+                    + "ou cet élément est encore utilisé par d'autres données. Vérifiez les "
+                    + "informations saisies, ou supprimez/modifiez d'abord les éléments qui en dépendent.";
+        } else if (estValeurTropLongue) {
+            message = "Une valeur saisie dépasse la taille maximale autorisée pour ce champ. "
+                    + "Raccourcissez le texte concerné, ou signalez cette erreur (limite de champ à agrandir).";
+        } else {
+            message = "Cette opération viole une contrainte d'unicité ou d'intégrité des données.";
+        }
+
+        response.put("message", message);
 
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
