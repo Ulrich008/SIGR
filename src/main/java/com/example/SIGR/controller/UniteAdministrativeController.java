@@ -1,6 +1,7 @@
 package com.example.SIGR.controller;
 
 import com.example.SIGR.dto.request.UniteAdministrativeRequest;
+import com.example.SIGR.dto.response.ImportResultResponse;
 import com.example.SIGR.dto.response.UniteAdministrativeResponse;
 import com.example.SIGR.services.UniteAdministrativeService;
 
@@ -12,12 +13,15 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -77,6 +81,54 @@ public class UniteAdministrativeController {
                 .body(
                         uniteService.create(request)
                 );
+    }
+
+    /**
+     * ================= IMPORT EXCEL =================
+     *
+     * ADMIN et SUPER_ADMIN uniquement.
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPER_ADMIN')")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Importer des unités administratives depuis un fichier Excel",
+            description = """
+                    Chaque ligne est traitée indépendamment : une ligne en
+                    erreur n'empêche pas l'import des autres. Le fichier doit
+                    respecter le modèle téléchargeable via GET /import/modele.
+                    Une unité parente référencée doit déjà exister (en base
+                    ou sur une ligne précédente du même fichier).
+                    """
+    )
+    public ResponseEntity<ImportResultResponse> importUnites(
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(uniteService.importFromExcel(file));
+    }
+
+    /**
+     * ================= MODÈLE D'IMPORT =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPER_ADMIN')")
+    @GetMapping("/import/modele")
+    @Operation(
+            summary = "Télécharger le modèle Excel pour l'import des unités administratives"
+    )
+    public ResponseEntity<byte[]> telechargerModeleImport() {
+        byte[] modele = uniteService.generateImportTemplate();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ))
+                .header(
+                        org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename("modele_import_unites_administratives.xlsx")
+                                .build()
+                                .toString()
+                )
+                .body(modele);
     }
 
     /**

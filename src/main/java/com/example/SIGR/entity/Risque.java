@@ -64,6 +64,16 @@ public class Risque extends Auditable {
     @Column(name = "etape_validation", length = 30)
     private EtapeValidation etapeValidation = EtapeValidation.FORMALISATION;
 
+    /**
+     * Agent ayant émis le dernier avis (Validé/Différé/Rejeté) sur ce
+     * risque — permet d'afficher qui a rendu l'avis et son profil (Pilote,
+     * CCI, CMMR) sans avoir à le déduire de l'étape courante du circuit.
+     */
+    @ManyToOne
+    @JoinColumn(name = "matricule_emetteur_avis", referencedColumnName = "matricule_agent")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    private Agent emetteurAvis;
+
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
 
@@ -209,6 +219,9 @@ public class Risque extends Auditable {
 
     public EtapeValidation getEtapeValidation() { return etapeValidation; }
     public Risque setEtapeValidation(EtapeValidation etapeValidation) { this.etapeValidation = etapeValidation; return this; }
+
+    public Agent getEmetteurAvis() { return emetteurAvis; }
+    public Risque setEmetteurAvis(Agent emetteurAvis) { this.emetteurAvis = emetteurAvis; return this; }
 
     public LocalDate getDateIdentification() { return dateIdentification; }
     public Risque setDateIdentification(LocalDate dateIdentification) { this.dateIdentification = dateIdentification; return this; }

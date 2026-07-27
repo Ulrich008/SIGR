@@ -23,9 +23,10 @@ public class AgentRequest {
     /**
      * ================= NPI =================
      */
-    @Size(
-            max = 20,
-            message = "Le NPI ne doit pas dépasser 20 caractères"
+    @NotBlank(message = "Le NPI est obligatoire")
+    @Pattern(
+            regexp = "^\\d{10}$",
+            message = "Le NPI doit contenir exactement 10 chiffres, sans lettre"
     )
     private String npi;
 

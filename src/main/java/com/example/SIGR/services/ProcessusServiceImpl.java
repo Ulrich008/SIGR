@@ -45,14 +45,11 @@ public class ProcessusServiceImpl implements ProcessusService {
                         new RuntimeException("Unité introuvable : " + request.getIdUnite())
                 );
 
-        Agent proprietaire = null;
-        if (request.getIdProprietaire() != null && !request.getIdProprietaire().isBlank()) {
-            proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
-                    .orElseThrow(() ->
-                            new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
-                    );
-            verifierProprietaireEstPilote(proprietaire);
-        }
+        Agent proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
+                .orElseThrow(() ->
+                        new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
+                );
+        verifierProprietaireEstPilote(proprietaire);
 
         // ================= GENERATION CODE =================
         // Format : P_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
@@ -116,14 +113,11 @@ public class ProcessusServiceImpl implements ProcessusService {
                         new RuntimeException("Unité introuvable : " + request.getIdUnite())
                 );
 
-        Agent proprietaire = null;
-        if (request.getIdProprietaire() != null && !request.getIdProprietaire().isBlank()) {
-            proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
-                    .orElseThrow(() ->
-                            new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
-                    );
-            verifierProprietaireEstPilote(proprietaire);
-        }
+        Agent proprietaire = agentRepository.findByMatricule(request.getIdProprietaire())
+                .orElseThrow(() ->
+                        new RuntimeException("Agent introuvable : " + request.getIdProprietaire())
+                );
+        verifierProprietaireEstPilote(proprietaire);
 
         processus.setLibelle(request.getLibelle());
         processus.setFinalite(request.getFinalite());

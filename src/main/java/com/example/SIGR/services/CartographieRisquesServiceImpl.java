@@ -163,7 +163,7 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
         List<CartographieRisqueDetailResponse> data =
                 evaluationRepository.findCartographieRisquesDetail();
 
-        return generateExcelFromData(data);
+        return generateExcelParUnite(data);
     }
 
     @Override
@@ -182,8 +182,90 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
                 Workbook workbook = new XSSFWorkbook(templateStream);
                 ByteArrayOutputStream out = new ByteArrayOutputStream()
         ) {
-            Sheet sheet = workbook.getSheetAt(0);
+            populerFeuille(workbook, workbook.getSheetAt(0), data);
 
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Erreur génération Excel cartographie depuis template", e);
+        }
+    }
+
+    /**
+     * Cartographie globale : au lieu d'un unique onglet mélangeant les risques
+     * de toutes les UA, génère un onglet distinct par UA dans le même classeur.
+     */
+    private byte[] generateExcelParUnite(List<CartographieRisqueDetailResponse> data) {
+
+        try (
+                InputStream templateStream = getClass()
+                        .getResourceAsStream("/templates/cartographie-risques-template.xlsx");
+                Workbook workbook = new XSSFWorkbook(templateStream);
+                ByteArrayOutputStream out = new ByteArrayOutputStream()
+        ) {
+            java.util.Map<String, List<CartographieRisqueDetailResponse>> parUnite = data.stream()
+                    .collect(Collectors.groupingBy(
+                            r -> r.getUniteAdministrative() != null ? r.getUniteAdministrative() : "Non renseigné",
+                            java.util.TreeMap::new,
+                            Collectors.toList()));
+
+            if (parUnite.isEmpty()) {
+                populerFeuille(workbook, workbook.getSheetAt(0), data);
+                workbook.write(out);
+                return out.toByteArray();
+            }
+
+            List<String> unites = new java.util.ArrayList<>(parUnite.keySet());
+
+            // Cloner la feuille modèle (encore vierge à ce stade) une fois par UA
+            // supplémentaire, AVANT d'y écrire la moindre donnée : cloneSheet duplique
+            // aussi les lignes déjà remplies, donc l'ordre clone-puis-remplit est impératif.
+            for (int i = 1; i < unites.size(); i++) {
+                workbook.cloneSheet(0);
+            }
+
+            java.util.Set<String> nomsUtilises = new java.util.HashSet<>();
+            for (int i = 0; i < unites.size(); i++) {
+                String unite = unites.get(i);
+                Sheet sheet = workbook.getSheetAt(i);
+
+                workbook.setSheetName(i, nomFeuilleUnique(unite, nomsUtilises));
+
+                populerFeuille(workbook, sheet, parUnite.get(unite));
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Erreur génération Excel cartographie depuis template", e);
+        }
+    }
+
+    /**
+     * Nom d'onglet Excel valide (≤ 31 caractères, sans caractères interdits) et
+     * unique dans le classeur (suffixe numérique en cas de collision après troncature).
+     */
+    private String nomFeuilleUnique(String libelleUnite, java.util.Set<String> nomsUtilises) {
+        String base = org.apache.poi.ss.util.WorkbookUtil.createSafeSheetName(libelleUnite);
+        String nom = base;
+        int suffixe = 2;
+        while (nomsUtilises.contains(nom)) {
+            String suffixeStr = "_" + suffixe;
+            int maxBase = 31 - suffixeStr.length();
+            nom = base.substring(0, Math.min(base.length(), maxBase)) + suffixeStr;
+            suffixe++;
+        }
+        nomsUtilises.add(nom);
+        return nom;
+    }
+
+    private void populerFeuille(Workbook workbook, Sheet sheet, List<CartographieRisqueDetailResponse> data) {
+
+        {
             // ================= STYLE BODY =================
             CellStyle bodyStyle = workbook.createCellStyle();
             bodyStyle.setWrapText(true);
@@ -296,13 +378,6 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
                 }
 
             }
-
-            workbook.write(out);
-            return out.toByteArray();
-
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "Erreur génération Excel cartographie depuis template", e);
         }
     }
 

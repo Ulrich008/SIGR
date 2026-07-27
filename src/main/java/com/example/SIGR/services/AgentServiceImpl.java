@@ -2,25 +2,44 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.AgentRequest;
 import com.example.SIGR.dto.response.AgentResponse;
+import com.example.SIGR.dto.response.ImportLigneErreurResponse;
+import com.example.SIGR.dto.response.ImportResultResponse;
 import com.example.SIGR.entity.Agent;
 import com.example.SIGR.entity.Ministere;
 import com.example.SIGR.entity.Profil;
 import com.example.SIGR.entity.Role;
+import com.example.SIGR.entity.Sexe;
 import com.example.SIGR.entity.UniteAdministrative;
 import com.example.SIGR.config.MinistereInterceptor;
 import com.example.SIGR.repository.AgentRepository;
 import com.example.SIGR.repository.MinistereRepository;
+import com.example.SIGR.repository.NotificationRepository;
 import com.example.SIGR.repository.ProfilRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
 import com.example.SIGR.security.SecurityUtils;
+import com.example.SIGR.util.ExcelImportUtils;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.hibernate.Session;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -40,8 +59,10 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +72,9 @@ public class AgentServiceImpl implements AgentService {
     private final UniteAdministrativeRepository uniteRepository;
     private final ProfilRepository profilRepository;
     private final MinistereRepository ministereRepository;
+    private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Validator validator;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -61,13 +84,17 @@ public class AgentServiceImpl implements AgentService {
             UniteAdministrativeRepository uniteRepository,
             ProfilRepository profilRepository,
             MinistereRepository ministereRepository,
-            PasswordEncoder passwordEncoder
+            NotificationRepository notificationRepository,
+            PasswordEncoder passwordEncoder,
+            Validator validator
     ) {
         this.agentRepository = agentRepository;
         this.uniteRepository = uniteRepository;
         this.profilRepository = profilRepository;
         this.ministereRepository = ministereRepository;
+        this.notificationRepository = notificationRepository;
         this.passwordEncoder = passwordEncoder;
+        this.validator = validator;
     }
 
     @Override
@@ -209,6 +236,39 @@ public class AgentServiceImpl implements AgentService {
      */
     @Override
     public AgentResponse getMe(String matricule) {
+        return toResponse(trouverAgentCourantSansFiltre(matricule));
+    }
+
+    @Override
+    public void changerMotDePasse(String matricule, String ancienMotDePasse, String nouveauMotDePasse) {
+
+        Agent agent = trouverAgentCourantSansFiltre(matricule);
+
+        if (!passwordEncoder.matches(ancienMotDePasse, agent.getPassword())) {
+            throw new RuntimeException("Mot de passe actuel incorrect");
+        }
+
+        agent.setPassword(passwordEncoder.encode(nouveauMotDePasse));
+        agentRepository.save(agent);
+    }
+
+    @Override
+    public AgentResponse modifierMonEmail(String matricule, String email) {
+
+        Agent agent = trouverAgentCourantSansFiltre(matricule);
+        agent.setEmail(email != null && !email.isBlank() ? email : null);
+
+        return toResponse(agentRepository.save(agent));
+    }
+
+    /**
+     * Recherche un agent par son propre matricule en désactivant
+     * temporairement le filtre par ministère : un agent doit toujours
+     * pouvoir se retrouver lui-même, quel que soit l'état du filtre pour
+     * la requête en cours (self-service : getMe, changement de mot de
+     * passe, modification d'email).
+     */
+    private Agent trouverAgentCourantSansFiltre(String matricule) {
 
         Session session = entityManager.unwrap(Session.class);
         boolean filtreActif = session.getEnabledFilter("ministereFilter") != null;
@@ -218,15 +278,13 @@ public class AgentServiceImpl implements AgentService {
         }
 
         try {
-            Agent agent = agentRepository
+            return agentRepository
                     .findByMatricule(matricule)
                     .orElseThrow(() ->
                             new RuntimeException(
                                     "Agent introuvable : " + matricule
                             )
                     );
-
-            return toResponse(agent);
 
         } finally {
             if (filtreActif) {
@@ -693,6 +751,7 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
+    @Transactional
     public void delete(String matricule) {
 
         Agent agent = agentRepository
@@ -703,6 +762,12 @@ public class AgentServiceImpl implements AgentService {
                                         + matricule
                         )
                 );
+
+        // Les notifications de cet agent n'ont aucune autre voie de
+        // suppression (pas d'endpoint, pas de purge planifiée) : sans ce
+        // nettoyage préalable, la contrainte matricule_destinataire NOT
+        // NULL bloquerait systématiquement la suppression de l'agent.
+        notificationRepository.deleteByDestinataire_Matricule(matricule);
 
         agentRepository.delete(agent);
     }
@@ -872,5 +937,131 @@ public class AgentServiceImpl implements AgentService {
                         : null,
                 agent.getEmail()
         );
+    }
+
+    // =========================================================
+    // IMPORT EXCEL
+    // =========================================================
+
+    private static final String[] COLONNES_IMPORT_AGENT = {
+            "NPI", "Nom", "Prénoms", "Sexe", "Rôle", "Code profil",
+            "Date de naissance", "Date de prise de service",
+            "Code unité", "Code ministère", "Email", "Mot de passe"
+    };
+
+    @Override
+    public ImportResultResponse importFromExcel(MultipartFile file) {
+        List<ImportLigneErreurResponse> echecs = new ArrayList<>();
+        int total = 0;
+        int succes = 0;
+
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (ExcelImportUtils.isRowEmpty(row)) continue;
+
+                int numeroLigne = i + 1;
+                total++;
+
+                try {
+                    AgentRequest request = mapperLigneAgent(row);
+
+                    Set<ConstraintViolation<AgentRequest>> violations = validator.validate(request);
+                    if (!violations.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                violations.iterator().next().getMessage()
+                        );
+                    }
+
+                    create(request);
+                    succes++;
+                } catch (Exception e) {
+                    echecs.add(new ImportLigneErreurResponse(numeroLigne, e.getMessage()));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Impossible de lire le fichier Excel : " + e.getMessage());
+        }
+
+        return new ImportResultResponse(total, succes, echecs);
+    }
+
+    private AgentRequest mapperLigneAgent(Row row) {
+        AgentRequest request = new AgentRequest();
+        request.setNpi(ExcelImportUtils.getString(row, 0));
+        request.setNom(ExcelImportUtils.getString(row, 1));
+        request.setPrenoms(ExcelImportUtils.getString(row, 2));
+        request.setSexe(parserSexe(ExcelImportUtils.getString(row, 3)));
+        request.setRole(parserRole(ExcelImportUtils.getString(row, 4)));
+        request.setCodeProfil(ExcelImportUtils.getString(row, 5));
+        request.setDateNaissance(ExcelImportUtils.getDate(row, 6));
+        request.setDatePriseService(ExcelImportUtils.getDate(row, 7));
+        request.setCodeUnite(ExcelImportUtils.getString(row, 8));
+        request.setCodeMinistere(ExcelImportUtils.getString(row, 9));
+        request.setEmail(ExcelImportUtils.getString(row, 10));
+        request.setPassword(ExcelImportUtils.getString(row, 11));
+        return request;
+    }
+
+    private Sexe parserSexe(String valeur) {
+        if (valeur == null) return null;
+        String v = valeur.trim().toUpperCase();
+        if (v.equals("M") || v.equals("MASCULIN")) return Sexe.MASCULIN;
+        if (v.equals("F") || v.equals("FEMININ") || v.equals("FÉMININ")) return Sexe.FEMININ;
+        throw new IllegalArgumentException(
+                "Sexe invalide : " + valeur + " (attendu MASCULIN ou FEMININ)"
+        );
+    }
+
+    private Role parserRole(String valeur) {
+        if (valeur == null) return null;
+        try {
+            return Role.valueOf(valeur.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "Rôle invalide : " + valeur + " (attendu SUPER_ADMIN, ADMIN ou AGENT)"
+            );
+        }
+    }
+
+    @Override
+    public byte[] generateImportTemplate() {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Agents");
+
+            org.apache.poi.ss.usermodel.Font fontEntete = workbook.createFont();
+            fontEntete.setBold(true);
+            fontEntete.setColor(org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
+
+            CellStyle styleEntete = workbook.createCellStyle();
+            styleEntete.setFont(fontEntete);
+            styleEntete.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.DARK_GREEN.getIndex());
+            styleEntete.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            Row entete = sheet.createRow(0);
+            for (int c = 0; c < COLONNES_IMPORT_AGENT.length; c++) {
+                Cell cell = entete.createCell(c);
+                cell.setCellValue(COLONNES_IMPORT_AGENT[c]);
+                cell.setCellStyle(styleEntete);
+                sheet.setColumnWidth(c, 20 * 256);
+            }
+
+            Row exemple = sheet.createRow(1);
+            String[] valeursExemple = {
+                    "1234567890", "Kouassi", "Jean", "MASCULIN", "AGENT", "CORRESPONDANT_RISQUE",
+                    "01/01/1990", "01/01/2020", "DGB", "MEF", "jean.kouassi@exemple.gouv", "motdepasse123"
+            };
+            for (int c = 0; c < valeursExemple.length; c++) {
+                exemple.createCell(c).setCellValue(valeursExemple[c]);
+            }
+
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Impossible de générer le modèle : " + e.getMessage());
+        }
     }
 }

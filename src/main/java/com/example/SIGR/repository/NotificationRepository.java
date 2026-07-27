@@ -29,4 +29,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
     );
 
     List<Notification> findByDestinataire_MatriculeAndLuFalse(String matricule);
+
+    /**
+     * Purge les notifications d'un agent avant sa suppression : la colonne
+     * matricule_destinataire est NOT NULL sans ON DELETE CASCADE, donc
+     * supprimer un agent ayant déjà reçu une notification serait sinon
+     * toujours rejeté par la contrainte de clé étrangère.
+     */
+    void deleteByDestinataire_Matricule(String matricule);
 }

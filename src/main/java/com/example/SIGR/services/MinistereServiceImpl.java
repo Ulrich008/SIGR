@@ -99,11 +99,17 @@ public class MinistereServiceImpl implements MinistereService {
 
         verifierAccesMinistere(ministere);
 
+        if (ministereRepository.existsByCode(request.getCode())
+                && !ministere.getCode().equals(request.getCode())) {
+            throw new RuntimeException("Code déjà utilisé : " + request.getCode());
+        }
+
         if (ministereRepository.existsByNom(request.getNom())
                 && !ministere.getNom().equals(request.getNom())) {
             throw new RuntimeException("Nom déjà utilisé : " + request.getNom());
         }
 
+        ministere.setCode(request.getCode());
         ministere.setNom(request.getNom());
         ministere.setSigle(request.getSigle());
         ministere.setDescription(request.getDescription());

@@ -23,6 +23,7 @@ public class ProcessusRequest {
     @NotBlank(message = "L'identifiant de l'unité est obligatoire")
     private String idUnite;
 
+    @NotBlank(message = "Le propriétaire est obligatoire")
     private String idProprietaire;
 
     // ================= GETTERS / SETTERS =================

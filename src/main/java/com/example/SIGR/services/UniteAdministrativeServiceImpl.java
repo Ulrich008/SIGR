@@ -1,5 +1,7 @@
 package com.example.SIGR.services;
 import com.example.SIGR.dto.request.UniteAdministrativeRequest;
+import com.example.SIGR.dto.response.ImportLigneErreurResponse;
+import com.example.SIGR.dto.response.ImportResultResponse;
 import com.example.SIGR.dto.response.UniteAdministrativeResponse;
 import com.example.SIGR.entity.Ministere;
 import com.example.SIGR.entity.TypeUnite;
@@ -8,9 +10,26 @@ import com.example.SIGR.repository.MinistereRepository;
 import com.example.SIGR.repository.TypeUniteRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
 import com.example.SIGR.security.SecurityUtils;
+import com.example.SIGR.util.ExcelImportUtils;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UniteAdministrativeServiceImpl implements UniteAdministrativeService {
@@ -18,15 +37,18 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
     private final UniteAdministrativeRepository uniteRepository;
     private final MinistereRepository ministereRepository;
     private final TypeUniteRepository typeUniteRepository;
+    private final Validator validator;
 
     public UniteAdministrativeServiceImpl(
             UniteAdministrativeRepository uniteRepository,
             MinistereRepository ministereRepository,
-            TypeUniteRepository typeUniteRepository
+            TypeUniteRepository typeUniteRepository,
+            Validator validator
     ) {
         this.uniteRepository    = uniteRepository;
         this.ministereRepository = ministereRepository;
         this.typeUniteRepository = typeUniteRepository;
+        this.validator = validator;
     }
 
     // =========================================================
@@ -218,5 +240,103 @@ public class UniteAdministrativeServiceImpl implements UniteAdministrativeServic
                 unite.getParent()     != null ? unite.getParent().getCode()       : null,
                 unite.getNiveauHierarchique()
         );
+    }
+
+    // =========================================================
+    // IMPORT EXCEL
+    // =========================================================
+
+    private static final String[] COLONNES_IMPORT_UNITE = {
+            "Code", "Libellé", "Code type unité", "Code ministère",
+            "Code unité parente", "Niveau hiérarchique"
+    };
+
+    @Override
+    public ImportResultResponse importFromExcel(MultipartFile file) {
+        List<ImportLigneErreurResponse> echecs = new ArrayList<>();
+        int total = 0;
+        int succes = 0;
+
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (ExcelImportUtils.isRowEmpty(row)) continue;
+
+                int numeroLigne = i + 1;
+                total++;
+
+                try {
+                    UniteAdministrativeRequest request = mapperLigneUnite(row);
+
+                    Set<ConstraintViolation<UniteAdministrativeRequest>> violations =
+                            validator.validate(request);
+                    if (!violations.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                violations.iterator().next().getMessage()
+                        );
+                    }
+
+                    create(request);
+                    succes++;
+                } catch (Exception e) {
+                    echecs.add(new ImportLigneErreurResponse(numeroLigne, e.getMessage()));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Impossible de lire le fichier Excel : " + e.getMessage());
+        }
+
+        return new ImportResultResponse(total, succes, echecs);
+    }
+
+    private UniteAdministrativeRequest mapperLigneUnite(Row row) {
+        UniteAdministrativeRequest request = new UniteAdministrativeRequest();
+        request.setCode(ExcelImportUtils.getString(row, 0));
+        request.setLibelle(ExcelImportUtils.getString(row, 1));
+        request.setIdTypeUnite(ExcelImportUtils.getString(row, 2));
+        request.setCodeMinistere(ExcelImportUtils.getString(row, 3));
+        request.setIdUniteParent(ExcelImportUtils.getString(row, 4));
+        request.setNiveauHierarchique(ExcelImportUtils.getInt(row, 5));
+        return request;
+    }
+
+    @Override
+    public byte[] generateImportTemplate() {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Unités administratives");
+
+            Font fontEntete = workbook.createFont();
+            fontEntete.setBold(true);
+            fontEntete.setColor(org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
+
+            CellStyle styleEntete = workbook.createCellStyle();
+            styleEntete.setFont(fontEntete);
+            styleEntete.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.DARK_GREEN.getIndex());
+            styleEntete.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            Row entete = sheet.createRow(0);
+            for (int c = 0; c < COLONNES_IMPORT_UNITE.length; c++) {
+                Cell cell = entete.createCell(c);
+                cell.setCellValue(COLONNES_IMPORT_UNITE[c]);
+                cell.setCellStyle(styleEntete);
+                sheet.setColumnWidth(c, 20 * 256);
+            }
+
+            Row exemple = sheet.createRow(1);
+            String[] valeursExemple = {
+                    "DGB", "Direction Générale du Budget", "DIR_GEN", "MEF", "", "2"
+            };
+            for (int c = 0; c < valeursExemple.length; c++) {
+                exemple.createCell(c).setCellValue(valeursExemple[c]);
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Impossible de générer le modèle : " + e.getMessage());
+        }
     }
 }
