@@ -39,6 +39,11 @@ public class RisqueResponse {
 
     private EtapeValidation etapeValidation;
 
+    private String emetteurAvisMatricule;
+    private String emetteurAvisNomComplet;
+    private String emetteurAvisCodeProfil;
+    private String emetteurAvisLibelleProfil;
+
     public RisqueResponse(
             String id,
             String code,
@@ -56,7 +61,11 @@ public class RisqueResponse {
             AvisRisque avis,
             String motif,
             Boolean transmis,
-            EtapeValidation etapeValidation
+            EtapeValidation etapeValidation,
+            String emetteurAvisMatricule,
+            String emetteurAvisNomComplet,
+            String emetteurAvisCodeProfil,
+            String emetteurAvisLibelleProfil
     ) {
         this.id = id;
         this.code = code ;
@@ -75,6 +84,10 @@ public class RisqueResponse {
         this.motif = motif;
         this.transmis = transmis;
         this.etapeValidation = etapeValidation;
+        this.emetteurAvisMatricule = emetteurAvisMatricule;
+        this.emetteurAvisNomComplet = emetteurAvisNomComplet;
+        this.emetteurAvisCodeProfil = emetteurAvisCodeProfil;
+        this.emetteurAvisLibelleProfil = emetteurAvisLibelleProfil;
     }
 
     public String getCode() {
@@ -142,5 +155,21 @@ public class RisqueResponse {
 
     public EtapeValidation getEtapeValidation() {
         return etapeValidation;
+    }
+
+    public String getEmetteurAvisMatricule() {
+        return emetteurAvisMatricule;
+    }
+
+    public String getEmetteurAvisNomComplet() {
+        return emetteurAvisNomComplet;
+    }
+
+    public String getEmetteurAvisCodeProfil() {
+        return emetteurAvisCodeProfil;
+    }
+
+    public String getEmetteurAvisLibelleProfil() {
+        return emetteurAvisLibelleProfil;
     }
 }

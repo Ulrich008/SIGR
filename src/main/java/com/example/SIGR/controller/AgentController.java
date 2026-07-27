@@ -1,6 +1,8 @@
 package com.example.SIGR.controller;
 
 import com.example.SIGR.dto.request.AgentRequest;
+import com.example.SIGR.dto.request.ChangerMotDePasseRequest;
+import com.example.SIGR.dto.request.ModifierEmailRequest;
 import com.example.SIGR.dto.response.AgentResponse;
 import com.example.SIGR.services.AgentService;
 
@@ -158,6 +160,51 @@ public class AgentController {
     }
 
     /**
+     * ================= CHANGER MON MOT DE PASSE =================
+     */
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/me/password")
+    @Operation(
+            summary = "Changer mon mot de passe",
+            description = "Self-service : nécessite l'ancien mot de passe pour appliquer le nouveau."
+    )
+    public ResponseEntity<Void> changerMonMotDePasse(
+            @Valid @RequestBody ChangerMotDePasseRequest request,
+            Authentication authentication
+    ) {
+
+        agentService.changerMotDePasse(
+                authentication.getName(),
+                request.getAncienMotDePasse(),
+                request.getNouveauMotDePasse()
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * ================= MODIFIER MON EMAIL =================
+     */
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/me/email")
+    @Operation(
+            summary = "Modifier mon email",
+            description = "Self-service, depuis la page \"Mon profil\"."
+    )
+    public ResponseEntity<AgentResponse> modifierMonEmail(
+            @Valid @RequestBody ModifierEmailRequest request,
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                agentService.modifierMonEmail(
+                        authentication.getName(),
+                        request.getEmail()
+                )
+        );
+    }
+
+    /**
      * ================= LISTE =================
      * ADMIN/SUPER_ADMIN : tous les agents de leur périmètre (ministère,
      * filtré par Hibernate). AGENT : uniquement les agents de sa propre
@@ -229,6 +276,50 @@ public class AgentController {
                                 .toString()
                 )
                 .body(pdf);
+    }
+
+    /**
+     * ================= IMPORT EXCEL =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPER_ADMIN')")
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Importer des agents depuis un fichier Excel",
+            description = """
+                    Chaque ligne est traitée indépendamment : une ligne en
+                    erreur n'empêche pas l'import des autres. Le fichier doit
+                    respecter le modèle téléchargeable via GET /import/modele.
+                    """
+    )
+    public ResponseEntity<com.example.SIGR.dto.response.ImportResultResponse> importAgents(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file
+    ) {
+        return ResponseEntity.ok(agentService.importFromExcel(file));
+    }
+
+    /**
+     * ================= MODÈLE D'IMPORT =================
+     */
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPER_ADMIN')")
+    @GetMapping("/import/modele")
+    @Operation(
+            summary = "Télécharger le modèle Excel pour l'import des agents"
+    )
+    public ResponseEntity<byte[]> telechargerModeleImport() {
+        byte[] modele = agentService.generateImportTemplate();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ))
+                .header(
+                        org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename("modele_import_agents.xlsx")
+                                .build()
+                                .toString()
+                )
+                .body(modele);
     }
 
     /**

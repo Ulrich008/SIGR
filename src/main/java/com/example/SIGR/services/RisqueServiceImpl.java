@@ -19,15 +19,18 @@ public class RisqueServiceImpl implements RisqueService {
     private final RisqueRepository risqueRepository;
     private final ProcessusRepository processusRepository;
     private final CartographieRisquesRepository cartographieRepository;
+    private final AgentRepository agentRepository;
 
     public RisqueServiceImpl(
             RisqueRepository risqueRepository,
             ProcessusRepository processusRepository,
-            CartographieRisquesRepository cartographieRepository
+            CartographieRisquesRepository cartographieRepository,
+            AgentRepository agentRepository
     ) {
         this.risqueRepository = risqueRepository;
         this.processusRepository = processusRepository;
         this.cartographieRepository = cartographieRepository;
+        this.agentRepository = agentRepository;
     }
 
     /**
@@ -201,8 +204,10 @@ public class RisqueServiceImpl implements RisqueService {
 
         risque.setEtapeValidation(EtapeValidation.PILOTE);
         risque.setAvis(AvisRisque.EN_ATTENTE);
-        risque.setMotif(null);
         risque.setTransmis(true);
+        // Le motif d'un éventuel différé précédent est volontairement conservé
+        // (pas de remise à null) : il reste consultable tant qu'un nouvel avis
+        // ne l'a pas explicitement remplacé.
 
         return toResponse(risqueRepository.save(risque));
     }
@@ -254,9 +259,25 @@ public class RisqueServiceImpl implements RisqueService {
         risque.setAvis(request.getAvis());
         risque.setMotif(request.getMotif());
 
+        String matriculeEmetteur = SecurityUtils.getCurrentUser();
+        if (matriculeEmetteur != null) {
+            agentRepository.findByMatricule(matriculeEmetteur)
+                    .ifPresent(risque::setEmetteurAvis);
+        }
+
         switch (request.getAvis()) {
             case VALIDE -> risque.setEtapeValidation(etapeSuivante(etapeActuelle));
-            case DIFFERE -> risque.setEtapeValidation(etapePrecedente(etapeActuelle));
+            case DIFFERE -> {
+                EtapeValidation etapeRetour = etapePrecedente(etapeActuelle);
+                risque.setEtapeValidation(etapeRetour);
+                // Un différé qui retombe à Formalisation renvoie le dossier
+                // à la case départ : il ne redevient actif dans le circuit
+                // qu'après une nouvelle transmission explicite par le
+                // Responsable des risques (voir transmettre()).
+                if (etapeRetour == EtapeValidation.FORMALISATION) {
+                    risque.setTransmis(false);
+                }
+            }
             case REJETE -> risque.setEtapeValidation(EtapeValidation.REJETEE);
             default -> { /* EN_ATTENTE : ne devrait pas arriver ici */ }
         }
@@ -385,11 +406,13 @@ public class RisqueServiceImpl implements RisqueService {
 
         risque.setProcessus(processus);
         risque.setCartographie(cartographie);
-        risque.setAvis(request.getAvis());
-        risque.setMotif(request.getMotif());
-        if (request.getTransmis() != null) {
-            risque.setTransmis(request.getTransmis());
-        }
+        // avis / motif / transmis / etapeValidation ne sont volontairement PAS
+        // repris depuis la requête ici : ce sont les seules données du circuit
+        // de validation, et cette mise à jour générique du contenu du risque
+        // (accessible à RESPONSABLE_RISQUES/SUPER_ADMIN) ne doit pas pouvoir
+        // les contourner. Seuls transmettre() et validerAvis() — avec leurs
+        // vérifications d'étape et de motif obligatoire — sont autorisés à
+        // les modifier.
 
         Risque updated =
                 risqueRepository.save(risque);
@@ -432,7 +455,23 @@ public class RisqueServiceImpl implements RisqueService {
                 risque.getAvis(),
                 risque.getMotif(),
                 risque.getTransmis() != null ? risque.getTransmis() : false,
-                risque.getEtapeValidation()
+                risque.getEtapeValidation(),
+
+                risque.getEmetteurAvis() != null
+                        ? risque.getEmetteurAvis().getMatricule()
+                        : null,
+
+                risque.getEmetteurAvis() != null
+                        ? risque.getEmetteurAvis().getNom() + " " + risque.getEmetteurAvis().getPrenoms()
+                        : null,
+
+                risque.getEmetteurAvis() != null && risque.getEmetteurAvis().getProfil() != null
+                        ? risque.getEmetteurAvis().getProfil().getCode()
+                        : null,
+
+                risque.getEmetteurAvis() != null && risque.getEmetteurAvis().getProfil() != null
+                        ? risque.getEmetteurAvis().getProfil().getLibelle()
+                        : null
         );
     }
 
