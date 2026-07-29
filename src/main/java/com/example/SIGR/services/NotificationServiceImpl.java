@@ -154,10 +154,16 @@ public class NotificationServiceImpl implements NotificationService {
 
     private void detecterEcheanceIndicateur(IndicateurPerformance indicateur, List<Notification> creees) {
         LocalDate aujourdHui = LocalDate.now();
-        LocalDate dateFinAction = resoudreDateFinAction(indicateur);
-        if (dateFinAction == null) return;
+        // Même source que IndicateurPerformance.getStatut() (affiché et
+        // compté côté liste des indicateurs) : la date de fin propre à
+        // l'indicateur, indépendamment d'une action ou d'un plan de
+        // mitigation lié. Utiliser la date de fin d'une action liée ici
+        // désynchronisait la notification du statut réellement affiché,
+        // et privait d'alerte tout indicateur sans action rattachée.
+        LocalDate dateFin = indicateur.getDateFin();
+        if (dateFin == null) return;
 
-        long joursRestants = ChronoUnit.DAYS.between(aujourdHui, dateFinAction);
+        long joursRestants = ChronoUnit.DAYS.between(aujourdHui, dateFin);
         Processus processus = indicateur.getProcessus();
 
         if (aujourdHui.isAfter(indicateur.getSeuilAlerte())) {
@@ -165,7 +171,7 @@ public class NotificationServiceImpl implements NotificationService {
                     TypeNotification.INDICATEUR_SEUIL_DEPASSE,
                     "Seuil d'alerte dépassé",
                     "L'indicateur '" + indicateur.getLibelle() + "' a dépassé son seuil d'alerte. " +
-                            "Date de fin de l'action : " + dateFinAction + " (" + joursRestants + " jours).",
+                            "Date de fin : " + dateFin + " (" + joursRestants + " jours).",
                     indicateur.getCode(),
                     indicateur.getLibelle(),
                     SeveriteAlerte.HAUTE,
@@ -176,9 +182,9 @@ public class NotificationServiceImpl implements NotificationService {
         } else if (joursRestants <= 7) {
             creerPourProfils(
                     TypeNotification.INDICATEUR_ECHEANCE_PROCHE,
-                    "Échéance proche de l'action",
-                    "L'indicateur '" + indicateur.getLibelle() + "' approche de la date de fin de l'action. " +
-                            "Date de fin : " + dateFinAction + " (" + joursRestants + " jours restants).",
+                    "Échéance proche",
+                    "L'indicateur '" + indicateur.getLibelle() + "' approche de sa date de fin. " +
+                            "Date de fin : " + dateFin + " (" + joursRestants + " jours restants).",
                     indicateur.getCode(),
                     indicateur.getLibelle(),
                     SeveriteAlerte.MOYENNE,
@@ -187,20 +193,6 @@ public class NotificationServiceImpl implements NotificationService {
                     creees
             );
         }
-    }
-
-    private LocalDate resoudreDateFinAction(IndicateurPerformance indicateur) {
-        if (indicateur.getAction() != null) {
-            return indicateur.getAction().getDateFin();
-        }
-        if (indicateur.getPlanMitigation() != null) {
-            return actionRepository.findByPlanMitigation(indicateur.getPlanMitigation()).stream()
-                    .map(Action::getDateFin)
-                    .filter(d -> d != null)
-                    .max(LocalDate::compareTo)
-                    .orElse(null);
-        }
-        return null;
     }
 
     // ================= CIBLAGE / PERSISTANCE =================

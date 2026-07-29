@@ -19,15 +19,18 @@ public class ActionServiceImpl implements ActionService {
     private final ActionRepository actionRepository;
     private final PlanMitigationRepository planMitigationRepository;
     private final AgentRepository agentRepository;
+    private final PlanMitigationService planMitigationService;
 
     public ActionServiceImpl(
             ActionRepository actionRepository,
             PlanMitigationRepository planMitigationRepository,
-            AgentRepository agentRepository
+            AgentRepository agentRepository,
+            PlanMitigationService planMitigationService
     ) {
         this.actionRepository = actionRepository;
         this.planMitigationRepository = planMitigationRepository;
         this.agentRepository = agentRepository;
+        this.planMitigationService = planMitigationService;
     }
 
     // ================= CREATE =================
@@ -67,7 +70,10 @@ public class ActionServiceImpl implements ActionService {
                 .setPlanMitigation(plan)
                 .setResponsable(responsable);
 
-        return toResponse(actionRepository.save(action));
+        Action saved = actionRepository.save(action);
+        planMitigationService.recalculerStatut(plan.getCode());
+
+        return toResponse(saved);
     }
 
     // ================= GET BY CODE =================
@@ -101,6 +107,10 @@ public class ActionServiceImpl implements ActionService {
             throw new RuntimeException("Date de fin invalide");
         }
 
+        String ancienCodePlan = action.getPlanMitigation() != null
+                ? action.getPlanMitigation().getCode()
+                : null;
+
         PlanMitigation plan = planMitigationRepository.findByCode(request.getCodePlan())
                 .orElseThrow(() -> new RuntimeException("Plan introuvable : " + request.getCodePlan()));
 
@@ -116,7 +126,14 @@ public class ActionServiceImpl implements ActionService {
                 .setPlanMitigation(plan)
                 .setResponsable(responsable);
 
-        return toResponse(actionRepository.save(action));
+        Action saved = actionRepository.save(action);
+
+        planMitigationService.recalculerStatut(plan.getCode());
+        if (ancienCodePlan != null && !ancienCodePlan.equals(plan.getCode())) {
+            planMitigationService.recalculerStatut(ancienCodePlan);
+        }
+
+        return toResponse(saved);
     }
 
     // ================= DELETE BY CODE =================
@@ -126,7 +143,15 @@ public class ActionServiceImpl implements ActionService {
         Action action = actionRepository.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Action introuvable : " + code));
 
+        String codePlan = action.getPlanMitigation() != null
+                ? action.getPlanMitigation().getCode()
+                : null;
+
         actionRepository.delete(action);
+
+        if (codePlan != null) {
+            planMitigationService.recalculerStatut(codePlan);
+        }
     }
 
     // ================= MAPPER =================

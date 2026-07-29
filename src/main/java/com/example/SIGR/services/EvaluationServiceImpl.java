@@ -3,12 +3,15 @@ import com.example.SIGR.dto.request.EvaluationRequest;
 import com.example.SIGR.dto.response.CartographieRisqueDetailResponse;
 import com.example.SIGR.dto.response.EvaluationResponse;
 import com.example.SIGR.entity.Agent;
+import com.example.SIGR.entity.EtapeValidation;
 import com.example.SIGR.entity.Evaluation;
 import com.example.SIGR.entity.Risque;
+import com.example.SIGR.entity.StatutRisque;
 import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.repository.AgentRepository;
 import com.example.SIGR.repository.EvaluationRepository;
 import com.example.SIGR.repository.RisqueRepository;
+import com.example.SIGR.security.SecurityUtils;
 
 import org.springframework.stereotype.Service;
 
@@ -35,7 +38,7 @@ public class EvaluationServiceImpl implements EvaluationService {
     // ================= CARTOGRAPHIE =================
     @Override
     public List<CartographieRisqueDetailResponse> getCartographieDetail() {
-        return evaluationRepository.findCartographieRisquesDetail();
+        return evaluationRepository.findCartographieRisquesDetail(null);
     }
 
     // ================= CREATE =================
@@ -91,11 +94,18 @@ public class EvaluationServiceImpl implements EvaluationService {
                 )
         );
 
-        // ================= STRATEGIE RISQUE =================
-        // Appliquer automatiquement la stratégie de risque au risque parent
+        // ================= STRATEGIE RISQUE + STATUT =================
+        // Appliquer automatiquement la stratégie de risque et le statut
+        // (EN_COURS / MAITRISE) au risque parent.
+        boolean risqueModifie = mettreAJourStatutRisque(risque, evaluation.getRangPriorite());
+
         StrategieRisque strategieCalculee = evaluation.getStrategieRisqueCalculee();
         if (strategieCalculee != null) {
             risque.setStrategieRisque(strategieCalculee);
+            risqueModifie = true;
+        }
+
+        if (risqueModifie) {
             risqueRepository.save(risque);
         }
 
@@ -150,6 +160,8 @@ public class EvaluationServiceImpl implements EvaluationService {
                         )
                 );
 
+        verifierRisqueModifiable(risque);
+
         Agent agent = null;
 
         if (request.getMatriculeAgent() != null
@@ -178,11 +190,18 @@ public class EvaluationServiceImpl implements EvaluationService {
                 )
         );
 
-        // ================= STRATEGIE RISQUE =================
-        // Appliquer automatiquement la stratégie de risque au risque parent
+        // ================= STRATEGIE RISQUE + STATUT =================
+        // Appliquer automatiquement la stratégie de risque et le statut
+        // (EN_COURS / MAITRISE) au risque parent.
+        boolean risqueModifie = mettreAJourStatutRisque(risque, evaluation.getRangPriorite());
+
         StrategieRisque strategieCalculee = evaluation.getStrategieRisqueCalculee();
         if (strategieCalculee != null) {
             risque.setStrategieRisque(strategieCalculee);
+            risqueModifie = true;
+        }
+
+        if (risqueModifie) {
             risqueRepository.save(risque);
         }
 
@@ -222,13 +241,19 @@ public class EvaluationServiceImpl implements EvaluationService {
                 request.getProbabiliteInherente()
         );
 
-        // ================= MAITRISE =================
+        // ================= MAITRISE (calculée automatiquement) =================
+        // Protection et prévention ne sont jamais pris depuis le client : ils
+        // sont recalculés ici à partir des bonnes pratiques du risque
+        // réellement présentes dans controleExistants, selon la même formule
+        // que l'aperçu affiché au frontend — (nb présentes × 3) / nb total du
+        // type, arrondi, plafonné à 3. Le serveur reste ainsi la source de
+        // vérité même en cas d'appel API direct contournant l'UI.
         evaluation.setProtection(
-                request.getProtection()
+                calculerScoreMaitrise(risque.getBonnesPratiquesList(), "[Protection]", request.getControleExistants())
         );
 
         evaluation.setPrevention(
-                request.getPrevention()
+                calculerScoreMaitrise(risque.getBonnesPratiquesList(), "[Prévention]", request.getControleExistants())
         );
 
         // ================= CONTROLES =================
@@ -279,6 +304,63 @@ public class EvaluationServiceImpl implements EvaluationService {
         evaluation.setEvaluePar(agent);
     }
 
+    /**
+     * Un risque transmis (etapeValidation != FORMALISATION) est verrouillé
+     * pour le Responsable des risques : son évaluation ne redevient
+     * modifiable qu'une fois le risque revenu à Formalisation (différé
+     * jusqu'au bout par le Pilote). Le SUPER_ADMIN n'est pas soumis à ce
+     * verrou (accès total).
+     */
+    private void verifierRisqueModifiable(Risque risque) {
+        if (SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            return;
+        }
+
+        boolean enCoursDeValidation = Boolean.TRUE.equals(risque.getTransmis())
+                && risque.getEtapeValidation() != EtapeValidation.FORMALISATION;
+
+        if (enCoursDeValidation) {
+            throw new RuntimeException(
+                    "Ce risque est en cours de validation (transmis) : son évaluation ne peut plus être modifiée."
+            );
+        }
+    }
+
+    // ================= CALCUL PROTECTION / PREVENTION =================
+    /**
+     * (nombre de bonnes pratiques du type présentes dans controleExistants × 3)
+     * / nombre total de bonnes pratiques de ce type sur le risque, arrondi et
+     * plafonné à 3. Réplique exactement la formule du frontend
+     * (calculateScoresFromExistants dans evaluations-form.component.ts).
+     */
+    private Integer calculerScoreMaitrise(
+            List<String> pratiquesRisque,
+            String prefixeType,
+            String controleExistants
+    ) {
+
+        List<String> pratiquesDuType = pratiquesRisque.stream()
+                .filter(p -> p.startsWith(prefixeType))
+                .collect(Collectors.toList());
+
+        if (pratiquesDuType.isEmpty()) {
+            return 0;
+        }
+
+        String existantsMinuscule = controleExistants == null
+                ? ""
+                : controleExistants.toLowerCase();
+
+        long nbPresentes = pratiquesDuType.stream()
+                .filter(p -> existantsMinuscule.contains(
+                        p.substring(prefixeType.length()).trim().toLowerCase()
+                ))
+                .count();
+
+        long score = Math.round((nbPresentes * 3.0) / pratiquesDuType.size());
+        return (int) Math.min(3, score);
+    }
+
     // ================= CALCUL PRIORITE =================
     private Integer calculerRangPriorite(Integer scoreResiduel) {
 
@@ -296,8 +378,37 @@ public class EvaluationServiceImpl implements EvaluationService {
             return 2;
         }
 
-        // Risque faible 
+        // Risque faible
         return 1;
+    }
+
+    // ================= STATUT AUTOMATIQUE DU RISQUE =================
+    /**
+     * Le statut du risque est entièrement piloté par le système : ACTIF à
+     * la création (voir RisqueServiceImpl), puis ici EN_COURS dès qu'une
+     * évaluation existe, ou MAITRISE si le score résiduel de la dernière
+     * évaluation tombe dans le palier "Faible" (rangPriorite == 1). Les
+     * statuts CLOTURE/SUPPRIME sont des décisions humaines (clôture par
+     * le CCI, suppression) : une évaluation ne les remet jamais en cause.
+     * Renvoie true si le statut du risque a changé (pour éviter une
+     * sauvegarde inutile si rien n'a bougé).
+     */
+    private boolean mettreAJourStatutRisque(Risque risque, Integer rangPriorite) {
+        StatutRisque statutActuel = risque.getStatut();
+        if (statutActuel == StatutRisque.CLOTURE || statutActuel == StatutRisque.SUPPRIME) {
+            return false;
+        }
+
+        StatutRisque nouveauStatut = (rangPriorite != null && rangPriorite == 1)
+                ? StatutRisque.MAITRISE
+                : StatutRisque.EN_COURS;
+
+        if (nouveauStatut == statutActuel) {
+            return false;
+        }
+
+        risque.setStatut(nouveauStatut);
+        return true;
     }
 
     // ================= LIBELLE PRIORITE =================
@@ -389,7 +500,19 @@ public class EvaluationServiceImpl implements EvaluationService {
                         : null,
 
                 e.getRisque() != null
+                        ? e.getRisque().getCode()
+                        : null,
+
+                e.getRisque() != null
                         ? e.getRisque().getLibelle()
+                        : null,
+
+                e.getRisque() != null
+                        ? e.getRisque().getTransmis()
+                        : null,
+
+                e.getRisque() != null
+                        ? e.getRisque().getEtapeValidation()
                         : null,
 
                 // ================= AGENT =================

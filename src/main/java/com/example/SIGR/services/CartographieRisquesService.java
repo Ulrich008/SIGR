@@ -19,7 +19,7 @@ public interface CartographieRisquesService {
 
     void delete(String id);
 
-    byte[] generateExcel();
+    byte[] generateExcel(Integer annee);
 
-    byte[] generateExcelByUnite(String codeUnite);
+    byte[] generateExcelByUnite(String codeUnite, Integer annee);
 }

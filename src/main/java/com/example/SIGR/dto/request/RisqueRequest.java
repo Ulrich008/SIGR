@@ -1,7 +1,6 @@
 package com.example.SIGR.dto.request;
 
 import com.example.SIGR.entity.AvisRisque;
-import com.example.SIGR.entity.StatutRisque;
 import com.example.SIGR.entity.StrategieRisque;
 import com.example.SIGR.entity.TypeRisque;
 import jakarta.validation.constraints.*;
@@ -23,9 +22,6 @@ public class RisqueRequest {
     private List<String> consequenceProbable;
 
     private List<String> bonnesPratiques;
-
-    @NotNull(message = "Le statut est obligatoire")
-    private StatutRisque statut;
 
     private StrategieRisque strategieRisque;
 
@@ -93,15 +89,6 @@ public class RisqueRequest {
 
     public RisqueRequest setBonnesPratiques(List<String> bonnesPratiques) {
         this.bonnesPratiques = bonnesPratiques;
-        return this;
-    }
-
-    public StatutRisque getStatut() {
-        return statut;
-    }
-
-    public RisqueRequest setStatut(StatutRisque statut) {
-        this.statut = statut;
         return this;
     }
 

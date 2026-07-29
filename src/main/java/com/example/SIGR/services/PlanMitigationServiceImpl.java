@@ -3,9 +3,13 @@ package com.example.SIGR.services;
 import com.example.SIGR.dto.request.PlanMitigationRequest;
 import com.example.SIGR.dto.response.PlanMitigationResponse;
 
+import com.example.SIGR.entity.Action;
 import com.example.SIGR.entity.PlanMitigation;
 import com.example.SIGR.entity.Risque;
+import com.example.SIGR.entity.StatutAction;
+import com.example.SIGR.entity.StatutPlanMitigation;
 
+import com.example.SIGR.repository.ActionRepository;
 import com.example.SIGR.repository.PlanMitigationRepository;
 import com.example.SIGR.repository.RisqueRepository;
 
@@ -19,13 +23,16 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
 
     private final PlanMitigationRepository repository;
     private final RisqueRepository risqueRepository;
+    private final ActionRepository actionRepository;
 
     public PlanMitigationServiceImpl(
             PlanMitigationRepository repository,
-            RisqueRepository risqueRepository
+            RisqueRepository risqueRepository,
+            ActionRepository actionRepository
     ) {
         this.repository = repository;
         this.risqueRepository = risqueRepository;
+        this.actionRepository = actionRepository;
     }
 
     // ================= CREATE =================
@@ -63,7 +70,11 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         plan.setLibelle(request.getLibelle());
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
-        plan.setStatut(request.getStatut());
+        // Le statut est désormais entièrement piloté par le système : PLANIFIE
+        // à la création (aucune action liée pour l'instant), puis EN_COURS/
+        // TERMINE selon les actions (voir recalculerStatut), et CLOTURE via
+        // l'action dédiée du CCI (voir cloturer()) — jamais saisi manuellement.
+        plan.setStatut(StatutPlanMitigation.PLANIFIE);
         plan.setRisque(risque);
 
         return toResponse(repository.save(plan));
@@ -114,10 +125,56 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         plan.setLibelle(request.getLibelle());
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
-        plan.setStatut(request.getStatut());
+        // Le statut n'est pas repris ici : il est piloté par le système
+        // (voir create() et recalculerStatut()).
         plan.setRisque(risque);
 
         return toResponse(repository.save(plan));
+    }
+
+    // ================= CLÔTURE (CCI) =================
+    @Override
+    public PlanMitigationResponse cloturer(String code) {
+
+        PlanMitigation plan = repository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan introuvable : " + code)
+                );
+
+        if (plan.getStatut() == StatutPlanMitigation.CLOTURE) {
+            throw new RuntimeException("Ce plan est déjà clôturé.");
+        }
+
+        plan.setStatut(StatutPlanMitigation.CLOTURE);
+
+        return toResponse(repository.save(plan));
+    }
+
+    // ================= RECALCUL AUTOMATIQUE =================
+    @Override
+    public void recalculerStatut(String codePlanMitigation) {
+
+        PlanMitigation plan = repository.findByCode(codePlanMitigation)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan introuvable : " + codePlanMitigation)
+                );
+
+        // Une fois clôturé par le CCI, plus aucun recalcul automatique.
+        if (plan.getStatut() == StatutPlanMitigation.CLOTURE) {
+            return;
+        }
+
+        List<Action> actions = actionRepository.findByPlanMitigation(plan);
+
+        if (actions.isEmpty()) {
+            plan.setStatut(StatutPlanMitigation.PLANIFIE);
+        } else if (actions.stream().allMatch(a -> a.getStatut() == StatutAction.TERMINEE)) {
+            plan.setStatut(StatutPlanMitigation.TERMINE);
+        } else {
+            plan.setStatut(StatutPlanMitigation.EN_COURS);
+        }
+
+        repository.save(plan);
     }
 
     // ================= DELETE =================

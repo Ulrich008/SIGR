@@ -204,9 +204,11 @@ public class CartographieRisquesController {
             summary = "Exporter la cartographie en Excel",
             description = "Génère un fichier Excel contenant la cartographie détaillée des risques (lecture seule pour tous les profils)"
     )
-    public ResponseEntity<byte[]> exportExcel() {
+    public ResponseEntity<byte[]> exportExcel(
+            @RequestParam(required = false) Integer annee
+    ) {
 
-        byte[] excel = cartographieRisquesService.generateExcel();
+        byte[] excel = cartographieRisquesService.generateExcel(annee);
 
         return ResponseEntity.ok()
                 .header(
@@ -233,10 +235,11 @@ public class CartographieRisquesController {
             description = "Génère un fichier Excel contenant la cartographie détaillée des risques pour une unité administrative spécifique (lecture seule pour tous les profils)"
     )
     public ResponseEntity<byte[]> exportExcelByUnite(
-            @PathVariable String codeUnite
+            @PathVariable String codeUnite,
+            @RequestParam(required = false) Integer annee
     ) {
 
-        byte[] excel = cartographieRisquesService.generateExcelByUnite(codeUnite);
+        byte[] excel = cartographieRisquesService.generateExcelByUnite(codeUnite, annee);
 
         return ResponseEntity.ok()
                 .header(

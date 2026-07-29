@@ -272,6 +272,34 @@ public class RisqueController {
     }
 
     /**
+     * ================= CLÔTURE =================
+     *
+     * CCI :
+     * - Confirme que le risque est effectivement résolu et le clôture,
+     *   indépendamment de l'étape où il se trouve dans le circuit de
+     *   validation de la cartographie.
+     */
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CCI')")
+    @PatchMapping("/{code}/cloturer")
+    @Operation(
+            summary = "Clôturer un risque",
+            description = "Réservé au CCI : confirme que le risque est résolu et le clôture définitivement."
+    )
+    public ResponseEntity<RisqueResponse> cloturer(
+
+            @Parameter(
+                    description = "Code métier du risque",
+                    example = "RIS-001"
+            )
+            @PathVariable String code
+    ) {
+
+        return ResponseEntity.ok(
+                risqueService.cloturer(code)
+        );
+    }
+
+    /**
      * ================= SUPPRESSION =================
      *
      * ADMIN :
