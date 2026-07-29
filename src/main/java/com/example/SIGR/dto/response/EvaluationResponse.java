@@ -1,5 +1,6 @@
 package com.example.SIGR.dto.response;
 
+import com.example.SIGR.entity.EtapeValidation;
 import com.example.SIGR.entity.StrategieRisque;
 
 import java.time.LocalDate;
@@ -53,7 +54,17 @@ public class EvaluationResponse {
     // ================= RISQUE =================
 
     private String idRisque;
+    private String codeRisque;
     private String libelleRisque;
+
+    /**
+     * État du risque parent, exposés pour permettre au frontend de
+     * verrouiller l'édition de l'évaluation tant que le risque est en
+     * cours de validation (transmis, hors Formalisation) — voir
+     * EvaluationServiceImpl.verifierRisqueModifiable().
+     */
+    private Boolean risqueTransmis;
+    private EtapeValidation risqueEtapeValidation;
 
     // ================= AGENT =================
 
@@ -92,7 +103,10 @@ public class EvaluationResponse {
             String bonnesPratiques,
 
             String idRisque,
+            String codeRisque,
             String libelleRisque,
+            Boolean risqueTransmis,
+            EtapeValidation risqueEtapeValidation,
 
             String matriculeAgent,
             String nomAgent
@@ -129,7 +143,10 @@ public class EvaluationResponse {
         this.bonnesPratiques = bonnesPratiques;
 
         this.idRisque = idRisque;
+        this.codeRisque = codeRisque;
         this.libelleRisque = libelleRisque;
+        this.risqueTransmis = risqueTransmis;
+        this.risqueEtapeValidation = risqueEtapeValidation;
 
         this.matriculeAgent = matriculeAgent;
         this.nomAgent = nomAgent;
@@ -225,8 +242,20 @@ public class EvaluationResponse {
         return idRisque;
     }
 
+    public String getCodeRisque() {
+        return codeRisque;
+    }
+
     public String getLibelleRisque() {
         return libelleRisque;
+    }
+
+    public Boolean getRisqueTransmis() {
+        return risqueTransmis;
+    }
+
+    public EtapeValidation getRisqueEtapeValidation() {
+        return risqueEtapeValidation;
     }
 
     public String getMatriculeAgent() {

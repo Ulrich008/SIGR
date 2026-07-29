@@ -109,6 +109,12 @@ public class IndicateurPerformance extends Auditable {
     @Transient
     public String getStatut() {
 
+        // L'atteinte de la cible prime sur les dates : un objectif atteint
+        // reste atteint même si l'échéance est par ailleurs dépassée.
+        if (estObjectifAtteint()) {
+            return "Objectif atteint";
+        }
+
         if (dateFin == null || seuilAlerte == null) {
             return "Informations de suivi non disponibles";
         }
@@ -124,6 +130,26 @@ public class IndicateurPerformance extends Auditable {
         }
 
         return "Plan de mitigation en cours conformément au calendrier";
+    }
+
+    /**
+     * Vrai si la valeur obtenue atteint ou dépasse la valeur cible.
+     * Uniquement pertinent pour les unités de mesure numériques : pour une
+     * unité de type DATE, l'atteinte n'a pas de sens directionnel évident
+     * (dépend du KPI), donc on ne la considère jamais atteinte ici.
+     */
+    @Transient
+    public boolean estObjectifAtteint() {
+        if (valeurCible == null || valeurObtenue == null) return false;
+        if (uniteMesure != null && uniteMesure.getTypeUnite() == UniteMesure.TypeUnite.DATE) return false;
+
+        try {
+            double cible = Double.parseDouble(valeurCible);
+            double obtenue = Double.parseDouble(valeurObtenue);
+            return obtenue >= cible;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     // ===================== GETTERS / SETTERS =====================

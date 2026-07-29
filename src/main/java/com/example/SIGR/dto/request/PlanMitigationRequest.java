@@ -1,7 +1,5 @@
 package com.example.SIGR.dto.request;
 
-import com.example.SIGR.entity.StatutPlanMitigation;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,11 +30,6 @@ public class PlanMitigationRequest {
             message = "La date de création est obligatoire"
     )
     private LocalDate dateCreation;
-
-    @NotNull(
-            message = "Le statut est obligatoire"
-    )
-    private StatutPlanMitigation statut;
 
     /**
      * Utilisation du CODE métier
@@ -72,17 +65,6 @@ public class PlanMitigationRequest {
             LocalDate dateCreation
     ) {
         this.dateCreation = dateCreation;
-        return this;
-    }
-
-    public StatutPlanMitigation getStatut() {
-        return statut;
-    }
-
-    public PlanMitigationRequest setStatut(
-            StatutPlanMitigation statut
-    ) {
-        this.statut = statut;
         return this;
     }
 

@@ -159,17 +159,17 @@ public class CartographieRisquesServiceImpl implements CartographieRisquesServic
     }
 
     @Override
-    public byte[] generateExcel() {
+    public byte[] generateExcel(Integer annee) {
         List<CartographieRisqueDetailResponse> data =
-                evaluationRepository.findCartographieRisquesDetail();
+                evaluationRepository.findCartographieRisquesDetail(annee);
 
         return generateExcelParUnite(data);
     }
 
     @Override
-    public byte[] generateExcelByUnite(String codeUnite) {
+    public byte[] generateExcelByUnite(String codeUnite, Integer annee) {
         List<CartographieRisqueDetailResponse> data =
-                evaluationRepository.findCartographieRisquesDetailByUnite(codeUnite);
+                evaluationRepository.findCartographieRisquesDetailByUnite(codeUnite, annee);
 
         return generateExcelFromData(data);
     }

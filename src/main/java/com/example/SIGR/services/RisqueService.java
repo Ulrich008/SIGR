@@ -30,4 +30,10 @@ public interface RisqueService {
     RisqueResponse transmettre(String code);
 
     void deleteByCode(String code);
+
+    /**
+     * Clôture manuelle du risque par le CCI, indépendante du circuit de
+     * validation de la cartographie et possible à n'importe quelle étape.
+     */
+    RisqueResponse cloturer(String code);
 }

@@ -44,6 +44,13 @@ public class RisqueResponse {
     private String emetteurAvisCodeProfil;
     private String emetteurAvisLibelleProfil;
 
+    /**
+     * Un risque doit avoir été évalué (au moins une Evaluation) avant de
+     * pouvoir être transmis par le Responsable des risques — voir
+     * RisqueServiceImpl.transmettre().
+     */
+    private boolean evalue;
+
     public RisqueResponse(
             String id,
             String code,
@@ -65,7 +72,8 @@ public class RisqueResponse {
             String emetteurAvisMatricule,
             String emetteurAvisNomComplet,
             String emetteurAvisCodeProfil,
-            String emetteurAvisLibelleProfil
+            String emetteurAvisLibelleProfil,
+            boolean evalue
     ) {
         this.id = id;
         this.code = code ;
@@ -88,6 +96,7 @@ public class RisqueResponse {
         this.emetteurAvisNomComplet = emetteurAvisNomComplet;
         this.emetteurAvisCodeProfil = emetteurAvisCodeProfil;
         this.emetteurAvisLibelleProfil = emetteurAvisLibelleProfil;
+        this.evalue = evalue;
     }
 
     public String getCode() {
@@ -171,5 +180,9 @@ public class RisqueResponse {
 
     public String getEmetteurAvisLibelleProfil() {
         return emetteurAvisLibelleProfil;
+    }
+
+    public boolean isEvalue() {
+        return evalue;
     }
 }

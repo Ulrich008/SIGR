@@ -4,5 +4,5 @@ public enum StatutPlanMitigation {
     EN_COURS,
     PLANIFIE,
     TERMINE,
-    ANNULE
+    CLOTURE
 }

@@ -20,17 +20,20 @@ public class RisqueServiceImpl implements RisqueService {
     private final ProcessusRepository processusRepository;
     private final CartographieRisquesRepository cartographieRepository;
     private final AgentRepository agentRepository;
+    private final EvaluationRepository evaluationRepository;
 
     public RisqueServiceImpl(
             RisqueRepository risqueRepository,
             ProcessusRepository processusRepository,
             CartographieRisquesRepository cartographieRepository,
-            AgentRepository agentRepository
+            AgentRepository agentRepository,
+            EvaluationRepository evaluationRepository
     ) {
         this.risqueRepository = risqueRepository;
         this.processusRepository = processusRepository;
         this.cartographieRepository = cartographieRepository;
         this.agentRepository = agentRepository;
+        this.evaluationRepository = evaluationRepository;
     }
 
     /**
@@ -102,7 +105,11 @@ public class RisqueServiceImpl implements RisqueService {
                 request.getConsequenceProbable()
         );
         risque.setBonnesPratiquesList(request.getBonnesPratiques());
-        risque.setStatut(request.getStatut());
+        // Le statut est désormais entièrement piloté par le système : ACTIF
+        // à la création, puis EN_COURS/MAITRISE selon les évaluations
+        // (voir EvaluationServiceImpl), et CLOTURE via l'action dédiée du
+        // CCI (voir cloturer() ci-dessous) — jamais saisi manuellement.
+        risque.setStatut(StatutRisque.ACTIF);
         risque.setStrategieRisque(request.getStrategieRisque());
         risque.setDateIdentification(
                 request.getDateIdentification()
@@ -173,10 +180,33 @@ public class RisqueServiceImpl implements RisqueService {
                                 )
                         );
 
+        verifierRisqueModifiable(risque);
+
         return updateEntity(
                 risque,
                 request
         );
+    }
+
+    /**
+     * Un risque transmis (etapeValidation != FORMALISATION) est verrouillé
+     * pour le Responsable des risques : il ne redevient modifiable qu'une
+     * fois revenu à Formalisation (différé jusqu'au bout par le Pilote).
+     * Le SUPER_ADMIN n'est pas soumis à ce verrou (accès total).
+     */
+    private void verifierRisqueModifiable(Risque risque) {
+        if (SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            return;
+        }
+
+        boolean enCoursDeValidation = Boolean.TRUE.equals(risque.getTransmis())
+                && risque.getEtapeValidation() != EtapeValidation.FORMALISATION;
+
+        if (enCoursDeValidation) {
+            throw new RuntimeException(
+                    "Ce risque est en cours de validation (transmis) et ne peut plus être modifié."
+            );
+        }
     }
 
     /**
@@ -199,6 +229,12 @@ public class RisqueServiceImpl implements RisqueService {
         if (risque.getEtapeValidation() != EtapeValidation.FORMALISATION) {
             throw new RuntimeException(
                     "Ce risque a déjà été transmis et est en cours de validation"
+            );
+        }
+
+        if (!evaluationRepository.existsByRisque_Code(code)) {
+            throw new RuntimeException(
+                    "Ce risque doit être évalué avant de pouvoir être transmis"
             );
         }
 
@@ -348,6 +384,30 @@ public class RisqueServiceImpl implements RisqueService {
     }
 
     /**
+     * ================= CLÔTURE =================
+     *
+     * Action manuelle réservée au CCI (indépendante du circuit de
+     * validation de la cartographie) : confirme que le risque est
+     * effectivement résolu, à n'importe quelle étape.
+     */
+    @Override
+    public RisqueResponse cloturer(String code) {
+
+        Risque risque = risqueRepository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Risque introuvable : " + code)
+                );
+
+        if (risque.getStatut() == StatutRisque.CLOTURE) {
+            throw new RuntimeException("Ce risque est déjà clôturé.");
+        }
+
+        risque.setStatut(StatutRisque.CLOTURE);
+
+        return toResponse(risqueRepository.save(risque));
+    }
+
+    /**
      * ================= UPDATE ENTITY =================
      */
     private RisqueResponse updateEntity(
@@ -395,7 +455,6 @@ public class RisqueServiceImpl implements RisqueService {
                 request.getConsequenceProbable()
         );
         risque.setBonnesPratiquesList(request.getBonnesPratiques());
-        risque.setStatut(request.getStatut());
         risque.setStrategieRisque(request.getStrategieRisque());
         risque.setDateIdentification(
                 request.getDateIdentification()
@@ -413,6 +472,9 @@ public class RisqueServiceImpl implements RisqueService {
         // les contourner. Seuls transmettre() et validerAvis() — avec leurs
         // vérifications d'étape et de motif obligatoire — sont autorisés à
         // les modifier.
+        // statut n'est pas non plus repris : il est désormais piloté par le
+        // système (ACTIF à la création, EN_COURS/MAITRISE selon les
+        // évaluations, CLOTURE via cloturer() réservé au CCI).
 
         Risque updated =
                 risqueRepository.save(risque);
@@ -471,7 +533,9 @@ public class RisqueServiceImpl implements RisqueService {
 
                 risque.getEmetteurAvis() != null && risque.getEmetteurAvis().getProfil() != null
                         ? risque.getEmetteurAvis().getProfil().getLibelle()
-                        : null
+                        : null,
+
+                evaluationRepository.existsByRisque_Code(risque.getCode())
         );
     }
 

@@ -16,6 +16,8 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
 
     boolean existsByCode(String code);
 
+    boolean existsByRisque_Code(String codeRisque);
+
     long countByRisque_Processus_Unite_Code(String codeUnite);
 
     // ================= CARTOGRAPHIE DETAILLEE =================
@@ -69,9 +71,10 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
     JOIN r.processus p
     JOIN p.unite ua
     LEFT JOIN e.evaluePar ag
+    WHERE (:annee IS NULL OR YEAR(r.dateIdentification) = :annee)
 """)
 
-    List<CartographieRisqueDetailResponse> findCartographieRisquesDetail();
+    List<CartographieRisqueDetailResponse> findCartographieRisquesDetail(@Param("annee") Integer annee);
 
     @Query("""
     SELECT new com.example.SIGR.dto.response.CartographieRisqueDetailResponse(
@@ -124,9 +127,13 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, String> 
     JOIN p.unite ua
     LEFT JOIN e.evaluePar ag
     WHERE ua.code = :codeUnite
+    AND (:annee IS NULL OR YEAR(r.dateIdentification) = :annee)
 """)
 
-    List<CartographieRisqueDetailResponse> findCartographieRisquesDetailByUnite(@Param("codeUnite") String codeUnite);
+    List<CartographieRisqueDetailResponse> findCartographieRisquesDetailByUnite(
+            @Param("codeUnite") String codeUnite,
+            @Param("annee") Integer annee
+    );
 
     // ================= OPTIONNEL =================
 

@@ -48,7 +48,6 @@ public class PlanMitigationController {
                                     {
                                       "description": "Réduction du risque de fraude",
                                       "dateCreation": "2026-05-07",
-                                      "statut": "PLANIFIE",
                                       "codeRisque": "RIS-001"
                                     }
                                     """
@@ -102,7 +101,6 @@ public class PlanMitigationController {
                                     {
                                       "description": "Mise à jour du plan",
                                       "dateCreation": "2026-05-07",
-                                      "statut": "EN_COURS",
                                       "codeRisque": "RIS-001"
                                     }
                                     """
@@ -115,6 +113,19 @@ public class PlanMitigationController {
             @Valid @RequestBody PlanMitigationRequest request
     ) {
         return ResponseEntity.ok(service.updateByCode(code, request));
+    }
+
+    // ================= CLÔTURE =================
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'CCI')")
+    @PatchMapping("/{code}/cloturer")
+    @Operation(
+            summary = "Clôturer un plan de mitigation",
+            description = "Réservé au CCI : confirme que le plan est terminé et le clôture définitivement."
+    )
+    public ResponseEntity<PlanMitigationResponse> cloturer(
+            @PathVariable String code
+    ) {
+        return ResponseEntity.ok(service.cloturer(code));
     }
 
     // ================= DELETE =================

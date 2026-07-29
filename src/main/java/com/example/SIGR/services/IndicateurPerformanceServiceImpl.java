@@ -77,12 +77,12 @@ public class IndicateurPerformanceServiceImpl
                     throw new RuntimeException("La valeur obtenue ne peut pas être négative.");
                 }
             }
-            // Règle : la valeur cible doit être inférieure ou égale à la valeur obtenue (pour les valeurs numériques)
+            // Règle : la valeur obtenue ne peut pas dépasser la valeur cible (l'égalité est autorisée : objectif atteint pile).
             if (valeurCibleStr != null && !valeurCibleStr.isEmpty() && valeurObtenueStr != null && !valeurObtenueStr.isEmpty()) {
                 double valeurCible = Double.parseDouble(valeurCibleStr);
                 double valeurObtenue = Double.parseDouble(valeurObtenueStr);
-                if (valeurCible <= valeurObtenue) {
-                    throw new RuntimeException("La valeur cible (" + valeurCible + "%) ne peut pas être supérieure à la valeur obtenue (" + valeurObtenue + "%).");
+                if (valeurObtenue > valeurCible) {
+                    throw new RuntimeException("La valeur obtenue (" + valeurObtenue + "%) ne peut pas être supérieure à la valeur cible (" + valeurCible + "%).");
                 }
             }
         } catch (NumberFormatException e) {
