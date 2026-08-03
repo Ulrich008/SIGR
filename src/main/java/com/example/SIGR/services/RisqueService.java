@@ -2,6 +2,7 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
+import com.example.SIGR.dto.response.AvisHistoriqueResponse;
 import com.example.SIGR.dto.response.RisqueResponse;
 
 import java.util.List;
@@ -36,4 +37,12 @@ public interface RisqueService {
      * validation de la cartographie et possible à n'importe quelle étape.
      */
     RisqueResponse cloturer(String code);
+
+    /**
+     * Historique complet des avis de validation (Transmis, Validé, Différé,
+     * Rejeté) de ce risque, reconstitué depuis les révisions Envers —
+     * contrairement à RisqueResponse.motif/avis (uniquement le dernier en
+     * date), couvre tous les allers-retours passés dans le circuit.
+     */
+    List<AvisHistoriqueResponse> getHistoriqueAvis(String code);
 }

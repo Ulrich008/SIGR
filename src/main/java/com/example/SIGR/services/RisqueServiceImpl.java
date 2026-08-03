@@ -2,15 +2,29 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
+import com.example.SIGR.dto.response.AvisHistoriqueResponse;
 import com.example.SIGR.dto.response.RisqueResponse;
 import com.example.SIGR.entity.*;
 import com.example.SIGR.repository.*;
 import com.example.SIGR.security.SecurityUtils;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.DefaultRevisionEntity;
+import org.hibernate.envers.query.AuditEntity;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +35,9 @@ public class RisqueServiceImpl implements RisqueService {
     private final CartographieRisquesRepository cartographieRepository;
     private final AgentRepository agentRepository;
     private final EvaluationRepository evaluationRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public RisqueServiceImpl(
             RisqueRepository risqueRepository,
@@ -405,6 +422,90 @@ public class RisqueServiceImpl implements RisqueService {
         risque.setStatut(StatutRisque.CLOTURE);
 
         return toResponse(risqueRepository.save(risque));
+    }
+
+    /**
+     * ================= HISTORIQUE DES AVIS DE VALIDATION =================
+     *
+     * avis/motif/etapeValidation sont de simples colonnes sur Risque,
+     * écrasées à chaque nouvelle décision (voir validerAvis/transmettre) :
+     * seul le dernier avis est donc visible via RisqueResponse. Ici, on
+     * reconstitue l'historique complet en relisant les révisions Envers de
+     * l'entité (déjà activées via @Audited sur Risque, jusque-là jamais
+     * exploitées), en ne gardant que les révisions où avis, motif ou
+     * étape ont réellement changé — les autres sauvegardes de Risque
+     * (déclenchées par exemple par la création d'une évaluation) sont
+     * ainsi filtrées.
+     */
+    @Override
+    public List<AvisHistoriqueResponse> getHistoriqueAvis(String code) {
+
+        Risque risque = risqueRepository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Risque introuvable : " + code)
+                );
+
+        AuditReader auditReader = AuditReaderFactory.get(entityManager);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> revisions = auditReader.createQuery()
+                .forRevisionsOfEntity(Risque.class, false, true)
+                .add(AuditEntity.id().eq(risque.getId()))
+                .addOrder(AuditEntity.revisionNumber().asc())
+                .getResultList();
+
+        List<AvisHistoriqueResponse> historique = new ArrayList<>();
+
+        // État "avant création" : permet à la boucle de détecter tout
+        // changement dès la première transmission, sans faire apparaître
+        // la révision de création elle-même (avis encore null à ce stade).
+        AvisRisque dernierAvis = null;
+        EtapeValidation derniereEtape = EtapeValidation.FORMALISATION;
+        String dernierMotif = null;
+
+        for (Object[] tuple : revisions) {
+
+            Risque snapshot = (Risque) tuple[0];
+            DefaultRevisionEntity revisionInfo = (DefaultRevisionEntity) tuple[1];
+
+            AvisRisque avisSnapshot = snapshot.getAvis();
+            EtapeValidation etapeSnapshot = snapshot.getEtapeValidation();
+            String motifSnapshot = snapshot.getMotif();
+
+            boolean change =
+                    !Objects.equals(avisSnapshot, dernierAvis)
+                            || !Objects.equals(etapeSnapshot, derniereEtape)
+                            || !Objects.equals(motifSnapshot, dernierMotif);
+
+            if (change) {
+
+                String matriculeAuteur = snapshot.getUpdatedBy();
+
+                String nomAuteur = matriculeAuteur != null
+                        ? agentRepository.findByMatricule(matriculeAuteur)
+                                .map(a -> a.getNom() + " " + a.getPrenoms())
+                                .orElse(matriculeAuteur)
+                        : null;
+
+                historique.add(new AvisHistoriqueResponse(
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(revisionInfo.getTimestamp()),
+                                ZoneId.systemDefault()
+                        ),
+                        avisSnapshot,
+                        motifSnapshot,
+                        etapeSnapshot,
+                        matriculeAuteur,
+                        nomAuteur
+                ));
+            }
+
+            dernierAvis = avisSnapshot;
+            derniereEtape = etapeSnapshot;
+            dernierMotif = motifSnapshot;
+        }
+
+        return historique;
     }
 
     /**
