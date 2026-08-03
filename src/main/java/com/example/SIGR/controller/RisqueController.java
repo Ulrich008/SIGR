@@ -2,6 +2,7 @@ package com.example.SIGR.controller;
 
 import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
+import com.example.SIGR.dto.response.AvisHistoriqueResponse;
 import com.example.SIGR.dto.response.RisqueResponse;
 import com.example.SIGR.services.RisqueService;
 
@@ -296,6 +297,40 @@ public class RisqueController {
 
         return ResponseEntity.ok(
                 risqueService.cloturer(code)
+        );
+    }
+
+    /**
+     * ================= HISTORIQUE DES AVIS =================
+     *
+     * Tous les profils :
+     * - Consultation en lecture seule de l'historique complet des avis
+     *   de validation (Transmis, Validé, Différé, Rejeté), y compris les
+     *   décisions passées écrasées depuis sur le risque lui-même.
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{code}/historique-avis")
+    @Operation(
+            summary = "Historique des avis de validation d'un risque",
+            description = """
+                    Retourne, dans l'ordre chronologique, chaque changement
+                    d'avis/étape/motif survenu sur ce risque au fil de son
+                    passage dans le circuit de validation — reconstitué à
+                    partir des révisions Envers, puisque le risque lui-même
+                    ne conserve que le dernier avis en date.
+                    """
+    )
+    public ResponseEntity<List<AvisHistoriqueResponse>> getHistoriqueAvis(
+
+            @Parameter(
+                    description = "Code métier du risque",
+                    example = "RIS-001"
+            )
+            @PathVariable String code
+    ) {
+
+        return ResponseEntity.ok(
+                risqueService.getHistoriqueAvis(code)
         );
     }
 
