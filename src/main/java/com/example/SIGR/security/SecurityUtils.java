@@ -78,4 +78,20 @@ public class SecurityUtils {
 
         return staticAgentRepository.findCodeMinistereByMatricule(matricule);
     }
+
+    /**
+     * Code (métier) de l'unité administrative de l'utilisateur courant, sur
+     * le même principe que getCurrentMinistereCode() (requête native pour
+     * rester immunisé au filtre Hibernate qu'elle sert justement à
+     * calculer). Utilisé pour le cantonnement du Correspondant Risque à sa
+     * propre UA (voir MinistereInterceptor / filtre "uaFilter").
+     */
+    public static String getCurrentCodeUnite() {
+        String matricule = getCurrentUser();
+        if (matricule == null) {
+            return null;
+        }
+
+        return staticAgentRepository.findCodeUniteByMatricule(matricule);
+    }
 }

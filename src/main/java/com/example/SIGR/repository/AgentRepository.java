@@ -62,7 +62,7 @@ public interface AgentRepository extends JpaRepository<Agent, String> {
     /**
      * Résout les destinataires d'une notification ciblée par rôle/étape :
      * tous les agents actifs d'un ministère donné rattachés à un profil
-     * métier donné (RESPONSABLE_RISQUES, PILOTE, CCI, CMMR, RESPONSABLE_ACTION...).
+     * métier donné (MANAGER_RISQUE, PILOTE, CCI, CMMR, RESPONSABLE_ACTION...).
      * Ignore les comptes désactivés (enabled=false) — inutile de notifier
      * un agent qui ne peut plus se connecter.
      */

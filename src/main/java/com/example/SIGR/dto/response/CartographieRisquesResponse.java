@@ -7,7 +7,7 @@ import java.time.LocalDate;
 public class CartographieRisquesResponse {
 
     private String id;
-    private String code; // AJOUT IMPORTANT
+    private String code;
     private String titre;
     private LocalDate periode;
 

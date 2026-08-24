@@ -3,6 +3,7 @@ package com.example.SIGR.dto.response;
 import com.example.SIGR.entity.StatutPlanMitigation;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class PlanMitigationResponse {
 
@@ -19,12 +20,13 @@ public class PlanMitigationResponse {
     private StatutPlanMitigation statut;
 
     /**
-     * Utilisation du CODE métier
-     * au lieu de l'id technique
+     * Utilisation des CODES métier
+     * au lieu des ids techniques.
+     * Un plan de mitigation peut désormais couvrir plusieurs risques.
      */
-    private String codeRisque;
+    private List<String> codesRisques;
 
-    private String libelleRisque;
+    private List<String> libellesRisques;
 
     public String getLibelle() {
         return libelle;
@@ -37,8 +39,8 @@ public class PlanMitigationResponse {
             String description,
             LocalDate dateCreation,
             StatutPlanMitigation statut,
-            String codeRisque,
-            String libelleRisque
+            List<String> codesRisques,
+            List<String> libellesRisques
     ) {
         this.id = id;
         this.code = code;
@@ -46,8 +48,8 @@ public class PlanMitigationResponse {
         this.description = description;
         this.dateCreation = dateCreation;
         this.statut = statut;
-        this.codeRisque = codeRisque;
-        this.libelleRisque = libelleRisque;
+        this.codesRisques = codesRisques;
+        this.libellesRisques = libellesRisques;
     }
 
     // ================= GETTERS =================
@@ -72,11 +74,11 @@ public class PlanMitigationResponse {
         return statut;
     }
 
-    public String getCodeRisque() {
-        return codeRisque;
+    public List<String> getCodesRisques() {
+        return codesRisques;
     }
 
-    public String getLibelleRisque() {
-        return libelleRisque;
+    public List<String> getLibellesRisques() {
+        return libellesRisques;
     }
 }

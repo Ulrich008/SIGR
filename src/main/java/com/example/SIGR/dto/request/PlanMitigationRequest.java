@@ -1,10 +1,12 @@
 package com.example.SIGR.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class PlanMitigationRequest {
 
@@ -32,13 +34,14 @@ public class PlanMitigationRequest {
     private LocalDate dateCreation;
 
     /**
-     * Utilisation du CODE métier
-     * et non de l'id technique
+     * Utilisation des CODES métier
+     * et non des ids techniques.
+     * Un plan de mitigation peut désormais couvrir plusieurs risques.
      */
-    @NotBlank(
-            message = "Le code du risque est obligatoire"
+    @NotEmpty(
+            message = "Au moins un risque est obligatoire"
     )
-    private String codeRisque;
+    private List<String> codesRisques;
 
     // ================= GETTERS / SETTERS =================
 
@@ -68,14 +71,14 @@ public class PlanMitigationRequest {
         return this;
     }
 
-    public String getCodeRisque() {
-        return codeRisque;
+    public List<String> getCodesRisques() {
+        return codesRisques;
     }
 
-    public PlanMitigationRequest setCodeRisque(
-            String codeRisque
+    public PlanMitigationRequest setCodesRisques(
+            List<String> codesRisques
     ) {
-        this.codeRisque = codeRisque;
+        this.codesRisques = codesRisques;
         return this;
     }
 }

@@ -46,15 +46,19 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
             );
         }
 
-        // ================= RISQUE =================
-        Risque risque = risqueRepository.findByCode(request.getCodeRisque())
-                .orElseThrow(() ->
-                        new RuntimeException("Risque introuvable : " + request.getCodeRisque())
-                );
+        // ================= RISQUES =================
+        List<Risque> risques = request.getCodesRisques().stream()
+                .map(codeRisque -> risqueRepository.findByCode(codeRisque)
+                        .orElseThrow(() ->
+                                new RuntimeException("Risque introuvable : " + codeRisque)
+                        ))
+                .collect(Collectors.toList());
 
         // ================= GENERATION CODE =================
         // Format : PM_<sigleUA><séquence sur 3 chiffres>, séquence propre à l'UA
-        String sigleUnite = risque.getProcessus().getUnite().getCode();
+        // du PREMIER risque de la liste (représentatif, cf. comportement
+        // historique lorsque le plan ne portait qu'un seul risque).
+        String sigleUnite = risques.get(0).getProcessus().getUnite().getCode();
         long compteur = repository.countByRisque_Processus_Unite_Code(sigleUnite) + 1;
 
         String code = "PM_" + sigleUnite + String.format("%03d", compteur);
@@ -75,7 +79,7 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
         // TERMINE selon les actions (voir recalculerStatut), et CLOTURE via
         // l'action dédiée du CCI (voir cloturer()) — jamais saisi manuellement.
         plan.setStatut(StatutPlanMitigation.PLANIFIE);
-        plan.setRisque(risque);
+        plan.setRisques(risques);
 
         return toResponse(repository.save(plan));
     }
@@ -117,17 +121,19 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
             );
         }
 
-        Risque risque = risqueRepository.findByCode(request.getCodeRisque())
-                .orElseThrow(() ->
-                        new RuntimeException("Risque introuvable : " + request.getCodeRisque())
-                );
+        List<Risque> risques = request.getCodesRisques().stream()
+                .map(codeRisque -> risqueRepository.findByCode(codeRisque)
+                        .orElseThrow(() ->
+                                new RuntimeException("Risque introuvable : " + codeRisque)
+                        ))
+                .collect(Collectors.toList());
 
         plan.setLibelle(request.getLibelle());
         plan.setDescription(request.getDescription());
         plan.setDateCreation(request.getDateCreation());
         // Le statut n'est pas repris ici : il est piloté par le système
         // (voir create() et recalculerStatut()).
-        plan.setRisque(risque);
+        plan.setRisques(risques);
 
         return toResponse(repository.save(plan));
     }
@@ -192,6 +198,8 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
     // ================= RESPONSE =================
     private PlanMitigationResponse toResponse(PlanMitigation plan) {
 
+        List<Risque> risques = plan.getRisques();
+
         return new PlanMitigationResponse(
                 plan.getId(),
                 plan.getCode(),
@@ -199,8 +207,8 @@ public class PlanMitigationServiceImpl implements PlanMitigationService {
                 plan.getDescription(),
                 plan.getDateCreation(),
                 plan.getStatut(),
-                plan.getRisque() != null ? plan.getRisque().getCode() : null,
-                plan.getRisque() != null ? plan.getRisque().getLibelle() : null
+                risques != null ? risques.stream().map(Risque::getCode).collect(Collectors.toList()) : null,
+                risques != null ? risques.stream().map(Risque::getLibelle).collect(Collectors.toList()) : null
         );
     }
 }

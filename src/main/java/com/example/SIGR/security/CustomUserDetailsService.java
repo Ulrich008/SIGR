@@ -43,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority(agent.getRole().name()));
         }
 
-        // Profil métier (CMMR, CCI, PILOTE, RESPONSABLE_RISQUES, ...)
+        // Profil métier (CMMR, CCI, PILOTE, MANAGER_RISQUE, ...)
         if (agent.getProfil() != null) {
             authorities.add(new SimpleGrantedAuthority(agent.getProfil().getCode()));
         }

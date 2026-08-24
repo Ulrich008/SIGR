@@ -17,6 +17,10 @@ public class RisqueRequest {
     @Size(max = 200, message = "Le libellé ne doit pas dépasser 200 caractères")
     private String libelle;
 
+    @NotBlank(message = "La finalité du processus menacée par ce risque est obligatoire")
+    @Size(max = 500, message = "La finalité ne doit pas dépasser 500 caractères")
+    private String finalite;
+
     private List<String> causeProbable;
 
     private List<String> consequenceProbable;
@@ -64,6 +68,14 @@ public class RisqueRequest {
         return this;
     }
 
+    public String getFinalite() {
+        return finalite;
+    }
+
+    public RisqueRequest setFinalite(String finalite) {
+        this.finalite = finalite;
+        return this;
+    }
 
     public List<String> getCauseProbable() {
         return causeProbable;

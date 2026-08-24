@@ -794,7 +794,7 @@ public class AgentServiceImpl implements AgentService {
 
     /**
      * Le profil métier n'est obligatoire que pour le rôle AGENT
-     * (CMMR, CCI, PILOTE, RESPONSABLE_RISQUES, ...). Un ADMIN ou un
+     * (CMMR, CCI, PILOTE, MANAGER_RISQUE, ...). Un ADMIN ou un
      * SUPER_ADMIN n'a pas de profil : son accès vient uniquement de
      * son rôle technique.
      */
@@ -827,12 +827,15 @@ public class AgentServiceImpl implements AgentService {
      * sans profil) gardent l'ancien format générique AGT-XXX.
      */
     private static final java.util.Map<String, String> PREFIXES_MATRICULE_PAR_PROFIL = java.util.Map.of(
-            "RESPONSABLE_RISQUES", "RR_",
+            "MANAGER_RISQUE", "RR_",
             "PILOTE", "Pt_",
             "CCI", "CCI_",
             "CMMR", "CMMR_",
             "AUDITEUR", "Au_",
-            "RESPONSABLE_ACTION", "RA_"
+            "RESPONSABLE_ACTION", "RA_",
+            "CONTROLEUR_INTERNE", "CI_",
+            "RESPONSABLE_RISQUES", "RES_",
+            "CORRESPONDANT_RISQUE", "COR_"
     );
 
     /**

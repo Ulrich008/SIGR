@@ -7,13 +7,16 @@ import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import org.hibernate.envers.Audited;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "plan_mitigation")
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
-@Filter(name = "ministereFilter", condition = "id_risque IN (SELECT r.id_risque FROM risque r WHERE r.code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)))")
+@Filter(name = "ministereFilter", condition = "id_plan IN (SELECT pmr.id_plan FROM plan_mitigation_risque pmr JOIN risque r ON r.id_risque = pmr.id_risque WHERE r.code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)))")
+@FilterDef(name = "uaFilter", parameters = @ParamDef(name = "codeUnite", type = String.class))
+@Filter(name = "uaFilter", condition = "id_plan IN (SELECT pmr.id_plan FROM plan_mitigation_risque pmr JOIN risque r ON r.id_risque = pmr.id_risque WHERE r.code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_unite = :codeUnite)))")
 public class PlanMitigation extends Auditable {
 
     @Id
@@ -38,9 +41,19 @@ public class PlanMitigation extends Auditable {
     @Column(name = "statut", length = 50)
     private StatutPlanMitigation statut;
 
-    @ManyToOne
-    @JoinColumn(name = "id_risque", nullable = false)
-    private Risque risque;
+    /**
+     * Un plan de mitigation peut désormais traiter plusieurs risques à la
+     * fois (relation N-N, portée par la table de jointure dédiée
+     * plan_mitigation_risque) — auparavant limité à un seul risque via une
+     * simple colonne id_risque sur cette table.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "plan_mitigation_risque",
+            joinColumns = @JoinColumn(name = "id_plan"),
+            inverseJoinColumns = @JoinColumn(name = "id_risque")
+    )
+    private List<Risque> risques = new ArrayList<>();
 
     @OneToMany(mappedBy = "planMitigation")
     private List<Action> actions;
@@ -100,12 +113,12 @@ public class PlanMitigation extends Auditable {
         return this;
     }
 
-    public Risque getRisque() {
-        return risque;
+    public List<Risque> getRisques() {
+        return risques;
     }
 
-    public PlanMitigation setRisque(Risque risque) {
-        this.risque = risque;
+    public PlanMitigation setRisques(List<Risque> risques) {
+        this.risques = risques;
         return this;
     }
 

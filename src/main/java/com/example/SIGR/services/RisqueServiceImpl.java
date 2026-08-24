@@ -2,6 +2,7 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
+import com.example.SIGR.dto.request.SuiviRecommandationRequest;
 import com.example.SIGR.dto.response.AvisHistoriqueResponse;
 import com.example.SIGR.dto.response.RisqueResponse;
 import com.example.SIGR.entity.*;
@@ -85,6 +86,10 @@ public class RisqueServiceImpl implements RisqueService {
                                 )
                         );
 
+        // ================= FINALITE =================
+
+        verifierFinaliteAppartientAuProcessus(processus, request.getFinalite());
+
         // ================= CARTOGRAPHIE =================
 
         CartographieRisques cartographie =
@@ -117,6 +122,7 @@ public class RisqueServiceImpl implements RisqueService {
         risque.setCode(code);
 
         risque.setLibelle(request.getLibelle());
+        risque.setFinalite(request.getFinalite());
         risque.setCauseProbableList(request.getCauseProbable());
         risque.setConsequenceProbableList(
                 request.getConsequenceProbable()
@@ -229,8 +235,15 @@ public class RisqueServiceImpl implements RisqueService {
     /**
      * ================= TRANSMETTRE =================
      *
-     * Le Responsable des risques fait entrer le dossier dans le
-     * circuit de validation : Formalisation -> Pilote.
+     * Relaie le dossier à l'étape suivante du circuit — sans avis, à la
+     * différence de validerAvis() ci-dessous. Utilisé par :
+     * - le Correspondant Risque (ou le Manager Risque) pour faire entrer le
+     *   dossier dans le circuit (Formalisation -> Manager Risque) ;
+     * - le Manager Risque pour relayer vers le CCI (-> CCI_VERS_RESPONSABLE),
+     *   ou, si le dossier revient d'un différé du Responsable/CMMR, pour le
+     *   renvoyer au Correspondant pour correction (-> Formalisation) ;
+     * - le CCI, deux fois, pour relayer vers le Responsable puis vers le
+     *   CMMR (CCI_VERS_RESPONSABLE -> Responsable, CCI_VERS_CMMR -> CMMR).
      */
     @Override
     public RisqueResponse transmettre(String code) {
@@ -243,39 +256,82 @@ public class RisqueServiceImpl implements RisqueService {
                                 )
                         );
 
-        if (risque.getEtapeValidation() != EtapeValidation.FORMALISATION) {
-            throw new RuntimeException(
-                    "Ce risque a déjà été transmis et est en cours de validation"
+        EtapeValidation etapeActuelle = risque.getEtapeValidation();
+
+        verifierAutoriteTransmission(etapeActuelle);
+
+        switch (etapeActuelle) {
+            case FORMALISATION -> {
+                if (!evaluationRepository.existsByRisque_Code(code)) {
+                    throw new RuntimeException(
+                            "Ce risque doit être évalué avant de pouvoir être transmis"
+                    );
+                }
+                risque.setEtapeValidation(EtapeValidation.MANAGER_RISQUE);
+                risque.setAvis(AvisRisque.EN_ATTENTE);
+                risque.setTransmis(true);
+                // Le motif d'un éventuel différé précédent est volontairement
+                // conservé (pas de remise à null) : il reste consultable tant
+                // qu'un nouvel avis ne l'a pas explicitement remplacé.
+            }
+            case MANAGER_RISQUE -> {
+                if (risque.getAvis() == AvisRisque.DIFFERE) {
+                    // Le dossier revient d'un différé du Responsable ou du
+                    // CMMR : le Manager Risque le renvoie au Correspondant
+                    // pour correction, plutôt que de le relayer vers le CCI.
+                    risque.setEtapeValidation(EtapeValidation.FORMALISATION);
+                    risque.setTransmis(false);
+                } else {
+                    risque.setEtapeValidation(EtapeValidation.CCI_VERS_RESPONSABLE);
+                }
+            }
+            case CCI_VERS_RESPONSABLE -> risque.setEtapeValidation(EtapeValidation.RESPONSABLE);
+            case CCI_VERS_CMMR -> risque.setEtapeValidation(EtapeValidation.CMMR);
+            default -> throw new RuntimeException(
+                    "Ce risque n'est pas à une étape de transmission (il attend un avis, ou le circuit est terminé)."
             );
         }
-
-        if (!evaluationRepository.existsByRisque_Code(code)) {
-            throw new RuntimeException(
-                    "Ce risque doit être évalué avant de pouvoir être transmis"
-            );
-        }
-
-        risque.setEtapeValidation(EtapeValidation.PILOTE);
-        risque.setAvis(AvisRisque.EN_ATTENTE);
-        risque.setTransmis(true);
-        // Le motif d'un éventuel différé précédent est volontairement conservé
-        // (pas de remise à null) : il reste consultable tant qu'un nouvel avis
-        // ne l'a pas explicitement remplacé.
 
         return toResponse(risqueRepository.save(risque));
     }
 
     /**
+     * Seul le profil chargé de relayer l'étape actuelle peut transmettre
+     * (SUPER_ADMIN contourne cette règle).
+     */
+    private void verifierAutoriteTransmission(EtapeValidation etape) {
+
+        if (SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            return;
+        }
+
+        boolean autorise = switch (etape) {
+            case FORMALISATION -> SecurityUtils.hasAuthority("CORRESPONDANT_RISQUE")
+                    || SecurityUtils.hasAuthority("MANAGER_RISQUE");
+            case MANAGER_RISQUE -> SecurityUtils.hasAuthority("MANAGER_RISQUE");
+            case CCI_VERS_RESPONSABLE, CCI_VERS_CMMR -> SecurityUtils.hasAuthority("CCI");
+            default -> false;
+        };
+
+        if (!autorise) {
+            throw new AccessDeniedException(
+                    "Ce dossier n'est pas à votre étape de transmission"
+            );
+        }
+    }
+
+    /**
      * ================= VALIDER / DIFFÉRER / REJETER =================
      *
-     * Action réservée aux profils de validation (CMMR, CCI, Pilote de
-     * processus) : contrairement à updateByCode, ne modifie que
-     * l'avis, le motif et l'étape du circuit — jamais le contenu du
-     * risque lui-même.
+     * Action réservée aux deux profils qui rendent un véritable avis dans
+     * le circuit (Responsable Risque, CMMR) : contrairement à
+     * updateByCode, ne modifie que l'avis, le motif et l'étape du
+     * circuit — jamais le contenu du risque lui-même.
      *
-     * Circuit : Pilote -> CCI -> CMMR -> Validée.
-     * - Valider  : passage à l'étape suivante (Validée si déjà CMMR).
-     * - Différer : retour à l'étape précédente (motif obligatoire).
+     * - Valider  : passage à l'étape suivante (CCI_VERS_CMMR depuis
+     *   Responsable, VALIDEE depuis CMMR).
+     * - Différer : retour à Manager Risque, qui renverra ensuite le dossier
+     *   au Correspondant pour correction (motif obligatoire).
      * - Rejeter  : clôture définitive, sans retour (motif obligatoire).
      */
     @Override
@@ -320,17 +376,10 @@ public class RisqueServiceImpl implements RisqueService {
 
         switch (request.getAvis()) {
             case VALIDE -> risque.setEtapeValidation(etapeSuivante(etapeActuelle));
-            case DIFFERE -> {
-                EtapeValidation etapeRetour = etapePrecedente(etapeActuelle);
-                risque.setEtapeValidation(etapeRetour);
-                // Un différé qui retombe à Formalisation renvoie le dossier
-                // à la case départ : il ne redevient actif dans le circuit
-                // qu'après une nouvelle transmission explicite par le
-                // Responsable des risques (voir transmettre()).
-                if (etapeRetour == EtapeValidation.FORMALISATION) {
-                    risque.setTransmis(false);
-                }
-            }
+            // Un différé (Responsable ou CMMR) revient toujours à Manager
+            // Risque, qui le relaiera explicitement au Correspondant pour
+            // correction via un nouveau transmettre() (voir ce méthode).
+            case DIFFERE -> risque.setEtapeValidation(EtapeValidation.MANAGER_RISQUE);
             case REJETE -> risque.setEtapeValidation(EtapeValidation.REJETEE);
             default -> { /* EN_ATTENTE : ne devrait pas arriver ici */ }
         }
@@ -339,8 +388,8 @@ public class RisqueServiceImpl implements RisqueService {
     }
 
     /**
-     * Un dossier ne peut être traité que par le profil correspondant
-     * à son étape actuelle (SUPER_ADMIN contourne cette règle).
+     * Un dossier ne peut recevoir un avis que du profil correspondant à
+     * son étape actuelle (SUPER_ADMIN contourne cette règle).
      */
     private void verifierEtapeCorrespondAuProfil(EtapeValidation etapeActuelle) {
 
@@ -349,8 +398,7 @@ public class RisqueServiceImpl implements RisqueService {
         }
 
         boolean autorise = switch (etapeActuelle) {
-            case PILOTE -> SecurityUtils.hasAuthority("PILOTE");
-            case CCI -> SecurityUtils.hasAuthority("CCI");
+            case RESPONSABLE -> SecurityUtils.hasAuthority("RESPONSABLE_RISQUES");
             case CMMR -> SecurityUtils.hasAuthority("CMMR");
             default -> false;
         };
@@ -364,18 +412,8 @@ public class RisqueServiceImpl implements RisqueService {
 
     private EtapeValidation etapeSuivante(EtapeValidation etape) {
         return switch (etape) {
-            case PILOTE -> EtapeValidation.CCI;
-            case CCI -> EtapeValidation.CMMR;
+            case RESPONSABLE -> EtapeValidation.CCI_VERS_CMMR;
             case CMMR -> EtapeValidation.VALIDEE;
-            default -> etape;
-        };
-    }
-
-    private EtapeValidation etapePrecedente(EtapeValidation etape) {
-        return switch (etape) {
-            case PILOTE -> EtapeValidation.FORMALISATION;
-            case CCI -> EtapeValidation.PILOTE;
-            case CMMR -> EtapeValidation.CCI;
             default -> etape;
         };
     }
@@ -539,6 +577,10 @@ public class RisqueServiceImpl implements RisqueService {
                                 )
                         );
 
+        // ================= FINALITE =================
+
+        verifierFinaliteAppartientAuProcessus(processus, request.getFinalite());
+
         // ================= CARTOGRAPHIE =================
 
         CartographieRisques cartographie =
@@ -549,6 +591,7 @@ public class RisqueServiceImpl implements RisqueService {
         // ================= UPDATE =================
 
         risque.setLibelle(request.getLibelle());
+        risque.setFinalite(request.getFinalite());
         risque.setCauseProbableList(
                 request.getCauseProbable()
         );
@@ -569,7 +612,7 @@ public class RisqueServiceImpl implements RisqueService {
         // avis / motif / transmis / etapeValidation ne sont volontairement PAS
         // repris depuis la requête ici : ce sont les seules données du circuit
         // de validation, et cette mise à jour générique du contenu du risque
-        // (accessible à RESPONSABLE_RISQUES/SUPER_ADMIN) ne doit pas pouvoir
+        // (accessible à MANAGER_RISQUE/SUPER_ADMIN) ne doit pas pouvoir
         // les contourner. Seuls transmettre() et validerAvis() — avec leurs
         // vérifications d'étape et de motif obligatoire — sont autorisés à
         // les modifier.
@@ -594,6 +637,7 @@ public class RisqueServiceImpl implements RisqueService {
                 risque.getId(),
                 risque.getCode(),
                 risque.getLibelle(),
+                risque.getFinalite(),
                 risque.getCauseProbableList(),
                 risque.getConsequenceProbableList(),
                 risque.getBonnesPratiquesList(),
@@ -636,8 +680,53 @@ public class RisqueServiceImpl implements RisqueService {
                         ? risque.getEmetteurAvis().getProfil().getLibelle()
                         : null,
 
-                evaluationRepository.existsByRisque_Code(risque.getCode())
+                evaluationRepository.existsByRisque_Code(risque.getCode()),
+
+                risque.getStatutSuivi(),
+                risque.getDecisionSuivi(),
+                risque.getDateDecisionSuivi()
         );
+    }
+
+    /**
+     * ================= SUIVI DES ACTIONS DE MITIGATION =================
+     */
+    @Override
+    public RisqueResponse enregistrerSuivi(String code, SuiviRecommandationRequest request) {
+        Risque risque = risqueRepository.findByCode(code)
+                .orElseThrow(() -> new RuntimeException("Risque introuvable : " + code));
+
+        risque.setStatutSuivi(request.getStatutSuivi());
+        risque.setDecisionSuivi(request.getDecision());
+        risque.setDateDecisionSuivi(LocalDateTime.now());
+
+        return toResponse(risqueRepository.save(risque));
+    }
+
+    /**
+     * La finalité renseignée doit être l'une de celles réellement formalisées
+     * sur le processus sélectionné (Processus.finalite, texte séparé par des
+     * points-virgules) : évite qu'un risque se retrouve rattaché à une
+     * finalité arbitraire, y compris en cas d'appel API direct contournant
+     * le sélecteur du formulaire.
+     */
+    private void verifierFinaliteAppartientAuProcessus(Processus processus, String finalite) {
+
+        List<String> finalitesDuProcessus = processus.getFinalite() == null
+                ? List.of()
+                : java.util.Arrays.stream(processus.getFinalite().split(";"))
+                        .map(String::trim)
+                        .filter(f -> !f.isEmpty())
+                        .collect(Collectors.toList());
+
+        boolean appartient = finalitesDuProcessus.stream()
+                .anyMatch(f -> f.equalsIgnoreCase(finalite == null ? null : finalite.trim()));
+
+        if (!appartient) {
+            throw new RuntimeException(
+                    "La finalité sélectionnée ne fait pas partie des finalités du processus " + processus.getCode()
+            );
+        }
     }
 
     /**
