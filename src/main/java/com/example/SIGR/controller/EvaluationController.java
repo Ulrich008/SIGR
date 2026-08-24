@@ -50,10 +50,10 @@ public class EvaluationController {
      * ADMIN :
      * - Création des évaluations
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Création des évaluations (Évaluation)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @PostMapping
     @Operation(
             summary = "Créer une évaluation",
@@ -165,10 +165,10 @@ public class EvaluationController {
      * ADMIN :
      * - Modification des évaluations
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Modification des évaluations (Évaluation)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier une évaluation",
@@ -243,10 +243,10 @@ public class EvaluationController {
      * ADMIN :
      * - Suppression des évaluations
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Suppression des évaluations (Évaluation)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer une évaluation",

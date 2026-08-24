@@ -52,6 +52,8 @@ public class EvaluationServiceImpl implements EvaluationService {
                         )
                 );
 
+        verifierReevaluationAutorisee(risque);
+
         Agent agent = null;
 
         if (request.getMatriculeAgent() != null
@@ -322,6 +324,38 @@ public class EvaluationServiceImpl implements EvaluationService {
         if (enCoursDeValidation) {
             throw new RuntimeException(
                     "Ce risque est en cours de validation (transmis) : son évaluation ne peut plus être modifiée."
+            );
+        }
+    }
+
+    /**
+     * Une réévaluation (nouvelle Evaluation sur un risque qui en possède déjà
+     * au moins une) n'est autorisée que si le risque est encore en
+     * Formalisation (pas transmis, ou redescendu jusque-là par un différé —
+     * on corrige avant de retransmettre) ou si le CMMR a rendu son avis final
+     * positif (etapeValidation == VALIDEE). Tant que le dossier est en cours
+     * de circuit (Pilote/CCI/CMMR, en attente d'avis) ou a été rejeté, aucune
+     * nouvelle évaluation n'est possible — un rejet précoce (par le Pilote ou
+     * la CCI, avant d'atteindre le CMMR) bloque donc la réévaluation
+     * indéfiniment, par choix métier. Le SUPER_ADMIN n'est pas soumis à ce
+     * verrou.
+     */
+    private void verifierReevaluationAutorisee(Risque risque) {
+        if (SecurityUtils.hasAuthority("SUPER_ADMIN")) {
+            return;
+        }
+
+        boolean dejaEvalue = evaluationRepository.existsByRisque_Code(risque.getCode());
+        if (!dejaEvalue) {
+            return;
+        }
+
+        boolean autorise = risque.getEtapeValidation() == EtapeValidation.FORMALISATION
+                || risque.getEtapeValidation() == EtapeValidation.VALIDEE;
+
+        if (!autorise) {
+            throw new RuntimeException(
+                    "Ce risque ne peut être réévalué qu'après l'avis final de validation du CMMR."
             );
         }
     }

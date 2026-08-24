@@ -40,6 +40,9 @@ public class PlanAuditRequest {
     @Size(max = 1000, message = "L'effort d'audit indicatif ne doit pas dépasser 1000 caractères")
     private String effetAuditIndicatif;
 
+    @Size(max = 1000, message = "La recommandation ne doit pas dépasser 1000 caractères")
+    private String recommandation;
+
     // ================= GETTERS / SETTERS =================
 
     public String getCode() {
@@ -129,6 +132,15 @@ public class PlanAuditRequest {
 
     public PlanAuditRequest setEffetAuditIndicatif(String effetAuditIndicatif) {
         this.effetAuditIndicatif = effetAuditIndicatif;
+        return this;
+    }
+
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public PlanAuditRequest setRecommandation(String recommandation) {
+        this.recommandation = recommandation;
         return this;
     }
 }

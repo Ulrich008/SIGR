@@ -45,13 +45,35 @@ VALUES (
     'system'
 ) ON CONFLICT (code) DO NOTHING;
 
--- 5. Responsable des risques
+-- 5. Manager Risque
+INSERT INTO profil (id_profil, code, libelle, description, created_at, created_by)
+VALUES (
+    gen_random_uuid(),
+    'MANAGER_RISQUE',
+    'Manager Risque',
+    'Identifie, en concertation avec les assistants pilotes, les risques inhérents. Évalue les risques. Coordonne la mise en œuvre des plans de mitigation au niveau du processus. Création, modification et suppression sur Formalisation, Risques inhérents, Évaluation, Mitigation et Cartographie. Accès global sur tous les processus.',
+    NOW(),
+    'system'
+) ON CONFLICT (code) DO NOTHING;
+
+-- 5bis. Responsable Risque
 INSERT INTO profil (id_profil, code, libelle, description, created_at, created_by)
 VALUES (
     gen_random_uuid(),
     'RESPONSABLE_RISQUES',
-    'Responsable des risques',
-    'Identifie, en concertation avec les assistants pilotes, les risques inhérents. Évalue les risques. Coordonne la mise en œuvre des plans de mitigation au niveau du processus. Création, modification et suppression sur Formalisation, Risques inhérents, Évaluation et Mitigation.',
+    'Responsable Risque',
+    'Directeur général ou assimilé, porte la responsabilité de gestion des risques de son unité administrative. Consultation uniquement sur Formalisation, Évaluation, Mitigation et Audit ; appose son visa dans le circuit de validation des risques (Cartographie).',
+    NOW(),
+    'system'
+) ON CONFLICT (code) DO NOTHING;
+
+-- 5ter. Correspondant Risque
+INSERT INTO profil (id_profil, code, libelle, description, created_at, created_by)
+VALUES (
+    gen_random_uuid(),
+    'CORRESPONDANT_RISQUE',
+    'Correspondant Risque',
+    'Cadre au niveau d''un département opérationnel. Mêmes droits de création/modification que le Manager Risque sur Formalisation, Évaluation et Mitigation, mais cantonné aux données de sa propre unité administrative. Cartographie et Audit en lecture seule.',
     NOW(),
     'system'
 ) ON CONFLICT (code) DO NOTHING;
@@ -74,6 +96,17 @@ VALUES (
     'AUDITEUR',
     'Auditeur',
     'Consulte les informations dans le cadre des missions d''audit. Tous les modules accessibles en lecture seule, sauf Audit accessible en lecture et modification.',
+    NOW(),
+    'system'
+) ON CONFLICT (code) DO NOTHING;
+
+-- 8. Contrôleur Interne
+INSERT INTO profil (id_profil, code, libelle, description, created_at, created_by)
+VALUES (
+    gen_random_uuid(),
+    'CONTROLEUR_INTERNE',
+    'Contrôleur Interne',
+    'Réalise les contrôles de second niveau et les rapports de contrôle interne d''un processus. Évaluations, Mitigation, Audit et Cartographie définitive accessibles en lecture seule ; création, modification et suppression sur le module Contrôle Interne.',
     NOW(),
     'system'
 ) ON CONFLICT (code) DO NOTHING;

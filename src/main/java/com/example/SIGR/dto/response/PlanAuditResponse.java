@@ -1,9 +1,11 @@
 package com.example.SIGR.dto.response;
 
 import com.example.SIGR.entity.AuditPropose;
+import com.example.SIGR.entity.StatutSuiviRecommandation;
 import com.example.SIGR.entity.TypeRevue;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class PlanAuditResponse {
 
@@ -21,6 +23,10 @@ public class PlanAuditResponse {
     private TypeRevue typeRevue;
     private String objectifAudit;
     private String effetAuditIndicatif;
+    private String recommandation;
+    private StatutSuiviRecommandation statutSuivi;
+    private String decisionSuivi;
+    private LocalDateTime dateDecisionSuivi;
 
     public PlanAuditResponse(
             String id,
@@ -36,7 +42,11 @@ public class PlanAuditResponse {
             AuditPropose auditPropose,
             TypeRevue typeRevue,
             String objectifAudit,
-            String effetAuditIndicatif
+            String effetAuditIndicatif,
+            String recommandation,
+            StatutSuiviRecommandation statutSuivi,
+            String decisionSuivi,
+            LocalDateTime dateDecisionSuivi
     ) {
         this.id = id;
         this.code = code;
@@ -52,6 +62,10 @@ public class PlanAuditResponse {
         this.typeRevue = typeRevue;
         this.objectifAudit = objectifAudit;
         this.effetAuditIndicatif = effetAuditIndicatif;
+        this.recommandation = recommandation;
+        this.statutSuivi = statutSuivi;
+        this.decisionSuivi = decisionSuivi;
+        this.dateDecisionSuivi = dateDecisionSuivi;
     }
 
     // ================= GETTERS =================
@@ -110,5 +124,21 @@ public class PlanAuditResponse {
 
     public String getEffetAuditIndicatif() {
         return effetAuditIndicatif;
+    }
+
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public StatutSuiviRecommandation getStatutSuivi() {
+        return statutSuivi;
+    }
+
+    public String getDecisionSuivi() {
+        return decisionSuivi;
+    }
+
+    public LocalDateTime getDateDecisionSuivi() {
+        return dateDecisionSuivi;
     }
 }

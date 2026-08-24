@@ -2,6 +2,7 @@ package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
+import com.example.SIGR.dto.request.SuiviRecommandationRequest;
 import com.example.SIGR.dto.response.AvisHistoriqueResponse;
 import com.example.SIGR.dto.response.RisqueResponse;
 
@@ -45,4 +46,11 @@ public interface RisqueService {
      * date), couvre tous les allers-retours passés dans le circuit.
      */
     List<AvisHistoriqueResponse> getHistoriqueAvis(String code);
+
+    /**
+     * Suivi des actions de mitigation du risque (menu "Suivi des Risques" >
+     * "Suivi des actions de mitigations") : statut d'avancement + décision,
+     * distinct du circuit de validation (avis/motif).
+     */
+    RisqueResponse enregistrerSuivi(String code, SuiviRecommandationRequest request);
 }

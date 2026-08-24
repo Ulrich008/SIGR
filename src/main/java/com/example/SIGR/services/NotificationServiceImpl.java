@@ -68,6 +68,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         for (Risque risque : risqueRepository.findAll()) {
             detecterValidationEnAttente(risque, creees);
+            detecterTransmissionEnAttente(risque, creees);
         }
 
         for (IndicateurPerformance indicateur : indicateurPerformanceRepository.findAll()) {
@@ -95,7 +96,7 @@ public class NotificationServiceImpl implements NotificationService {
     // ================= RÈGLES DE DÉTECTION =================
 
     private void detecterMitigationManquante(Risque risque, List<Notification> creees) {
-        List<PlanMitigation> plans = planMitigationRepository.findByRisque(risque);
+        List<PlanMitigation> plans = planMitigationRepository.findByRisquesContaining(risque);
 
         if (plans.isEmpty()) {
             creerPourProfils(
@@ -106,7 +107,7 @@ public class NotificationServiceImpl implements NotificationService {
                     risque.getLibelle(),
                     SeveriteAlerte.CRITIQUE,
                     risque,
-                    List.of("RESPONSABLE_RISQUES", "RESPONSABLE_ACTION"),
+                    List.of("MANAGER_RISQUE", "RESPONSABLE_ACTION"),
                     creees
             );
             return;
@@ -134,8 +135,18 @@ public class NotificationServiceImpl implements NotificationService {
     private void detecterValidationEnAttente(Risque risque, List<Notification> creees) {
         if (!Boolean.TRUE.equals(risque.getTransmis())) return;
 
+        // Seuls RESPONSABLE et CMMR rendent un véritable avis dans le
+        // circuit (Manager Risque et CCI ne font que relayer) : eux seuls
+        // sont notifiés d'une décision en attente. "RESPONSABLE" (nom de
+        // l'étape) ne correspond pas au code du profil "RESPONSABLE_RISQUES",
+        // d'où la conversion explicite plutôt qu'un etape.name() générique.
         EtapeValidation etape = risque.getEtapeValidation();
-        if (etape != EtapeValidation.PILOTE && etape != EtapeValidation.CCI && etape != EtapeValidation.CMMR) {
+        String profilDestinataire = switch (etape) {
+            case RESPONSABLE -> "RESPONSABLE_RISQUES";
+            case CMMR -> "CMMR";
+            default -> null;
+        };
+        if (profilDestinataire == null) {
             return;
         }
 
@@ -147,7 +158,41 @@ public class NotificationServiceImpl implements NotificationService {
                 risque.getLibelle(),
                 SeveriteAlerte.MOYENNE,
                 risque,
-                List.of(etape.name()),
+                List.of(profilDestinataire),
+                creees
+        );
+    }
+
+    /**
+     * Contrepartie de detecterValidationEnAttente() pour les étapes de
+     * simple relais (Manager Risque, CCI) : ces profils ne rendent pas
+     * d'avis mais doivent tout de même être notifiés qu'un dossier attend
+     * leur action "Transmettre", sous peine de rester bloqué en silence.
+     * Le mapping étape -> profil reprend exactement celui de
+     * RisqueServiceImpl.verifierAutoriteTransmission().
+     */
+    private void detecterTransmissionEnAttente(Risque risque, List<Notification> creees) {
+        if (!Boolean.TRUE.equals(risque.getTransmis())) return;
+
+        EtapeValidation etape = risque.getEtapeValidation();
+        String profilDestinataire = switch (etape) {
+            case MANAGER_RISQUE -> "MANAGER_RISQUE";
+            case CCI_VERS_RESPONSABLE, CCI_VERS_CMMR -> "CCI";
+            default -> null;
+        };
+        if (profilDestinataire == null) {
+            return;
+        }
+
+        creerPourProfils(
+                TypeNotification.RISQUE_EN_ATTENTE_TRANSMISSION,
+                "Risque en attente de transmission",
+                "Le risque '" + risque.getLibelle() + "' attend d'être transmis à l'étape suivante du circuit (étape " + etape + ").",
+                risque.getCode(),
+                risque.getLibelle(),
+                SeveriteAlerte.FAIBLE,
+                risque,
+                List.of(profilDestinataire),
                 creees
         );
     }

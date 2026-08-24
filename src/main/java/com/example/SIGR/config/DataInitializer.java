@@ -52,6 +52,7 @@ public class    DataInitializer implements CommandLineRunner {
 
         supprimerContraintesMinistereObsoletes();
         reparerCodeMinistereHerite();
+        migrerPlanMitigationRisqueVersTableJointure();
         initProfils();
         initAdmin();
     }
@@ -127,6 +128,44 @@ public class    DataInitializer implements CommandLineRunner {
     }
 
     /**
+     * Un plan de mitigation ne portait auparavant qu'un seul risque, via une
+     * colonne id_risque directement sur plan_mitigation. Cette relation est
+     * devenue N-N (voir PlanMitigation.risques), portée par la nouvelle
+     * table de jointure plan_mitigation_risque. ddl-auto=update crée cette
+     * nouvelle table mais ne supprime jamais l'ancienne colonne id_risque ni
+     * ne migre son contenu : on le fait ici.
+     *
+     * Idempotente (INSERT ... WHERE NOT EXISTS) : rejouable sans dupliquer
+     * les associations déjà migrées. Ne s'exécute que si la colonne héritée
+     * id_risque existe encore (absente sur une base fraîchement créée après
+     * ce changement de modèle).
+     */
+    private void migrerPlanMitigationRisqueVersTableJointure() {
+
+        transactionTemplate.executeWithoutResult(status -> {
+
+            entityManager.createNativeQuery("""
+                    DO $$
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM information_schema.columns
+                            WHERE table_name = 'plan_mitigation' AND column_name = 'id_risque'
+                        ) THEN
+                            INSERT INTO plan_mitigation_risque (id_plan, id_risque)
+                            SELECT pm.id_plan, pm.id_risque
+                            FROM plan_mitigation pm
+                            WHERE pm.id_risque IS NOT NULL
+                              AND NOT EXISTS (
+                                  SELECT 1 FROM plan_mitigation_risque pmr
+                                  WHERE pmr.id_plan = pm.id_plan AND pmr.id_risque = pm.id_risque
+                              );
+                        END IF;
+                    END $$;
+                    """).executeUpdate();
+        });
+    }
+
+    /**
      * Les profils métier du système (voir profils.sql, jamais exécuté
      * automatiquement par Spring Boot car placé hors de resources/data.sql).
      * Insérés ici pour garantir leur présence au démarrage, quel que soit
@@ -157,9 +196,21 @@ public class    DataInitializer implements CommandLineRunner {
         );
 
         creerProfilSiAbsent(
+                "MANAGER_RISQUE",
+                "Manager Risque",
+                "Identifie, en concertation avec les assistants pilotes, les risques inhérents. Évalue les risques. Coordonne la mise en œuvre des plans de mitigation au niveau du processus. Création, modification et suppression sur Formalisation, Risques inhérents, Évaluation, Mitigation et Cartographie. Accès global sur tous les processus."
+        );
+
+        creerProfilSiAbsent(
                 "RESPONSABLE_RISQUES",
-                "Responsable des risques",
-                "Identifie, en concertation avec les assistants pilotes, les risques inhérents. Évalue les risques. Coordonne la mise en œuvre des plans de mitigation au niveau du processus. Création, modification et suppression sur Formalisation, Risques inhérents, Évaluation et Mitigation."
+                "Responsable Risque",
+                "Directeur général ou assimilé, porte la responsabilité de gestion des risques de son unité administrative. Consultation uniquement sur Formalisation, Évaluation, Mitigation et Audit ; appose son visa dans le circuit de validation des risques (Cartographie)."
+        );
+
+        creerProfilSiAbsent(
+                "CORRESPONDANT_RISQUE",
+                "Correspondant Risque",
+                "Cadre au niveau d'un département opérationnel. Mêmes droits de création/modification que le Manager Risque sur Formalisation, Évaluation et Mitigation, mais cantonné aux données de sa propre unité administrative. Cartographie et Audit en lecture seule."
         );
 
         creerProfilSiAbsent(
@@ -172,6 +223,12 @@ public class    DataInitializer implements CommandLineRunner {
                 "AUDITEUR",
                 "Auditeur",
                 "Consulte les informations dans le cadre des missions d'audit. Tous les modules accessibles en lecture seule, sauf Audit accessible en lecture et modification."
+        );
+
+        creerProfilSiAbsent(
+                "CONTROLEUR_INTERNE",
+                "Contrôleur Interne",
+                "Réalise les contrôles de second niveau et les rapports de contrôle interne d'un processus. Évaluations, Mitigation, Audit et Cartographie définitive accessibles en lecture seule ; création, modification et suppression sur le module Contrôle Interne."
         );
     }
 

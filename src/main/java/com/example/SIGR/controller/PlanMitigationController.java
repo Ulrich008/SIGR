@@ -33,7 +33,7 @@ public class PlanMitigationController {
     }
 
     // ================= CREATE =================
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE', 'RESPONSABLE_ACTION')")
     @PostMapping
     @Operation(
             summary = "Créer un plan de mitigation",
@@ -48,7 +48,7 @@ public class PlanMitigationController {
                                     {
                                       "description": "Réduction du risque de fraude",
                                       "dateCreation": "2026-05-07",
-                                      "codeRisque": "RIS-001"
+                                      "codesRisques": ["RIS-001"]
                                     }
                                     """
                             )
@@ -87,7 +87,7 @@ public class PlanMitigationController {
     }
 
     // ================= UPDATE =================
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE', 'RESPONSABLE_ACTION')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un plan de mitigation par code métier",
@@ -101,7 +101,7 @@ public class PlanMitigationController {
                                     {
                                       "description": "Mise à jour du plan",
                                       "dateCreation": "2026-05-07",
-                                      "codeRisque": "RIS-001"
+                                      "codesRisques": ["RIS-001"]
                                     }
                                     """
                             )
@@ -129,7 +129,7 @@ public class PlanMitigationController {
     }
 
     // ================= DELETE =================
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'RESPONSABLE_ACTION')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE', 'RESPONSABLE_ACTION')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un plan de mitigation par code métier"

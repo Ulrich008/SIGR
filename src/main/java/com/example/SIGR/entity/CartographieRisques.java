@@ -14,6 +14,8 @@ import java.util.List;
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
 @Filter(name = "ministereFilter", condition = "id_unite_administrative IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)")
+@FilterDef(name = "uaFilter", parameters = @ParamDef(name = "codeUnite", type = String.class))
+@Filter(name = "uaFilter", condition = "id_unite_administrative IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_unite = :codeUnite)")
 public class CartographieRisques extends Auditable {
 
     @Id

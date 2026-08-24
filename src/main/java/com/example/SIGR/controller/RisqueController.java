@@ -2,6 +2,7 @@ package com.example.SIGR.controller;
 
 import com.example.SIGR.dto.request.AvisRisqueRequest;
 import com.example.SIGR.dto.request.RisqueRequest;
+import com.example.SIGR.dto.request.SuiviRecommandationRequest;
 import com.example.SIGR.dto.response.AvisHistoriqueResponse;
 import com.example.SIGR.dto.response.RisqueResponse;
 import com.example.SIGR.services.RisqueService;
@@ -56,10 +57,10 @@ public class RisqueController {
      * ADMIN :
      * - Création des risques
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Création des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @PostMapping
     @Operation(
             summary = "Créer un risque",
@@ -99,6 +100,7 @@ public class RisqueController {
                                     value = """
                                             {
                                               "libelle": "Fraude financière",
+                                              "finalite": "Assurer le suivi budgétaire",
                                               "categorie": "Financier",
                                               "causeProbable": "Absence de contrôle",
                                               "consequenceProbable": "Perte financière",
@@ -175,10 +177,10 @@ public class RisqueController {
      * ADMIN :
      * - Modification des risques
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Modification des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un risque",
@@ -212,15 +214,19 @@ public class RisqueController {
     /**
      * ================= TRANSMETTRE =================
      *
-     * RESPONSABLE_RISQUES :
-     * - Fait entrer le dossier dans le circuit de validation
-     *   (Formalisation -> Pilote), une fois les 4 étapes complétées.
+     * Relaie le dossier à l'étape suivante du circuit (sans avis) :
+     * - CORRESPONDANT_RISQUE / MANAGER_RISQUE : fait entrer le dossier dans
+     *   le circuit (Formalisation -> Manager Risque).
+     * - MANAGER_RISQUE : relaie vers le CCI, ou renvoie au Correspondant
+     *   pour correction après un différé du Responsable/CMMR.
+     * - CCI : relaie vers le Responsable puis, une fois son visa obtenu,
+     *   vers le CMMR.
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE', 'CCI')")
     @PatchMapping("/{code}/transmettre")
     @Operation(
-            summary = "Transmettre un risque au circuit de validation",
-            description = "Fait entrer le risque dans le circuit de validation (étape Pilote de processus)."
+            summary = "Transmettre un risque à l'étape suivante du circuit de validation",
+            description = "Relaie le risque à l'étape suivante du circuit (Formalisation -> Manager Risque -> CCI -> Responsable -> CCI -> CMMR), sans avis."
     )
     public ResponseEntity<RisqueResponse> transmettre(
 
@@ -239,12 +245,14 @@ public class RisqueController {
     /**
      * ================= VALIDER / DIFFÉRER / REJETER =================
      *
-     * CMMR, CCI, PILOTE :
-     * - Se prononcent sur le risque (avis + motif) sans pouvoir en
-     *   modifier le contenu. Chacun ne peut agir que sur les dossiers
-     *   actuellement à sa propre étape (vérifié en service).
+     * RESPONSABLE_RISQUES, CMMR :
+     * - Seuls profils qui se prononcent réellement sur le risque (avis +
+     *   motif) sans pouvoir en modifier le contenu — le CCI et le Manager
+     *   Risque ne font que relayer (voir transmettre()). Chacun ne peut
+     *   agir que sur les dossiers actuellement à sa propre étape (vérifié
+     *   en service).
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'PILOTE', 'CCI', 'CMMR')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES', 'CMMR')")
     @PatchMapping("/{code}/avis")
     @Operation(
             summary = "Valider, différer ou rejeter un risque",
@@ -252,8 +260,9 @@ public class RisqueController {
                     Enregistre l'avis porté sur un risque (Valider, Différer,
                     Rejeter) ainsi que son motif éventuel, sans modifier le
                     contenu du risque. Le motif est obligatoire en cas de
-                    différé ou de rejet. Fait avancer ou reculer le dossier
-                    dans le circuit de validation (Pilote -> CCI -> CMMR).
+                    différé ou de rejet. Fait avancer le dossier (Responsable
+                    -> CCI -> CMMR -> Validée) ou le renvoie à Manager Risque
+                    en cas de différé.
                     """
     )
     public ResponseEntity<RisqueResponse> validerAvis(
@@ -335,15 +344,39 @@ public class RisqueController {
     }
 
     /**
+     * ================= SUIVI DES ACTIONS DE MITIGATION =================
+     *
+     * ADMIN / MANAGER_RISQUE / CMMR :
+     * - Peuvent renseigner le statut de suivi et la décision sur le suivi
+     *   des actions de mitigation du risque (menu "Suivi des Risques").
+     */
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE', 'CMMR')")
+    @PatchMapping("/{code}/suivi")
+    @Operation(
+            summary = "Enregistrer le suivi des actions de mitigation d'un risque",
+            description = "Permet de renseigner le statut d'avancement et la décision sur le suivi des actions de mitigation"
+    )
+    public ResponseEntity<RisqueResponse> enregistrerSuivi(
+            @Parameter(description = "Code métier du risque", example = "RIS-001")
+            @PathVariable String code,
+            @Valid @RequestBody SuiviRecommandationRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                risqueService.enregistrerSuivi(code, request)
+        );
+    }
+
+    /**
      * ================= SUPPRESSION =================
      *
      * ADMIN :
      * - Suppression des risques
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Suppression des risques (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un risque",

@@ -1,6 +1,7 @@
 package com.example.SIGR.controller;
 
 import com.example.SIGR.dto.request.PlanAuditRequest;
+import com.example.SIGR.dto.request.SuiviRecommandationRequest;
 import com.example.SIGR.dto.response.PlanAuditResponse;
 import com.example.SIGR.services.PlanAuditService;
 
@@ -232,5 +233,29 @@ public class PlanAuditController {
         return ResponseEntity
                 .noContent()
                 .build();
+    }
+
+    /**
+     * ================= SUIVI DE LA RECOMMANDATION =================
+     *
+     * ADMIN / AUDITEUR :
+     * - Peuvent renseigner le statut de suivi et la décision sur la
+     *   recommandation du plan d'audit (menu "Suivi des recommandations
+     *   d'audit").
+     */
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'AUDITEUR')")
+    @PatchMapping("/{code}/suivi")
+    @Operation(
+            summary = "Enregistrer le suivi de la recommandation d'un plan d'audit",
+            description = "Permet de renseigner le statut d'avancement et la décision sur le suivi de la recommandation"
+    )
+    public ResponseEntity<PlanAuditResponse> enregistrerSuivi(
+            @PathVariable String code,
+            @Valid @RequestBody SuiviRecommandationRequest request
+    ) {
+
+        return ResponseEntity.ok(
+                planAuditService.enregistrerSuivi(code, request)
+        );
     }
 }

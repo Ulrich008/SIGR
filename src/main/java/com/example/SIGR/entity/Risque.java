@@ -16,6 +16,8 @@ import java.util.List;
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
 @Filter(name = "ministereFilter", condition = "code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere))")
+@FilterDef(name = "uaFilter", parameters = @ParamDef(name = "codeUnite", type = String.class))
+@Filter(name = "uaFilter", condition = "code_processus IN (SELECT p.code_processus FROM processus p WHERE p.id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_unite = :codeUnite))")
 public class Risque extends Auditable {
 
     @Id
@@ -28,6 +30,15 @@ public class Risque extends Auditable {
 
     @Column(name = "libelle_risque", length = 200)
     private String libelle;
+
+    /**
+     * Finalité du processus (parmi celles formalisées sur Processus.finalite)
+     * que ce risque menace concrètement — permet de savoir, pour un
+     * processus ayant plusieurs finalités, laquelle est exposée par ce
+     * risque précis.
+     */
+    @Column(name = "finalite", length = 500)
+    private String finalite;
 
     @Column(name = "cause_probable", length = 2000)
     private String causeProbable;
@@ -77,6 +88,19 @@ public class Risque extends Auditable {
     @Column(name = "date_identification")
     private LocalDate dateIdentification;
 
+    // Suivi des actions de mitigation du risque (menu "Suivi des Risques" >
+    // "Suivi des actions de mitigations"), distinct du circuit de validation
+    // (avis/motif/étapeValidation) ci-dessus.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut_suivi", length = 30)
+    private StatutSuiviRecommandation statutSuivi;
+
+    @Column(name = "decision_suivi", length = 1000)
+    private String decisionSuivi;
+
+    @Column(name = "date_decision_suivi")
+    private java.time.LocalDateTime dateDecisionSuivi;
+
     /**
      * RELATION :
      * Plusieurs risques peuvent appartenir à un même processus
@@ -119,9 +143,11 @@ public class Risque extends Auditable {
     private List<Evaluation> evaluations;
 
     /*
-     * Un risque peut être traité par plusieurs plans de mitigation
+     * Un risque peut être traité par plusieurs plans de mitigation, et
+     * depuis peu un même plan peut lui-même couvrir plusieurs risques
+     * (relation N-N, voir PlanMitigation.risques).
      */
-    @OneToMany(mappedBy = "risque")
+    @ManyToMany(mappedBy = "risques")
     private List<PlanMitigation> plansMitigation;
 
     // ===================== GETTERS / SETTERS =====================
@@ -134,6 +160,9 @@ public class Risque extends Auditable {
 
     public String getLibelle() { return libelle; }
     public Risque setLibelle(String libelle) { this.libelle = libelle; return this; }
+
+    public String getFinalite() { return finalite; }
+    public Risque setFinalite(String finalite) { this.finalite = finalite; return this; }
 
     public String getCauseProbable() { return causeProbable; }
     public Risque setCauseProbable(String causeProbable) { this.causeProbable = causeProbable; return this; }
@@ -213,6 +242,15 @@ public class Risque extends Auditable {
 
     public String getMotif() { return motif; }
     public Risque setMotif(String motif) { this.motif = motif; return this; }
+
+    public StatutSuiviRecommandation getStatutSuivi() { return statutSuivi; }
+    public Risque setStatutSuivi(StatutSuiviRecommandation statutSuivi) { this.statutSuivi = statutSuivi; return this; }
+
+    public String getDecisionSuivi() { return decisionSuivi; }
+    public Risque setDecisionSuivi(String decisionSuivi) { this.decisionSuivi = decisionSuivi; return this; }
+
+    public java.time.LocalDateTime getDateDecisionSuivi() { return dateDecisionSuivi; }
+    public Risque setDateDecisionSuivi(java.time.LocalDateTime dateDecisionSuivi) { this.dateDecisionSuivi = dateDecisionSuivi; return this; }
 
     public Boolean getTransmis() { return transmis; }
     public Risque setTransmis(Boolean transmis) { this.transmis = transmis; return this; }

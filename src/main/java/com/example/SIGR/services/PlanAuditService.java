@@ -1,6 +1,7 @@
 package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.PlanAuditRequest;
+import com.example.SIGR.dto.request.SuiviRecommandationRequest;
 import com.example.SIGR.dto.response.PlanAuditResponse;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface PlanAuditService {
     PlanAuditResponse update(String code, PlanAuditRequest request);
 
     void delete(String code);
+
+    PlanAuditResponse enregistrerSuivi(String code, SuiviRecommandationRequest request);
 }

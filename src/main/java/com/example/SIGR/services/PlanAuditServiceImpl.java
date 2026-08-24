@@ -1,6 +1,7 @@
 package com.example.SIGR.services;
 
 import com.example.SIGR.dto.request.PlanAuditRequest;
+import com.example.SIGR.dto.request.SuiviRecommandationRequest;
 import com.example.SIGR.dto.response.PlanAuditResponse;
 import com.example.SIGR.entity.PlanAudit;
 import com.example.SIGR.entity.Processus;
@@ -12,6 +13,7 @@ import com.example.SIGR.repository.RisqueRepository;
 import com.example.SIGR.repository.UniteAdministrativeRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,7 @@ public class PlanAuditServiceImpl implements PlanAuditService {
         planAudit.setTypeRevue(request.getTypeRevue());
         planAudit.setObjectifAudit(request.getObjectifAudit());
         planAudit.setEffetAuditIndicatif(request.getEffetAuditIndicatif());
+        planAudit.setRecommandation(request.getRecommandation());
 
         PlanAudit saved = planAuditRepository.save(planAudit);
 
@@ -141,6 +144,7 @@ public class PlanAuditServiceImpl implements PlanAuditService {
         planAudit.setTypeRevue(request.getTypeRevue());
         planAudit.setObjectifAudit(request.getObjectifAudit());
         planAudit.setEffetAuditIndicatif(request.getEffetAuditIndicatif());
+        planAudit.setRecommandation(request.getRecommandation());
 
         PlanAudit updated = planAuditRepository.save(planAudit);
 
@@ -155,6 +159,21 @@ public class PlanAuditServiceImpl implements PlanAuditService {
                         new RuntimeException("Plan d'audit introuvable : " + code)
                 );
         planAuditRepository.delete(planAudit);
+    }
+
+    // ================= SUIVI DE LA RECOMMANDATION =================
+    @Override
+    public PlanAuditResponse enregistrerSuivi(String code, SuiviRecommandationRequest request) {
+        PlanAudit planAudit = planAuditRepository.findByCode(code)
+                .orElseThrow(() ->
+                        new RuntimeException("Plan d'audit introuvable : " + code)
+                );
+
+        planAudit.setStatutSuivi(request.getStatutSuivi());
+        planAudit.setDecisionSuivi(request.getDecision());
+        planAudit.setDateDecisionSuivi(LocalDateTime.now());
+
+        return toResponse(planAuditRepository.save(planAudit));
     }
 
     // ================= RESPONSE =================
@@ -173,7 +192,11 @@ public class PlanAuditServiceImpl implements PlanAuditService {
                 planAudit.getAuditPropose(),
                 planAudit.getTypeRevue(),
                 planAudit.getObjectifAudit(),
-                planAudit.getEffetAuditIndicatif()
+                planAudit.getEffetAuditIndicatif(),
+                planAudit.getRecommandation(),
+                planAudit.getStatutSuivi(),
+                planAudit.getDecisionSuivi(),
+                planAudit.getDateDecisionSuivi()
         );
     }
 

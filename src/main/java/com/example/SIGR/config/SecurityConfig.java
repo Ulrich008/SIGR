@@ -59,7 +59,7 @@ public class SecurityConfig {
      * droits d'ADMIN. Ainsi @PreAuthorize("hasAuthority('ADMIN')") (ou
      * hasAnyAuthority(...'ADMIN'...)) laisse aussi passer SUPER_ADMIN,
      * sans avoir à lister SUPER_ADMIN partout dans les contrôleurs.
-     * Les profils métier (CMMR, CCI, PILOTE, RESPONSABLE_RISQUES,
+     * Les profils métier (CMMR, CCI, PILOTE, MANAGER_RISQUE,
      * RESPONSABLE_ACTION, AUDITEUR) restent hors hiérarchie : ce sont
      * des autorisations métier distinctes, pas des rôles techniques.
      *

@@ -13,6 +13,12 @@ import java.util.List;
 @Audited
 @FilterDef(name = "ministereFilter", parameters = @ParamDef(name = "codeMinistere", type = String.class))
 @Filter(name = "ministereFilter", condition = "id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_ministere = :codeMinistere)")
+// Cantonnement du Correspondant Risque à sa propre unité administrative
+// (voir MinistereInterceptor) : filtre additionnel, actif seulement pour ce
+// profil — sans effet pour les autres tant qu'il n'est pas explicitement
+// activé sur la session.
+@FilterDef(name = "uaFilter", parameters = @ParamDef(name = "codeUnite", type = String.class))
+@Filter(name = "uaFilter", condition = "id_unite IN (SELECT ua.id_unite FROM unite_administrative ua WHERE ua.code_unite = :codeUnite)")
 public class Processus extends Auditable {
 
     @Id

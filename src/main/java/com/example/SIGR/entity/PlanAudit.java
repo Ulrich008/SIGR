@@ -9,6 +9,7 @@ import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "plan_audit")
@@ -59,6 +60,21 @@ public class PlanAudit extends Auditable {
 
     @Column(name = "effet_audit_indicatif", length = 1000)
     private String effetAuditIndicatif;
+
+    @Column(name = "recommandation", length = 1000)
+    private String recommandation;
+
+    // Suivi de la recommandation d'audit (menu "Suivi des recommandations
+    // d'audit") : statut nullable tant qu'aucun suivi n'a été renseigné.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statut_suivi", length = 30)
+    private StatutSuiviRecommandation statutSuivi;
+
+    @Column(name = "decision_suivi", length = 1000)
+    private String decisionSuivi;
+
+    @Column(name = "date_decision_suivi")
+    private LocalDateTime dateDecisionSuivi;
 
     public String getId() {
         return id;
@@ -156,6 +172,42 @@ public class PlanAudit extends Auditable {
 
     public PlanAudit setEffetAuditIndicatif(String effetAuditIndicatif) {
         this.effetAuditIndicatif = effetAuditIndicatif;
+        return this;
+    }
+
+    public String getRecommandation() {
+        return recommandation;
+    }
+
+    public PlanAudit setRecommandation(String recommandation) {
+        this.recommandation = recommandation;
+        return this;
+    }
+
+    public StatutSuiviRecommandation getStatutSuivi() {
+        return statutSuivi;
+    }
+
+    public PlanAudit setStatutSuivi(StatutSuiviRecommandation statutSuivi) {
+        this.statutSuivi = statutSuivi;
+        return this;
+    }
+
+    public String getDecisionSuivi() {
+        return decisionSuivi;
+    }
+
+    public PlanAudit setDecisionSuivi(String decisionSuivi) {
+        this.decisionSuivi = decisionSuivi;
+        return this;
+    }
+
+    public LocalDateTime getDateDecisionSuivi() {
+        return dateDecisionSuivi;
+    }
+
+    public PlanAudit setDateDecisionSuivi(LocalDateTime dateDecisionSuivi) {
+        this.dateDecisionSuivi = dateDecisionSuivi;
         return this;
     }
 }

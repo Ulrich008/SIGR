@@ -39,10 +39,10 @@ public class ProcessusController {
     /**
      * ================= CREATE =================
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Peut créer des processus (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @PostMapping
     @Operation(
             summary = "Créer un processus",
@@ -121,10 +121,10 @@ public class ProcessusController {
     /**
      * ================= UPDATE =================
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Peut modifier les processus (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @PutMapping("/{code}")
     @Operation(
             summary = "Modifier un processus",
@@ -164,10 +164,10 @@ public class ProcessusController {
     /**
      * ================= DELETE =================
      *
-     * RESPONSABLE_RISQUES :
+     * MANAGER_RISQUE :
      * - Peut supprimer un processus (Formalisation des risques)
      */
-    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'RESPONSABLE_RISQUES')")
+    @PreAuthorize("hasAnyAuthority('SUPER_ADMIN', 'MANAGER_RISQUE', 'CORRESPONDANT_RISQUE')")
     @DeleteMapping("/{code}")
     @Operation(
             summary = "Supprimer un processus",
