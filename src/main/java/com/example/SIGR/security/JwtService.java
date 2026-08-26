@@ -22,10 +22,10 @@ public class JwtService {
             "SIGR_SECRET_KEY_2026_ULRICH_APPLICATION";
 
     /**
-     * Expiration : 24 heures
+     * Expiration : 1 heure
      */
     private static final long EXPIRATION =
-            1000 * 60 * 60 * 24;
+            1000 * 60 * 60;
 
     /**
      * Génération de la clé
